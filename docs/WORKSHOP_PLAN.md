@@ -46,6 +46,7 @@ Deterministic and safe to use on stage or in a recording. It runs anywhere and h
 | Scenario engine | `demo/scenario.py` | Runs the same attack with controls OFF, then ON |
 | Terminal narrator | `demo/run.py` | `python3 -m demo.run` for a CLI walkthrough |
 | **Breach Console** | `demo/dashboard.html` | The visual for the room and the video |
+| **Lateral Movement Map** | `demo/attack_map.html` | Architecture view per step: the path the request takes, the chain of agents it passed through, and the five background checks (identity → delegation → policy → behavior → response) |
 
 **Why simulate first:** a live attack on stage can fail. A scripted one runs the same
 way every time, so you can rehearse the timing and cut the video frame by frame.
@@ -94,7 +95,7 @@ Add the voiceover afterwards.
 | **1. The shift** | 10 min | AI agents are now an identity problem. They log in, hold tokens, call APIs and act on behalf of people. Most IAM programmes were built for humans. |
 | **2. Show the video** | 5 min | Play the 3-minute film. Don't explain it yet. |
 | **3. Live replay** | 15 min | Run the Breach Console live. Pause on each step and ask the room, *"Would you catch this today?"* |
-| **4. Unpack the controls** | 20 min | Walk through the five controls in section 4. Map each one to a block in the demo. |
+| **4. Unpack the controls** | 20 min | Open the Lateral Movement Map. Step through the chain with controls off, then on. Show where each lateral hop lands and which of the five controls in section 4 fires. |
 | **5. Their environment** | 25 min | Discovery conversation (questions in section 5). Whiteboard their agent landscape. |
 | **6. Path forward** | 15 min | Propose an **identity posture assessment** for their agent estate, then a scoped Tier B proof of value. |
 

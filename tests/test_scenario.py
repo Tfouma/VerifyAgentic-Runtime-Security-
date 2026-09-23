@@ -17,6 +17,13 @@ class ScenarioTest(unittest.TestCase):
         # A blocked read must not touch a single customer record.
         self.assertEqual(r["snapshot"]["records_exposed"], 0)
 
+    def test_retry_hits_kill_switch(self):
+        controls = [s["control"] for s in run(True)["steps"]]
+        self.assertEqual(
+            controls,
+            ["ISPM / Shadow Access", "Agent Identity", "Agent Identity", "ITDR / Kill-switch"],
+        )
+
     def test_ledger_is_conserved(self):
         for enabled in (False, True):
             snap = run(enabled)["snapshot"]

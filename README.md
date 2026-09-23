@@ -14,6 +14,7 @@ illustration, not IBM software.
 |------|------------|
 | `docs/WORKSHOP_PLAN.md` | **Start here.** How many agents you need, which environment to use, the video storyboard, the 90-minute agenda, the talk track, discovery questions, objection handling and the call to action |
 | `demo/dashboard.html` | The Breach Console: an interactive visual for the room and the recording |
+| `demo/attack_map.html` | Lateral Movement Map: architecture view of each step, including the request chain across agents and the background checks that run on every call |
 | `demo/run.py` | Terminal narrator that prints the attack with controls OFF, then ON |
 | `demo/bank.py` | In-memory mock bank |
 | `demo/guardrail.py` | Simulated runtime control layer (agent identity, delegated mandate, per-action policy, quarantine) |
@@ -30,7 +31,8 @@ python3 -m unittest discover tests # verify the OFF/ON outcomes
 ```
 
 For the dashboard, open `demo/dashboard.html` in a browser. Choose **Controls off** or
-**Controls on**, then click **Run attack**.
+**Controls on**, then click **Run attack**. To explain what happens behind each step,
+open `demo/attack_map.html` and step through it or click **Play chain**.
 
 ## The story in one line
 

@@ -46,6 +46,9 @@ class Guardrail:
     enabled: bool
     registry: dict[str, AgentIdentity] = field(default_factory=dict)
     events: list[dict] = field(default_factory=list)
+    # Unregistered callers that already tripped a block. Known agents carry
+    # their own flag on AgentIdentity.
+    quarantined_ids: set[str] = field(default_factory=set)
 
     def register(self, ident: AgentIdentity) -> None:
         self.registry[ident.agent_id] = ident
@@ -74,8 +77,16 @@ class Guardrail:
 
         ident = self.registry.get(agent_id)
 
+        # 0. Kill-switch: an unknown caller that was already blocked stays blocked.
+        if agent_id in self.quarantined_ids:
+            return self._log(
+                Decision(False, "Agent identity is quarantined after a prior policy violation.", "block", "ITDR / Kill-switch"),
+                agent_id, action, str(ctx),
+            )
+
         # 1. Unregistered / unknown non-human identity.
         if ident is None:
+            self.quarantined_ids.add(agent_id)
             return self._log(
                 Decision(False, f"Unregistered agent '{agent_id}' — no verifiable identity.", "block", "Agent Identity"),
                 agent_id, action, str(ctx),
