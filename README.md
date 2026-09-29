@@ -15,6 +15,8 @@ illustration, not IBM software.
 | `docs/WORKSHOP_PLAN.md` | **Start here.** How many agents you need, which environment to use, the video storyboard, the 90-minute agenda, the talk track, discovery questions, objection handling and the call to action |
 | `docs/USE_CASE_DEVIN_ZERO_TRUST.md` | Use case: zero trust for Devin (AI software engineer) with IBM Agent Identity in a bank. Actors, threat model, architecture, flows, policy matrix, regulatory mapping and rollout |
 | `docs/USE_CASE_ENTERPRISE_AI_AGENTS_ZERO_TRUST.md` | Use case: zero trust for the AI agents employees use (ChatGPT, Gemini, Claude, Claude Code, Codex, Cursor, Devin, OpenClaw and others). Agent categories, access patterns, per-tool controls, scenarios, tiers and rollout |
+| `docs/USE_CASE_SANDBOXED_AGENT_BANKING.md` | Use case: sandboxed KYC agent acting for an analyst (Entra ID sign-in, IBM Verify token exchange and RAR, Vault 5-minute credentials, MCP gateway, OPA, human approval for writes, shared-signals response). Banking version of IBM's NVIDIA OpenShell demo |
+| `demo/sandbox_flow.html` | Governed Agent Sandbox: interactive architecture with Overview, Delegation and Policy lifecycle tabs and four scenarios (KYC remediation, poisoned runbook, failed approvals, unregistered tool) |
 | `demo/dashboard.html` | The Breach Console: an interactive visual for the room and the recording |
 | `demo/attack_map.html` | Lateral Movement Map: architecture view of each step, including the request chain across agents and the background checks that run on every call |
 | `demo/run.py` | Terminal narrator that prints the attack with controls OFF, then ON |
