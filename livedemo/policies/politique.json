@@ -1,0 +1,19 @@
+{
+  "_description": "Politique en tant que code (données OPA simulées). Modifiée par demande de fusion révisée, jamais à la main en production.",
+  "mcp_enregistres": {
+    "jira": ["read_issue"],
+    "gitlab": ["get_file"],
+    "databricks": ["query", "execute"],
+    "web": ["fetch"],
+    "annuaire": ["scim_get"]
+  },
+  "sorties_autorisees": {
+    "agent-csc-parent": ["politiques.coop.example"]
+  },
+  "sql_destructif": ["DROP", "TRUNCATE", "ALTER"],
+  "delete_sans_where_interdit": true,
+  "seuil_refus": 3,
+  "suspension_secondes": 300,
+  "duree_identifiant_secondes": 300,
+  "echecs_approbation_max": 3
+}

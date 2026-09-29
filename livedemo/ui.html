@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="fr-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent IA gouverné</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0a0e1a; --surface: #111726; --surface-2: #161d30; --line: #24304b; --line-soft: #1b2337;
+    --ink: #d7deee; --ink-dim: #8492b0; --ink-faint: #5b6884;
+    --accent: #4f8cff; --danger: #ff5468; --danger-dim: rgba(255,84,104,.14);
+    --safe: #26d18a; --safe-dim: rgba(38,209,138,.13); --warn: #f5b544; --warn-dim: rgba(245,181,68,.15);
+    --sig: #a78bfa; --sig-dim: rgba(167,139,250,.16); --sandbox: #9bd15a; --vault: #e8b83a;
+    --mono: "IBM Plex Mono", ui-monospace, "DejaVu Sans Mono", Menlo, monospace;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", "DejaVu Sans", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { font-family: var(--sans); color: var(--ink); background: radial-gradient(1100px 520px at 80% -10%, rgba(15,98,254,.10), transparent 60%), var(--bg); -webkit-font-smoothing: antialiased; }
+  button { font-family: inherit; }
+  .app { display: grid; grid-template-rows: auto 1fr; height: 100vh; min-height: 760px; padding: 12px 16px 14px; gap: 12px; }
+
+  header { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .eyebrow { font-family: var(--mono); font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-faint); margin: 0; }
+  h1 { font-size: 21px; margin: 3px 0 0; font-weight: 600; letter-spacing: -.01em; }
+  .chips { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .chip { font-family: var(--mono); font-size: 11.5px; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink-dim); white-space: nowrap; }
+  .chip b { color: var(--ink); font-weight: 600; }
+  .chip.ok { border-color: var(--safe); color: var(--safe); }
+  .chip.bad { border-color: var(--danger); color: var(--danger); }
+  .chip.run { border-color: var(--accent); color: var(--accent); }
+  .ghostbtn { font-size: 12px; padding: 6px 11px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--ink-dim); cursor: pointer; }
+
+  .main > .col:first-child { overflow-y: auto; }
+  .step { display: flex; align-items: center; gap: 8px; margin-top: 9px; font-size: 12.5px; color: var(--ink-dim); }
+  .step input { accent-color: var(--accent); }
+  .step .btn { width: auto; margin-left: auto; padding: 6px 10px; font-size: 12px; }
+  .step .btn.ready { border-color: var(--accent); background: var(--accent); color: #fff; }
+  .main { display: grid; grid-template-columns: 290px minmax(0, 1fr) 390px; gap: 12px; min-height: 0; }
+  .col { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+  .card { background: var(--surface); border: 1px solid var(--line-soft); border-radius: 12px; padding: 12px 13px; }
+  .card h2 { font-family: var(--mono); font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-faint); margin: 0 0 9px; font-weight: 500; }
+  .btn { width: 100%; text-align: left; font-size: 13px; font-weight: 600; padding: 9px 11px; border-radius: 9px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); cursor: pointer; }
+  .btn:hover:not(:disabled) { border-color: var(--accent); }
+  .btn:disabled { opacity: .45; cursor: default; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn small { display: block; font-weight: 400; font-size: 11.5px; color: var(--ink-dim); margin-top: 2px; }
+  .btn.primary small { color: rgba(255,255,255,.8); }
+  .btn.active { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+  .stack { display: flex; flex-direction: column; gap: 7px; }
+  .who { font-size: 13px; line-height: 1.5; color: var(--ink-dim); }
+  .who b { color: var(--ink); }
+
+  .approve { border-color: var(--warn); box-shadow: 0 0 0 1px var(--warn) inset; }
+  .approve p { margin: 0 0 8px; font-size: 12.5px; line-height: 1.5; color: var(--ink); }
+  .row { display: flex; gap: 7px; }
+  input.code { flex: 1; min-width: 0; font-family: var(--mono); font-size: 16px; letter-spacing: .3em; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: #0c1120; color: var(--ink); }
+  .row .btn { width: auto; }
+  .mail { margin-top: 8px; font-size: 12px; color: var(--ink-dim); background: #0c1120; border: 1px dashed var(--line); border-radius: 8px; padding: 7px 9px; line-height: 1.5; }
+  .mail b { font-family: var(--mono); color: var(--warn); letter-spacing: .12em; }
+  .note { font-size: 11.5px; color: var(--ink-faint); margin-top: 6px; }
+
+  .agent { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 7px 0; border-top: 1px solid var(--line-soft); font-size: 12.5px; }
+  .agent:first-of-type { border-top: 0; padding-top: 0; }
+  .agent .id { font-family: var(--mono); font-size: 12px; }
+  .agent .st { font-family: var(--mono); font-size: 11px; }
+  .agent .st.actif { color: var(--safe); } .agent .st.suspendu { color: var(--danger); }
+  .agent .d { grid-column: 1 / 3; font-size: 11.5px; color: var(--ink-faint); }
+  .agent .btn { grid-column: 1 / 3; margin-top: 5px; padding: 6px 9px; font-size: 12px; }
+
+  /* diagram */
+  .diagram { padding: 8px 8px 6px; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  svg.map { display: block; width: 100%; height: 100%; min-height: 0; flex: 1 1 auto; color: var(--ink-faint); font-family: var(--sans); }
+  .node rect { fill: var(--surface-2); stroke: var(--line); stroke-width: 1.3; transition: stroke .25s, fill .25s; }
+  .node .t { fill: var(--ink); font-size: 13.5px; font-weight: 600; }
+  .node .s { fill: var(--ink-faint); font-size: 11px; font-family: var(--mono); }
+  .node .i { fill: var(--ink-dim); font-size: 11px; font-style: italic; }
+  .node.dash rect { stroke-dasharray: 5 4; }
+  .node.sandbox > rect { stroke: var(--sandbox); stroke-width: 1.8; fill: rgba(155,209,90,.05); }
+  .node.sandbox .lab { fill: var(--sandbox); font-size: 13px; font-weight: 600; }
+  .node.vault > rect { stroke: var(--vault); }
+  .node.opa > rect { stroke: var(--sig); } .node.opa .t { fill: var(--sig); }
+  .node.gw > rect { stroke: var(--accent); fill: rgba(79,140,255,.05); stroke-width: 1.8; }
+  .node.gw .lab { fill: var(--accent); font-size: 14px; font-weight: 600; }
+  .node.ghost { opacity: .35; } .node.ghost.deny { opacity: 1; }
+  .node.hot > rect { stroke: var(--accent); stroke-width: 2.4; }
+  .node.ok > rect { stroke: var(--safe); stroke-width: 2.4; fill: rgba(38,209,138,.08); }
+  .node.deny > rect { stroke: var(--danger); stroke-width: 2.4; fill: rgba(255,84,104,.09); }
+  .node.warn > rect { stroke: var(--warn); stroke-width: 2.4; fill: rgba(245,181,68,.08); }
+  .node.sigon > rect { stroke: var(--sig); stroke-width: 2.4; fill: rgba(167,139,250,.08); }
+  .node.quar > rect { stroke: var(--danger); stroke-dasharray: 6 4; stroke-width: 2.4; }
+  .node .badge { display: none; }
+  .node.quar .badge { display: inline; fill: var(--danger); font-family: var(--mono); font-size: 11px; font-weight: 600; }
+  .gi rect { fill: var(--surface); stroke: var(--line); stroke-width: 1; transition: .25s; }
+  .gi text { fill: var(--ink); font-size: 11.5px; }
+  .gi.hot rect { stroke: var(--accent); fill: rgba(79,140,255,.16); }
+  .gi.ok rect { stroke: var(--safe); fill: var(--safe-dim); }
+  .gi.deny rect { stroke: var(--danger); fill: var(--danger-dim); }
+  .gi.warn rect { stroke: var(--warn); fill: var(--warn-dim); }
+  .gi.sigon rect { stroke: var(--sig); fill: var(--sig-dim); }
+  .edge { fill: none; stroke: var(--line); stroke-width: 1.6; transition: stroke .25s; }
+  .edge.dashed { stroke-dasharray: 5 5; }
+  .edge.live { stroke: var(--accent); stroke-width: 2.8; }
+  .edge.ok { stroke: var(--safe); stroke-width: 2.8; }
+  .edge.deny { stroke: var(--danger); stroke-width: 2.8; }
+  .edge.sigon { stroke: var(--sig); stroke-width: 2.6; stroke-dasharray: 7 5; }
+  .elabel { font-size: 11px; fill: var(--ink-faint); font-family: var(--mono); }
+  .refused circle { fill: var(--surface-2); stroke: var(--line); transition: .25s; }
+  .refused text { fill: var(--ink-faint); font-family: var(--mono); font-size: 11px; font-weight: 600; }
+  .refused.on circle { fill: var(--danger); stroke: var(--danger); } .refused.on text { fill: #fff; }
+  #refusedLbl { font-family: var(--mono); font-size: 10.5px; fill: var(--ink-faint); }
+  #refusedLbl.on { fill: var(--danger); font-weight: 600; }
+  .cap { text-align: center; font-weight: 600; font-size: 14px; padding: 6px 4px 2px; min-height: 26px; color: var(--accent); }
+  .cap.allow, .cap.done { color: var(--safe); } .cap.deny, .cap.revoke, .cap.suspend { color: var(--danger); }
+  .cap.stepup { color: var(--warn); } .cap.signal { color: var(--sig); }
+
+  .lower { display: grid; grid-template-columns: 1.35fr 1fr; gap: 12px; }
+  table { border-collapse: collapse; width: 100%; font-size: 12px; }
+  th, td { text-align: left; padding: 5px 7px; border-bottom: 1px solid var(--line-soft); white-space: nowrap; }
+  th { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); font-weight: 500; }
+  td.m { font-family: var(--mono); font-size: 11.5px; }
+  tr.changed td { background: var(--safe-dim); }
+  .hi { color: var(--danger); font-weight: 600; } .mid { color: var(--warn); } .lo { color: var(--safe); }
+  .lease { display: grid; grid-template-columns: 1fr auto; gap: 1px 8px; padding: 5px 0; border-bottom: 1px solid var(--line-soft); font-size: 11.5px; }
+  .lease .id { font-family: var(--mono); }
+  .lease .s { font-family: var(--mono); font-size: 10.5px; }
+  .lease .s.rev { color: var(--ink-faint); } .lease .s.act { color: var(--vault); }
+  .lease .d { grid-column: 1 / 3; color: var(--ink-faint); font-size: 10.5px; font-family: var(--mono); }
+  .empty { color: var(--ink-faint); font-size: 12px; }
+
+  /* journal */
+  .journal { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; padding-bottom: 6px; }
+  .events { flex: 1 1 auto; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px; }
+  .ev { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; padding: 7px 9px; border-radius: 9px; background: var(--surface-2); border: 1px solid var(--line-soft); cursor: pointer; }
+  .ev.say { background: transparent; border-style: dashed; }
+  .ev.sel { border-color: var(--accent); }
+  .ev .tag { font-family: var(--mono); font-size: 9.5px; letter-spacing: .06em; padding: 2px 6px; border-radius: 999px; align-self: start; margin-top: 1px; }
+  .ev .ti { font-size: 12.5px; font-weight: 600; line-height: 1.35; }
+  .ev .de { grid-column: 2; font-size: 11.5px; color: var(--ink-dim); line-height: 1.45; word-break: break-word; }
+  .ev .meta { grid-column: 2; font-family: var(--mono); font-size: 10px; color: var(--ink-faint); }
+  .t-info { background: rgba(133,146,176,.14); color: var(--ink-dim); }
+  .t-allow, .t-done { background: var(--safe-dim); color: var(--safe); }
+  .t-deny, .t-revoke, .t-suspend { background: var(--danger); color: #fff; }
+  .t-stepup { background: var(--warn-dim); color: var(--warn); }
+  .t-signal { background: var(--sig-dim); color: var(--sig); }
+  .tok { flex: 0 0 auto; }
+  pre.json { margin: 0; font-family: var(--mono); font-size: 11px; line-height: 1.5; background: #0c1120; border: 1px solid var(--line-soft); border-radius: 8px; padding: 8px 10px; max-height: 210px; overflow: auto; white-space: pre; color: var(--ink); }
+
+  /* video overlays */
+  #sub { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); max-width: 1180px; width: calc(100% - 80px);
+         background: rgba(5,8,16,.92); border: 1px solid var(--line); border-radius: 12px; padding: 12px 20px; font-size: 20px; line-height: 1.45;
+         text-align: center; color: #fff; box-shadow: 0 10px 40px rgba(0,0,0,.5); z-index: 20; display: none; }
+  #slide { position: fixed; inset: 0; z-index: 30; display: none; align-items: center; justify-content: center;
+           background: radial-gradient(900px 500px at 70% 10%, rgba(15,98,254,.22), transparent 60%), #070a13; }
+  #slide .inner { max-width: 1100px; padding: 40px; }
+  #slide .ey { font-family: var(--mono); letter-spacing: .25em; font-size: 14px; color: var(--accent); text-transform: uppercase; }
+  #slide h2 { font-size: 50px; line-height: 1.12; margin: 14px 0 16px; letter-spacing: -.02em; }
+  #slide p { font-size: 22px; color: var(--ink-dim); line-height: 1.5; margin: 0; }
+  #slide ol { font-size: 24px; line-height: 1.7; margin: 20px 0 0; padding-left: 30px; }
+  #slide ol li::marker { color: var(--accent); font-family: var(--mono); }
+  #slide .foot { margin-top: 26px; font-size: 15px; color: var(--ink-faint); }
+  @media (max-width: 1100px) { .main { grid-template-columns: 1fr; } .app { height: auto; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <p class="eyebrow">Démo en direct · coopérative financière fictive · données synthétiques</p>
+      <h1>Agent IA gouverné en bac à sable · opérations CSC (connaître son client)</h1>
+    </div>
+    <div class="chips">
+      <span class="chip" id="chipSess">Session Entra ID : <b>aucune</b></span>
+      <span class="chip" id="chipAgent">agent-csc-parent : <b>actif</b></span>
+      <span class="chip" id="chipRun">Prêt</span>
+      <button class="ghostbtn" id="resetBtn" title="Tout remettre à zéro">↺ Réinitialiser</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <!-- left: the human -->
+    <div class="col">
+      <section class="card">
+        <h2>1 · Conseillère</h2>
+        <div class="who" id="who">Camille Roy, conseillère en conformité CSC <i>(personne fictive)</i>.</div>
+        <div class="stack" style="margin-top:9px">
+          <button class="btn primary" id="loginBtn">Se connecter avec Entra ID<small>MFA · jeton transmis au bac à sable comme simple porteur</small></button>
+        </div>
+      </section>
+      <section class="card">
+        <h2>2 · Confier une tâche à l'agent</h2>
+        <div class="stack" id="scenarios"></div>
+        <label class="step"><input type="checkbox" id="stepChk"> Pas à pas <button class="btn" id="stepBtn" disabled>Étape suivante ▸</button></label>
+      </section>
+      <section class="card approve" id="approveCard" hidden>
+        <h2>Approbation · IBM Verify</h2>
+        <p id="approveText"></p>
+        <div class="row"><input class="code" id="codeIn" inputmode="numeric" maxlength="6" placeholder="······" aria-label="Code à usage unique"><button class="btn primary" id="approveBtn">Approuver</button></div>
+        <div class="mail" id="mail"></div>
+        <div class="note" id="approveNote"></div>
+      </section>
+      <section class="card">
+        <h2>Registre des agents · IBM Verify</h2>
+        <div id="registry"></div>
+      </section>
+    </div>
+
+    <!-- centre: architecture + data -->
+    <div class="col">
+      <section class="card diagram">
+        <svg class="map" viewBox="0 0 1000 612" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Architecture : Entra ID, bac à sable de l'agent, passerelle MCP, IBM Verify, Vault, OPA, serveurs MCP, Antenna SSF">
+          <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+          <path id="e-entra-verify" class="edge dashed" d="M300,50 L420,50"/><text class="elabel" x="360" y="42" text-anchor="middle">confiance STS</text>
+          <path id="e-entra-parent" class="edge" d="M160,92 L160,118" marker-end="url(#ah)"/><text class="elabel" x="170" y="110">porteur seulement</text>
+          <path id="e-parent-gw" class="edge" d="M300,196 L420,196" marker-end="url(#ah)"/>
+          <path id="e-sub-gw" class="edge" d="M300,381 L420,381" marker-end="url(#ah)"/>
+          <path id="e-parent-shim" class="edge" d="M160,268 L160,284" marker-end="url(#ah)"/>
+          <path id="e-shim-sub" class="edge" d="M160,330 L160,346" marker-end="url(#ah)"/>
+          <path id="e-opa-gw" class="edge" d="M404,320 L420,320"/>
+          <path id="e-gw-verify" class="edge" d="M530,124 L530,106" marker-end="url(#ah)"/>
+          <path id="e-verify-human" class="edge" d="M640,56 L720,56" marker-end="url(#ah)"/>
+          <path id="e-gw-vault" class="edge" d="M530,464 L530,484" marker-end="url(#ah)"/>
+          <path id="e-gw-jira" class="edge" d="M640,176 L700,152" marker-end="url(#ah)"/>
+          <path id="e-gw-gitlab" class="edge" d="M640,212 L700,220" marker-end="url(#ah)"/>
+          <path id="e-gw-dbx" class="edge" d="M640,284 L700,288" marker-end="url(#ah)"/>
+          <path id="e-gw-web" class="edge" d="M640,320 L700,356" marker-end="url(#ah)"/>
+          <path id="e-gw-lookup" class="edge" d="M640,356 L700,424" marker-end="url(#ah)"/>
+          <path id="e-gw-siem" class="edge" d="M640,430 L700,508" marker-end="url(#ah)"/>
+          <path id="e-gw-pay" class="edge dashed" d="M640,446 L700,578" marker-end="url(#ah)"/>
+          <path id="e-gw-antenna" class="edge dashed" d="M420,448 L300,472" marker-end="url(#ah)"/><text class="elabel" x="352" y="446" text-anchor="middle">CAEP</text>
+          <path id="e-ant-sidecar" class="edge dashed" d="M160,518 L160,530" marker-end="url(#ah)"/>
+          <path id="e-ant-entra" class="edge dashed" d="M20,486 C2,420 2,120 20,74" marker-end="url(#ah)"/>
+          <path id="e-ant-verify" class="edge dashed" d="M300,500 L409,500 L409,92 L420,92" marker-end="url(#ah)"/>
+
+          <g class="refused" id="r1"><circle cx="330" cy="222" r="10"/><text x="330" y="226" text-anchor="middle">1</text></g>
+          <g class="refused" id="r2"><circle cx="356" cy="222" r="10"/><text x="356" y="226" text-anchor="middle">2</text></g>
+          <g class="refused" id="r3"><circle cx="382" cy="222" r="10"/><text x="382" y="226" text-anchor="middle">3</text></g>
+          <text id="refusedLbl" x="356" y="250" text-anchor="middle">refus</text>
+
+          <g class="node" id="n-entra"><rect x="20" y="20" width="280" height="72" rx="9"/>
+            <text class="t" x="160" y="43" text-anchor="middle">Microsoft Entra ID</text>
+            <text class="s" x="160" y="61" text-anchor="middle">connexion des employés · MFA</text>
+            <text class="s" x="160" y="78" text-anchor="middle">Graph revokeSignInSessions</text></g>
+          <g class="node sandbox" id="n-parent"><rect x="20" y="118" width="280" height="150" rx="10"/>
+            <text class="lab" x="160" y="139" text-anchor="middle">Bac à sable OpenShell · parent</text>
+            <g class="node"><rect x="42" y="150" width="236" height="56" rx="8"/>
+              <text class="t" x="160" y="173" text-anchor="middle">Agent parent</text>
+              <text class="s" x="160" y="193" text-anchor="middle">agent-csc-parent</text></g>
+            <text class="i" x="160" y="229" text-anchor="middle">aucun secret du fournisseur</text>
+            <text class="i" x="160" y="246" text-anchor="middle">sortie : passerelle seulement</text>
+            <text class="badge" x="160" y="262" text-anchor="middle">✕ SUSPENDU</text></g>
+          <g class="node dash" id="n-shim"><rect x="20" y="284" width="280" height="46" rx="9"/>
+            <text class="t" x="160" y="304" text-anchor="middle">Cale de délégation (hôte)</text>
+            <text class="s" x="160" y="321" text-anchor="middle">lance un second bac à sable</text></g>
+          <g class="node sandbox dash" id="n-sub"><rect x="20" y="346" width="280" height="72" rx="10"/>
+            <text class="lab" x="160" y="367" text-anchor="middle">Sous-agent · lecture seule</text>
+            <text class="s" x="160" y="387" text-anchor="middle">csc-preuves · SPIFFE SVID</text>
+            <text class="s" x="160" y="405" text-anchor="middle">RAR actions : [read]</text></g>
+          <g class="node" id="n-antenna"><rect x="20" y="452" width="280" height="66" rx="9"/>
+            <text class="t" x="160" y="474" text-anchor="middle">IBM Verify Antenna (SSF)</text>
+            <text class="s" x="160" y="492" text-anchor="middle">émetteur + récepteur de signaux</text>
+            <text class="s" x="160" y="509" text-anchor="middle">session-revoked → double révocation</text></g>
+          <g class="node dash" id="n-sidecar"><rect x="20" y="530" width="280" height="54" rx="9"/>
+            <text class="t" x="160" y="552" text-anchor="middle">Cycle de vie de l'agent</text>
+            <text class="s" x="160" y="571" text-anchor="middle">agent-risk → suspension 5 min</text></g>
+          <g class="node opa" id="n-opa"><rect x="316" y="288" width="88" height="64" rx="9"/>
+            <text class="t" x="360" y="311" text-anchor="middle">OPA</text>
+            <text class="s" x="360" y="328" text-anchor="middle" style="font-size:10px">registre MCP</text>
+            <text class="s" x="360" y="343" text-anchor="middle" style="font-size:10px">sorties</text></g>
+          <g class="node" id="n-verify"><rect x="420" y="14" width="220" height="92" rx="9"/>
+            <text class="t" x="530" y="36" text-anchor="middle">IBM Verify</text>
+            <text class="s" x="530" y="54" text-anchor="middle">échange de jetons · RAR</text>
+            <text class="s" x="530" y="70" text-anchor="middle">politique · MFA · SSF</text>
+            <text class="s" x="530" y="86" text-anchor="middle">registre des agents</text></g>
+          <g class="node gw" id="n-gw"><rect x="420" y="124" width="220" height="340" rx="10"/>
+            <text class="lab" x="530" y="148" text-anchor="middle">Passerelle MCP</text>
+            <g class="gi" id="gi-introspect"><rect x="432" y="162" width="196" height="28" rx="6"/><text x="530" y="180" text-anchor="middle">introspection du jeton</text></g>
+            <g class="gi" id="gi-tier"><rect x="432" y="198" width="196" height="28" rx="6"/><text x="530" y="216" text-anchor="middle">palier par identité</text></g>
+            <g class="gi" id="gi-exchange"><rect x="432" y="234" width="196" height="28" rx="6"/><text x="530" y="252" text-anchor="middle">RFC 8693 + RFC 9396</text></g>
+            <g class="gi" id="gi-stepup"><rect x="432" y="270" width="196" height="28" rx="6"/><text x="530" y="288" text-anchor="middle">approbation humaine</text></g>
+            <g class="gi" id="gi-caep"><rect x="432" y="306" width="196" height="28" rx="6"/><text x="530" y="324" text-anchor="middle">événements CAEP</text></g>
+            <text class="i" x="530" y="364" text-anchor="middle">une instance par serveur MCP</text>
+            <text class="i" x="530" y="381" text-anchor="middle">serveurs MCP inchangés</text>
+            <text class="i" x="530" y="408" text-anchor="middle">les identifiants s'arrêtent ici :</text>
+            <text class="i" x="530" y="425" text-anchor="middle">l'agent n'en voit aucun</text></g>
+          <g class="node vault" id="n-vault"><rect x="420" y="484" width="220" height="100" rx="9"/>
+            <text class="t" x="530" y="506" text-anchor="middle">HashiCorp Vault</text>
+            <text class="s" x="530" y="524" text-anchor="middle">SPIFFE (sous-agent)</text>
+            <text class="s" x="530" y="540" text-anchor="middle">parent : Agent Identity</text>
+            <text class="s" x="530" y="556" text-anchor="middle">émission vérifiée par RAR</text>
+            <text class="s" x="530" y="572" text-anchor="middle">identifiant 5 min + révocation</text></g>
+          <g class="node" id="n-human"><rect x="720" y="20" width="260" height="72" rx="9"/>
+            <text class="t" x="850" y="43" text-anchor="middle">Conseillère (humaine)</text>
+            <text class="s" x="850" y="61" text-anchor="middle">Camille Roy · approuve</text>
+            <text class="s" x="850" y="78" text-anchor="middle">code à usage unique</text></g>
+          <g class="node" id="n-jira"><rect x="700" y="124" width="280" height="56" rx="9"/>
+            <text class="t" x="840" y="147" text-anchor="middle">Atlassian Jira MCP</text>
+            <text class="s" x="840" y="166" text-anchor="middle">billets FIN · lecture</text></g>
+          <g class="node" id="n-gitlab"><rect x="700" y="192" width="280" height="56" rx="9"/>
+            <text class="t" x="840" y="215" text-anchor="middle">GitLab MCP</text>
+            <text class="s" x="840" y="234" text-anchor="middle">guides CSC · lecture</text></g>
+          <g class="node" id="n-dbx"><rect x="700" y="260" width="280" height="56" rx="9"/>
+            <text class="t" x="840" y="283" text-anchor="middle">Databricks MCP</text>
+            <text class="s" x="840" y="302" text-anchor="middle">lakehouse CSC · écriture approuvée</text></g>
+          <g class="node" id="n-web"><rect x="700" y="328" width="280" height="56" rx="9"/>
+            <text class="t" x="840" y="351" text-anchor="middle">Web Fetch MCP</text>
+            <text class="s" x="840" y="370" text-anchor="middle">https · liste d'autorisation</text></g>
+          <g class="node" id="n-lookup"><rect x="700" y="396" width="280" height="56" rx="9"/>
+            <text class="t" x="840" y="419" text-anchor="middle">Annuaire IBM Verify (SCIM)</text>
+            <text class="s" x="840" y="438" text-anchor="middle">droits de la conseillère</text></g>
+          <g class="node" id="n-siem"><rect x="700" y="480" width="280" height="56" rx="9"/>
+            <text class="t" x="840" y="503" text-anchor="middle">SIEM / SOC</text>
+            <text class="s" x="840" y="522" text-anchor="middle">événements CAEP · jti</text></g>
+          <g class="node dash ghost" id="n-pay"><rect x="700" y="552" width="280" height="50" rx="9"/>
+            <text class="t" x="840" y="573" text-anchor="middle">paiements-core MCP</text>
+            <text class="s" x="840" y="591" text-anchor="middle">non enregistré · virements</text></g>
+        </svg>
+        <div class="cap" id="cap">Connectez-vous, puis confiez une tâche à l'agent.</div>
+      </section>
+      <div class="lower">
+        <section class="card">
+          <h2>Databricks · kyc_cote_risque_membre</h2>
+          <table><thead><tr><th>Membre</th><th>Cote</th><th>Vigil.</th><th>Modifié par</th><th>Approuvé par</th></tr></thead><tbody id="tbl"></tbody></table>
+        </section>
+        <section class="card">
+          <h2>Identifiants Vault · 5 min</h2>
+          <div id="leases"><div class="empty">Aucun identifiant émis.</div></div>
+        </section>
+      </div>
+    </div>
+
+    <!-- right: journal -->
+    <div class="col">
+      <section class="card journal">
+        <h2>Journal · SIEM (événements CAEP)</h2>
+        <div class="events" id="events"></div>
+      </section>
+      <section class="card tok">
+        <h2 id="tokHead">Dernier jeton émis</h2>
+        <pre class="json" id="tok">—</pre>
+      </section>
+    </div>
+  </div>
+</div>
+
+<div id="slide"><div class="inner" id="slideInner"></div></div>
+<div id="sub"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const SCEN = [
+  ["normal", "Parcours normal", "Billet → guide → sous-agent → écriture approuvée"],
+  ["poison", "Guide empoisonné", "Injection cachée → 3 sorties refusées → suspension"],
+  ["approbations", "Approbations échouées", "3 codes invalides → double révocation"],
+  ["outil", "Outil non enregistré", "Tentative de virement → refusée"],
+];
+const TAG = { info: "INFO", allow: "AUTORISÉ", deny: "REFUSÉ", stepup: "APPROBATION", signal: "SIGNAL",
+              revoke: "RÉVOQUÉ", suspend: "SUSPENDU", done: "TERMINÉ" };
+let last = 0, state = null, selected = null, activeScen = null, lastTokenEv = null;
+
+async function api(path, body) {
+  const r = await fetch(path, body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  return r.json();
+}
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+const hhmmss = ts => new Date(ts * 1000).toLocaleTimeString("fr-CA", { hour12: false });
+
+// ---- scenarios
+SCEN.forEach(([key, name, desc]) => {
+  const b = el("button", "btn"); b.dataset.key = key;
+  b.append(name); b.appendChild(el("small", null, desc));
+  b.onclick = async () => {
+    const r = await api("/api/run", { scenario: key });
+    if (!r.ok) flash(r.erreur); else { activeScen = key; paintScen(); }
+  };
+  $("scenarios").appendChild(b);
+});
+function paintScen() { document.querySelectorAll("#scenarios .btn").forEach(b => b.classList.toggle("active", b.dataset.key === activeScen)); }
+function flash(msg) { const c = $("cap"); c.className = "cap deny"; c.textContent = msg; }
+
+$("loginBtn").onclick = () => api("/api/login", {});
+$("resetBtn").onclick = async () => { await api("/api/reset", {}); last = 0; $("events").innerHTML = ""; $("tok").textContent = "—"; activeScen = null; paintScen(); clearMap(); $("cap").className = "cap"; $("cap").textContent = "Démo réinitialisée. Connectez-vous pour commencer."; };
+$("approveBtn").onclick = submitCode;
+$("stepChk").onchange = e => api("/api/pas-a-pas", { actif: e.target.checked });
+$("stepBtn").onclick = () => api("/api/etape", {});
+document.addEventListener("keydown", e => { if (e.key === " " && e.target.tagName !== "INPUT" && !$("stepBtn").disabled) { e.preventDefault(); $("stepBtn").click(); } });
+$("codeIn").addEventListener("keydown", e => { if (e.key === "Enter") submitCode(); });
+async function submitCode() {
+  const code = $("codeIn").value; $("codeIn").value = "";
+  const r = await api("/api/approve", { code });
+  $("approveNote").textContent = r.ok ? "" : (r.status === "failed" ? "Trop d'échecs : sessions révoquées." : `Code invalide (${r.attempts || 0}/3).`);
+}
+
+// ---- map
+const STATES = ["hot", "ok", "deny", "warn", "sigon"];
+function clearMap() {
+  document.querySelectorAll(".node, .gi").forEach(n => n.classList.remove(...STATES));
+  document.querySelectorAll(".edge").forEach(e => e.classList.remove("live", "ok", "deny", "sigon"));
+}
+function paintMap(ev) {
+  clearMap();
+  Object.entries(ev.nodes || {}).forEach(([id, c]) => { const n = $(id); if (n && c) n.classList.add(c === "quar" ? "deny" : c); });
+  Object.entries(ev.edges || {}).forEach(([id, c]) => { const n = $(id); if (n && c) n.classList.add(c); });
+  const cap = $("cap"); cap.className = "cap " + ev.verdict; cap.textContent = ev.title;
+}
+
+// ---- journal
+function addEvent(ev) {
+  const say = ev.verdict === "info" && !ev.siem;
+  const box = el("div", "ev" + (say ? " say" : ""));
+  box.appendChild(el("span", "tag t-" + ev.verdict, TAG[ev.verdict] || ev.verdict));
+  box.appendChild(el("span", "ti", ev.title));
+  if (ev.detail) box.appendChild(el("span", "de", ev.detail));
+  box.appendChild(el("span", "meta", `${hhmmss(ev.ts)} · ${ev.src}${ev.token ? " · jeton ▸" : ""}`));
+  box.onclick = () => { document.querySelectorAll(".ev.sel").forEach(x => x.classList.remove("sel")); box.classList.add("sel"); selected = ev; showToken(ev); paintMap(ev); };
+  const list = $("events"); list.appendChild(box); list.scrollTop = list.scrollHeight;
+}
+function showToken(ev) {
+  if (!ev.token) return;
+  $("tokHead").textContent = ev === lastTokenEv ? "Dernier jeton émis" : "Jeton · " + ev.title;
+  $("tok").textContent = JSON.stringify(ev.token, null, 2);
+}
+
+async function pollEvents() {
+  try {
+    const evs = await api("/api/events?after=" + last);
+    evs.forEach(ev => {
+      last = ev.id; addEvent(ev);
+      if (Object.keys(ev.nodes).length || Object.keys(ev.edges).length) paintMap(ev);
+      else if (ev.verdict === "done") { $("cap").className = "cap done"; $("cap").textContent = ev.title + " · " + ev.detail; }
+      if (ev.token) { lastTokenEv = ev; if (!selected) showToken(ev); }
+    });
+  } catch (e) {}
+  setTimeout(pollEvents, 350);
+}
+
+// ---- state
+function paintState(s) {
+  state = s;
+  const sess = s.session;
+  $("chipSess").className = "chip " + (sess ? "ok" : "bad");
+  $("chipSess").innerHTML = "";
+  $("chipSess").append("Session Entra ID : ", Object.assign(el("b"), { textContent: sess ? sess.nom : "aucune" }));
+  $("loginBtn").disabled = !!sess;
+  $("loginBtn").firstChild.textContent = sess ? `Connectée : ${sess.nom}` : "Se connecter avec Entra ID";
+  document.querySelectorAll("#scenarios .btn").forEach(b => b.disabled = !sess || !!s.en_cours);
+
+  const parent = s.registre.find(a => a.id === "agent-csc-parent");
+  const susp = parent.statut === "suspendu";
+  const left = susp && parent.retablir_a ? Math.max(0, Math.round(parent.retablir_a - s.maintenant)) : 0;
+  const mmss = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`;
+  $("chipAgent").className = "chip " + (susp ? "bad" : "ok");
+  $("chipAgent").innerHTML = ""; $("chipAgent").append("agent-csc-parent : ", Object.assign(el("b"), { textContent: susp ? `suspendu · ${mmss}` : "actif" }));
+  $("n-parent").classList.toggle("quar", susp);
+  $("stepChk").checked = s.pas_a_pas;
+  $("stepBtn").disabled = !s.en_attente;
+  $("stepBtn").classList.toggle("ready", !!s.en_attente);
+  $("chipRun").className = "chip " + (s.en_cours ? "run" : "");
+  $("chipRun").textContent = s.en_cours ? "Agent au travail…" : "Prêt";
+
+  const reg = $("registry"); reg.innerHTML = "";
+  s.registre.forEach(a => {
+    const row = el("div", "agent");
+    row.appendChild(el("span", "id", a.id));
+    const st = a.statut === "suspendu" && a.retablir_a ? `suspendu · ${mmss}` : a.statut;
+    row.appendChild(el("span", "st " + a.statut, st));
+    row.appendChild(el("span", "d", `${a.type} · ${Object.entries(a.droits).map(([t, x]) => `${t}:${x.join("/")}`).join(" · ")}`));
+    if (a.statut === "suspendu") {
+      const b = el("button", "btn", "Rétablir l'agent (administrateur)");
+      b.onclick = () => api("/api/restore", { agent: a.id });
+      row.appendChild(b);
+    }
+    reg.appendChild(row);
+  });
+
+  [1, 2, 3].forEach(i => $("r" + i).classList.toggle("on", i <= s.refus));
+  $("refusedLbl").classList.toggle("on", s.refus > 0);
+
+  const ch = s.defi;
+  $("approveCard").hidden = !ch;
+  if (ch) {
+    $("approveText").textContent = `agent-csc-parent demande : ${ch.description}. Approuvez-vous ?`;
+    const m = s.courriel[s.courriel.length - 1];
+    $("mail").innerHTML = "";
+    $("mail").append("✉ Courriel reçu de IBM Verify · code : ", Object.assign(el("b"), { textContent: m ? m.code : "—" }));
+  } else { $("approveNote").textContent = ""; }
+
+  const tb = $("tbl"); tb.innerHTML = "";
+  s.table.forEach(r => {
+    const tr = el("tr", r.modifie_par_agent ? "changed" : "");
+    tr.appendChild(el("td", "m", r.membre_id));
+    tr.appendChild(el("td", r.cote === "ÉLEVÉE" ? "hi" : r.cote === "MOYENNE" ? "mid" : "lo", r.cote));
+    tr.appendChild(el("td", null, r.vigilance_accrue ? "oui" : "non"));
+    tr.appendChild(el("td", "m", r.modifie_par_agent || "—"));
+    tr.appendChild(el("td", "m", r.approuve_par ? r.approuve_par.split("@")[0] : "—"));
+    tb.appendChild(tr);
+  });
+
+  const lz = $("leases");
+  if (s.baux.length) {
+    lz.innerHTML = "";
+    s.baux.slice(-5).reverse().forEach(l => {
+      const row = el("div", "lease");
+      const rem = Math.max(0, Math.round(l.expire_a - s.maintenant));
+      row.appendChild(el("span", "id", l.id));
+      row.appendChild(el("span", "s " + (l.revoque ? "rev" : "act"), l.revoque ? "révoqué" : `actif ${rem}s`));
+      row.appendChild(el("span", "d", `jti ${l.jti} · ${l.auth}`));
+      lz.appendChild(row);
+    });
+  }
+}
+async function pollState() {
+  try { paintState(await api("/api/state")); } catch (e) {}
+  setTimeout(pollState, 600);
+}
+
+// ---- hooks for the recorded video (driven by video/enregistrer.js)
+window.demo = {
+  caption(text) { const s = $("sub"); s.textContent = text || ""; s.style.display = text ? "block" : "none"; },
+  slide(html) { $("slideInner").innerHTML = html; $("slide").style.display = html ? "flex" : "none"; },
+  code() { return state && state.courriel.length ? state.courriel[state.courriel.length - 1].code : ""; },
+  idle() { return state && !state.en_cours; },
+  waiting() { return !!(state && state.en_attente); },
+  pending() { return !!(state && state.defi); },
+};
+
+pollEvents(); pollState();
+</script>
+</body>
+</html>

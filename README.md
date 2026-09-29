@@ -12,6 +12,9 @@ illustration, not IBM software.
 
 | Path | What it is |
 |------|------------|
+| `docs/DEMO_DESJARDINS.md` | **Démo client en français** : guide du présentateur pour la vidéo et la démo fonctionnelle |
+| `livedemo/` | Démo fonctionnelle en direct (FR) : `python3 -m livedemo --ouvrir`. Jetons signés, échange RFC 8693 avec RAR, identifiants de 5 minutes, politique OPA, approbation humaine, suspension et double révocation, sur une base SQLite |
+| `video/` | Vidéo narrée en français (`demo-agent-gouverne.mp4`, sous-titres `.srt`) et scripts pour la régénérer |
 | `docs/WORKSHOP_PLAN.md` | **Start here.** How many agents you need, which environment to use, the video storyboard, the 90-minute agenda, the talk track, discovery questions, objection handling and the call to action |
 | `docs/USE_CASE_DEVIN_ZERO_TRUST.md` | Use case: zero trust for Devin (AI software engineer) with IBM Agent Identity in a bank. Actors, threat model, architecture, flows, policy matrix, regulatory mapping and rollout |
 | `docs/USE_CASE_ENTERPRISE_AI_AGENTS_ZERO_TRUST.md` | Use case: zero trust for the AI agents employees use (ChatGPT, Gemini, Claude, Claude Code, Codex, Cursor, Devin, OpenClaw and others). Agent categories, access patterns, per-tool controls, scenarios, tiers and rollout |
@@ -31,7 +34,8 @@ Needs Python 3.9+. No dependencies.
 
 ```bash
 python3 -m demo.run                # narrated terminal walkthrough
-python3 -m unittest discover tests # verify the OFF/ON outcomes
+python3 -m unittest discover tests # verify the OFF/ON outcomes and the live demo scenarios
+python3 -m livedemo --ouvrir       # French live console (http://127.0.0.1:8765)
 ```
 
 For the dashboard, open `demo/dashboard.html` in a browser. Choose **Controls off** or

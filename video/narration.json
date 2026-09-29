@@ -1,0 +1,101 @@
+{
+  "_note": "Chaque segment est une liste de phrases. Chaque phrase devient un sous-titre et un clip audio. La prononciation est ajustée dans generer_voix.py.",
+  "intro": [
+    "Vos équipes commencent à confier des tâches à des agents d'intelligence artificielle.",
+    "La question n'est plus de savoir si ces agents toucheront à vos systèmes, mais comment prouver, à chaque action, qui les a autorisés, et à faire quoi."
+  ],
+  "demande": [
+    "Voici le scénario. Une conseillère en conformité se connecte avec Entra ID et confie un dossier « connaître son client » à un agent qui tourne dans un bac à sable.",
+    "L'agent doit lire le billet dans Jira, récupérer le guide dans GitLab, déléguer la collecte des preuves à un sous-agent en lecture seule,",
+    "puis écrire la nouvelle cote de risque dans Databricks, mais seulement avec l'approbation d'une personne."
+  ],
+  "console": [
+    "Voici la console. À gauche, la conseillère. Au centre, l'architecture : l'agent, la passerelle MCP, IBM Verify, Vault et les systèmes. À droite, le journal transmis au SIEM.",
+    "Ce que vous allez voir s'exécute réellement : jetons signés, échanges de jetons, identifiants temporaires et base de données. Seul le comportement de l'agent est scripté."
+  ],
+  "connexion": [
+    "La conseillère se connecte avec son authentification habituelle, avec facteur multiple.",
+    "Le bac à sable ne reçoit que ce jeton, comme simple porteur. Il ne contient aucune clé d'API et aucun mot de passe."
+  ],
+  "n_jira": [
+    "L'agent lit le billet. La passerelle échange le jeton de la conseillère auprès d'IBM Verify, selon la norme RFC 8693.",
+    "Le nouveau jeton nomme la conseillère, nomme l'agent, et ne permet qu'une seule action : lire ce billet, pendant cinq minutes.",
+    "Vault émet ensuite un identifiant Jira de cinq minutes. L'agent ne le voit jamais, et il est révoqué dès la fin de l'appel."
+  ],
+  "n_gitlab": [
+    "Même chose pour le guide dans GitLab : un nouveau jeton, un nouvel identifiant, chacun limité à un seul outil."
+  ],
+  "n_deleg": [
+    "L'agent délègue maintenant la collecte des preuves à un sous-agent, lancé dans un second bac à sable.",
+    "Son jeton est réduit à la lecture seule et lié à sa propre identité de charge de travail, SPIFFE."
+  ],
+  "n_scim": [
+    "Le sous-agent vérifie dans l'annuaire que la conseillère fait bien partie des analystes autorisés."
+  ],
+  "n_query": [
+    "Il lit la cote actuelle du membre et ses transactions des 90 derniers jours, avec un identifiant Databricks en lecture seule."
+  ],
+  "n_refus": [
+    "Le sous-agent tente maintenant d'écrire la nouvelle cote lui-même. IBM Verify refuse : l'écriture ne fait pas partie de ce qui lui a été délégué.",
+    "Aucun identifiant n'est émis. Même compromis, un sous-agent ne peut ni modifier ni détruire une donnée."
+  ],
+  "n_stepup": [
+    "L'agent parent demande l'écriture. La politique exige une approbation humaine : IBM Verify envoie un code à la conseillère, avec la description exacte de la modification."
+  ],
+  "n_approuve": [
+    "Elle approuve. C'est le principe du double contrôle : l'agent prépare, une personne décide."
+  ],
+  "n_fin": [
+    "La cote du membre passe à « élevée ». Le journal contient la chaîne complète : la conseillère, l'agent, le refus du sous-agent, l'approbation, et l'identifiant de chaque jeton."
+  ],
+  "p_intro": [
+    "Deuxième scénario : une attaque. Quelqu'un a modifié le guide dans GitLab et y a caché une instruction."
+  ],
+  "p_cache": [
+    "Le commentaire caché demande à l'agent d'envoyer les preuves vers un site externe et de récupérer une clé d'API. L'agent, piégé, va essayer."
+  ],
+  "p_refus1": [
+    "Refusé. OPA vérifie la destination avant même IBM Verify : ce site n'est pas autorisé."
+  ],
+  "p_refus2": [
+    "Il essaie une autre adresse. Refusé encore."
+  ],
+  "p_susp": [
+    "Au troisième refus, la passerelle émet un signal de risque. L'Antenna d'IBM Verify le reçoit, et l'agent est suspendu dans le registre, partout à la fois."
+  ],
+  "p_fin": [
+    "Même une lecture légitime est maintenant refusée. Aucune donnée n'est sortie, et il n'y avait aucun secret à voler.",
+    "L'accès de la conseillère, lui, reste intact. L'agent se rétablit après cinq minutes, ou plus tôt, après revue par un administrateur."
+  ],
+  "a_intro": [
+    "Troisième scénario. L'agent demande une écriture, mais les codes d'approbation saisis sont faux."
+  ],
+  "a_codes": [
+    "Une fois. Deux fois. Trois fois."
+  ],
+  "a_revoke": [
+    "Pour une institution financière, trois échecs d'approbation sur une modification de données ressemblent à une prise de contrôle de compte.",
+    "L'Antenna supprime la session IBM Verify et révoque la connexion dans Entra ID. Le jeton du bac à sable ne vaut plus rien."
+  ],
+  "a_fin": [
+    "La tentative suivante de l'agent est refusée dès l'introspection. La conseillère devra se reconnecter avec son facteur multiple."
+  ],
+  "o_intro": [
+    "Dernier scénario : l'agent tente de faire un virement."
+  ],
+  "o_liste": [
+    "L'outil de paiement n'est pas enregistré. OPA ne le présente même pas à l'agent."
+  ],
+  "o_fin": [
+    "L'appel direct est refusé : aucun jeton, aucun identifiant. Un agent de conformité ne peut pas déplacer d'argent.",
+    "Ajouter un outil passe par une demande de fusion révisée par deux personnes, comme tout changement en production."
+  ],
+  "recap": [
+    "En résumé : aucun secret dans le bac à sable, un jeton délégué et limité à chaque appel, et des sous-agents qui ne peuvent jamais dépasser leur parent.",
+    "Une personne dans la boucle pour chaque écriture, une réponse automatique qui coupe l'agent ou la session en quelques secondes, et un journal complet pour l'audit."
+  ],
+  "suite": [
+    "Nous proposons de commencer par un inventaire de vos agents et de vos identités non humaines, puis une preuve de valeur ciblée sur un flux réel, dans un environnement isolé.",
+    "Merci."
+  ]
+}
