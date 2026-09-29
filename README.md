@@ -14,6 +14,7 @@ illustration, not IBM software.
 |------|------------|
 | `docs/WORKSHOP_PLAN.md` | **Start here.** How many agents you need, which environment to use, the video storyboard, the 90-minute agenda, the talk track, discovery questions, objection handling and the call to action |
 | `docs/USE_CASE_DEVIN_ZERO_TRUST.md` | Use case: zero trust for Devin (AI software engineer) with IBM Agent Identity in a bank. Actors, threat model, architecture, flows, policy matrix, regulatory mapping and rollout |
+| `docs/USE_CASE_ENTERPRISE_AI_AGENTS_ZERO_TRUST.md` | Use case: zero trust for the AI agents employees use (ChatGPT, Gemini, Claude, Claude Code, Codex, Cursor, Devin, OpenClaw and others). Agent categories, access patterns, per-tool controls, scenarios, tiers and rollout |
 | `demo/dashboard.html` | The Breach Console: an interactive visual for the room and the recording |
 | `demo/attack_map.html` | Lateral Movement Map: architecture view of each step, including the request chain across agents and the background checks that run on every call |
 | `demo/run.py` | Terminal narrator that prints the attack with controls OFF, then ON |

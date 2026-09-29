@@ -8,6 +8,7 @@
 | **Agent** | Devin (Cognition): an autonomous AI software engineer that plans, writes, tests and opens pull requests for code |
 | **Identity and security stack** | IBM Verify (agent and workforce identity), IBM Verify Identity Protection (VIP: posture and threat detection), Agentic Runtime Security (ARS: per-action enforcement), Agent Identity (watsonx Orchestrate, private preview), HashiCorp Vault (IBM) for short-lived secrets |
 | **Security model** | Zero trust: never trust, always verify, least privilege, assume breach |
+| **Companion document** | [`USE_CASE_ENTERPRISE_AI_AGENTS_ZERO_TRUST.md`](USE_CASE_ENTERPRISE_AI_AGENTS_ZERO_TRUST.md): the same pattern applied to ChatGPT, Gemini, Claude, Claude Code, Codex, Cursor, OpenClaw and other employee AI agents |
 | **Status** | Target-state use case for workshop, discovery and proof of value |
 
 > **Before using this with a client:** confirm product names, packaging and current
