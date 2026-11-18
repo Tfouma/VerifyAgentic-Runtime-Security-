@@ -1,0 +1,167 @@
+[
+ {
+  "start": 0.7,
+  "end": 3.48,
+  "text": "Two forty-seven A.M. No engineer is awake."
+ },
+ {
+  "start": 4.9,
+  "end": 8.25,
+  "text": "But fourteen AI agents are changing your bank's network."
+ },
+ {
+  "start": 9.6,
+  "end": 14.5,
+  "text": "Your teams have handed six thousand devices and six thousand links to AI agents."
+ },
+ {
+  "start": 14.8,
+  "end": 19.47,
+  "text": "Config backups, bulk changes, firmware, firewalls, even incident response."
+ },
+ {
+  "start": 19.8,
+  "end": 23.84,
+  "text": "Twelve hundred changes in one hour. Forty-one reviewed by a human."
+ },
+ {
+  "start": 24.6,
+  "end": 26.23,
+  "text": "So who is watching the agents?"
+ },
+ {
+  "start": 28.0,
+  "end": 31.29,
+  "text": "Machine-speed change needs machine-speed observability."
+ },
+ {
+  "start": 33.0,
+  "end": 37.26,
+  "text": "IBM SevOne. Observability, for the age of agentic AI."
+ },
+ {
+  "start": 41.0,
+  "end": 42.63,
+  "text": "Use case one: observe."
+ },
+ {
+  "start": 43.0,
+  "end": 53.01,
+  "text": "SevOne maps layer two and layer three topology down to the port, with primary and backup links shown apart, across IPv4, IPv6 and dual stack."
+ },
+ {
+  "start": 53.4,
+  "end": 58.86,
+  "text": "Every configuration change is detected in real time, and tied to the agent that made it."
+ },
+ {
+  "start": 59.4,
+  "end": 61.75,
+  "text": "And the data flows to your own BI tools."
+ },
+ {
+  "start": 65.0,
+  "end": 66.7,
+  "text": "Use case two: anticipate."
+ },
+ {
+  "start": 67.0,
+  "end": 71.98,
+  "text": "At one-twelve, a Devin agent changed an SD-WAN policy. Nothing broke."
+ },
+ {
+  "start": 72.2,
+  "end": 79.49,
+  "text": "But SevOne sees the Hub North link drifting above baseline, and forecasts a breach at eight-forty, before branches open."
+ },
+ {
+  "start": 81.6,
+  "end": 84.52,
+  "text": "And it finds twelve hundred dormant switch ports to reclaim."
+ },
+ {
+  "start": 87.0,
+  "end": 88.54,
+  "text": "Use case three: prevent."
+ },
+ {
+  "start": 88.8,
+  "end": 92.54,
+  "text": "A Claude Code agent plans a bulk push to 312 routers."
+ },
+ {
+  "start": 92.9,
+  "end": 98.19,
+  "text": "The pre-flight runs a dry run, and checks compliance, firmware lifecycle and vulnerabilities."
+ },
+ {
+  "start": 98.4,
+  "end": 101.52,
+  "text": "Bulk changes need approval from a nominated bank official."
+ },
+ {
+  "start": 102.2,
+  "end": 105.28,
+  "text": "Approved after the dry run, as a safe, phased rollout."
+ },
+ {
+  "start": 105.6,
+  "end": 107.02,
+  "text": "Automation, with a gate."
+ },
+ {
+  "start": 108.8,
+  "end": 110.34,
+  "text": "Use case four: react."
+ },
+ {
+  "start": 110.6,
+  "end": 113.69,
+  "text": "A Cursor agent changes QoS on a branch router."
+ },
+ {
+  "start": 114.0,
+  "end": 119.2,
+  "text": "The primary link starts flapping. SevOne reports one condition, not fourteen alerts."
+ },
+ {
+  "start": 119.6,
+  "end": 125.17,
+  "text": "The backup link is up, so the branch is degraded, not down. The config diff points to the agent."
+ },
+ {
+  "start": 126.6,
+  "end": 131.38,
+  "text": "One click rolls back to the known-good config. Resolved in forty-seven seconds."
+ },
+ {
+  "start": 135.0,
+  "end": 136.55,
+  "text": "Use case five: control."
+ },
+ {
+  "start": 137.0,
+  "end": 144.72,
+  "text": "Every agent change, attributed. Golden-config compliance, end-of-support milestones, and the approval log, in one place."
+ },
+ {
+  "start": 147.0,
+  "end": 148.89,
+  "text": "Real control. In real time."
+ },
+ {
+  "start": 152.5,
+  "end": 154.58,
+  "text": "Your AI agents act at machine speed."
+ },
+ {
+  "start": 155.2,
+  "end": 157.1,
+  "text": "SevOne observes at machine speed."
+ },
+ {
+  "start": 159.4,
+  "end": 162.7,
+  "text": "IBM SevOne. See everything. Control everything."
+ }
+]

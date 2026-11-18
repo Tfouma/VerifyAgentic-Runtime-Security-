@@ -36,6 +36,11 @@ with a narrator voice, subtitles and a use-case explainer. See
 Montréal, Toronto and Vancouver, U.S. branches, data residency in Canada and a
 sovereignty-aware pre-flight check. See [`sevone-film-ca/README.md`](sevone-film-ca/README.md).
 
+`sevone-film-bank/` is the **bank network edition**. It has no sovereignty theme, and its demo is
+built around use cases from a public-sector bank NMS RFP: L2/L3 topology, primary and backup
+links, flap damping, dormant ports, approval gating with dry run, and config rollback. See
+[`sevone-film-bank/README.md`](sevone-film-bank/README.md).
+
 ## Run it
 
 Needs Python 3.9+. No dependencies.

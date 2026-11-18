@@ -1,0 +1,131 @@
+1
+00:00:00,700 --> 00:00:03,780
+Two forty-seven A.M. No engineer is awake.
+
+2
+00:00:04,900 --> 00:00:08,550
+But fourteen AI agents are changing your bank's network.
+
+3
+00:00:09,600 --> 00:00:14,800
+Your teams have handed six thousand devices and six thousand links to AI agents.
+
+4
+00:00:14,800 --> 00:00:19,770
+Config backups, bulk changes, firmware, firewalls, even incident response.
+
+5
+00:00:19,800 --> 00:00:24,140
+Twelve hundred changes in one hour. Forty-one reviewed by a human.
+
+6
+00:00:24,600 --> 00:00:26,530
+So who is watching the agents?
+
+7
+00:00:28,000 --> 00:00:31,590
+Machine-speed change needs machine-speed observability.
+
+8
+00:00:33,000 --> 00:00:37,560
+IBM SevOne. Observability, for the age of agentic AI.
+
+9
+00:00:41,000 --> 00:00:42,930
+Use case one: observe.
+
+10
+00:00:43,000 --> 00:00:53,310
+SevOne maps layer two and layer three topology down to the port, with primary and backup links shown apart, across IPv4, IPv6 and dual stack.
+
+11
+00:00:53,400 --> 00:00:59,160
+Every configuration change is detected in real time, and tied to the agent that made it.
+
+12
+00:00:59,400 --> 00:01:02,050
+And the data flows to your own BI tools.
+
+13
+00:01:05,000 --> 00:01:07,000
+Use case two: anticipate.
+
+14
+00:01:07,000 --> 00:01:12,280
+At one-twelve, a Devin agent changed an SD-WAN policy. Nothing broke.
+
+15
+00:01:12,200 --> 00:01:19,790
+But SevOne sees the Hub North link drifting above baseline, and forecasts a breach at eight-forty, before branches open.
+
+16
+00:01:21,600 --> 00:01:24,820
+And it finds twelve hundred dormant switch ports to reclaim.
+
+17
+00:01:27,000 --> 00:01:28,840
+Use case three: prevent.
+
+18
+00:01:28,800 --> 00:01:32,840
+A Claude Code agent plans a bulk push to 312 routers.
+
+19
+00:01:32,900 --> 00:01:38,490
+The pre-flight runs a dry run, and checks compliance, firmware lifecycle and vulnerabilities.
+
+20
+00:01:38,400 --> 00:01:41,820
+Bulk changes need approval from a nominated bank official.
+
+21
+00:01:42,200 --> 00:01:45,580
+Approved after the dry run, as a safe, phased rollout.
+
+22
+00:01:45,600 --> 00:01:47,320
+Automation, with a gate.
+
+23
+00:01:48,800 --> 00:01:50,640
+Use case four: react.
+
+24
+00:01:50,600 --> 00:01:53,990
+A Cursor agent changes QoS on a branch router.
+
+25
+00:01:54,000 --> 00:01:59,500
+The primary link starts flapping. SevOne reports one condition, not fourteen alerts.
+
+26
+00:01:59,600 --> 00:02:05,470
+The backup link is up, so the branch is degraded, not down. The config diff points to the agent.
+
+27
+00:02:06,600 --> 00:02:11,680
+One click rolls back to the known-good config. Resolved in forty-seven seconds.
+
+28
+00:02:15,000 --> 00:02:16,850
+Use case five: control.
+
+29
+00:02:17,000 --> 00:02:25,020
+Every agent change, attributed. Golden-config compliance, end-of-support milestones, and the approval log, in one place.
+
+30
+00:02:27,000 --> 00:02:29,190
+Real control. In real time.
+
+31
+00:02:32,500 --> 00:02:34,880
+Your AI agents act at machine speed.
+
+32
+00:02:35,200 --> 00:02:37,400
+SevOne observes at machine speed.
+
+33
+00:02:39,400 --> 00:02:43,000
+IBM SevOne. See everything. Control everything.
