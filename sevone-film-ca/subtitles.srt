@@ -1,0 +1,127 @@
+1
+00:00:00,700 --> 00:00:04,750
+Two forty-seven A.M., Eastern. No engineer is awake.
+
+2
+00:00:04,900 --> 00:00:08,180
+But fourteen AI agents are changing your network.
+
+3
+00:00:09,600 --> 00:00:15,000
+From Vancouver to Toronto to Montreal, your teams have handed the network to AI agents.
+
+4
+00:00:15,000 --> 00:00:19,770
+BGP, SD-WAN, firewalls, patching, even incident response.
+
+5
+00:00:19,800 --> 00:00:24,140
+Twelve hundred changes in one hour. Forty-one reviewed by a human.
+
+6
+00:00:24,600 --> 00:00:26,530
+So who is watching the agents?
+
+7
+00:00:27,600 --> 00:00:29,510
+And is your data still in Canada?
+
+8
+00:00:33,000 --> 00:00:38,180
+IBM SevOne. Sovereign observability, for the age of agentic AI.
+
+9
+00:00:41,000 --> 00:00:43,840
+Use case one: observe, with Canada first.
+
+10
+00:00:43,800 --> 00:00:51,600
+SevOne runs in your Montreal, Toronto and Vancouver data centers. Telemetry and agent audit data stay in Canada.
+
+11
+00:00:51,600 --> 00:00:58,700
+It still sees your U.S. branches, and ties every agent change to its identity, its device, and its effect.
+
+12
+00:01:05,000 --> 00:01:07,000
+Use case two: anticipate.
+
+13
+00:01:07,000 --> 00:01:12,280
+At one-twelve, a Devin agent changed an SD-WAN policy. Nothing broke.
+
+14
+00:01:12,200 --> 00:01:21,710
+But SevOne sees the Toronto to Montreal MPLS link drifting above baseline, and forecasts a breach at eight-forty, before the TSX opens.
+
+15
+00:01:21,800 --> 00:01:24,570
+With the cause, the users at risk, and the fix.
+
+16
+00:01:27,000 --> 00:01:28,840
+Use case three: prevent.
+
+17
+00:01:28,800 --> 00:01:33,210
+A Claude Code agent plans to upgrade both Toronto core routers.
+
+18
+00:01:33,200 --> 00:01:38,540
+SevOne's pre-flight finds the failover would carry Canadian traffic through Chicago.
+
+19
+00:01:38,600 --> 00:01:41,350
+That breaks sovereignty. The change is held.
+
+20
+00:01:41,600 --> 00:01:44,380
+The agent re-plans, and stays in Canada.
+
+21
+00:01:44,600 --> 00:01:46,740
+Sovereignty becomes a guardrail.
+
+22
+00:01:48,800 --> 00:01:50,640
+Use case four: react.
+
+23
+00:01:50,600 --> 00:01:53,190
+A Cursor agent pushes a new WAF rule.
+
+24
+00:01:54,000 --> 00:01:59,010
+Checkout latency jumps eleven times. SevOne flags it in eight seconds.
+
+25
+00:01:59,000 --> 00:02:06,180
+It links the anomaly to the change, and the change to the agent, then triggers a rollback through watsonx Orchestrate.
+
+26
+00:02:07,000 --> 00:02:11,510
+Resolved in forty-seven seconds. The audit trail never leaves Canada.
+
+27
+00:02:15,000 --> 00:02:16,850
+Use case five: control.
+
+28
+00:02:17,000 --> 00:02:25,960
+All telemetry, kept in Canada. Every agent change, attributed. And a safe-change score for every agent, based on what it actually did.
+
+29
+00:02:27,000 --> 00:02:29,310
+Sovereign control. In real time.
+
+30
+00:02:32,500 --> 00:02:34,880
+Your AI agents act at machine speed.
+
+31
+00:02:35,200 --> 00:02:38,340
+SevOne observes at machine speed. In Canada.
+
+32
+00:02:39,400 --> 00:02:42,400
+IBM SevOne. Sovereign by design.

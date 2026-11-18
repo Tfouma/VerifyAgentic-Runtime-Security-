@@ -1,0 +1,162 @@
+[
+ {
+  "start": 0.7,
+  "end": 4.45,
+  "text": "Two forty-seven A.M., Eastern. No engineer is awake."
+ },
+ {
+  "start": 4.9,
+  "end": 7.88,
+  "text": "But fourteen AI agents are changing your network."
+ },
+ {
+  "start": 9.6,
+  "end": 14.7,
+  "text": "From Vancouver to Toronto to Montreal, your teams have handed the network to AI agents."
+ },
+ {
+  "start": 15.0,
+  "end": 19.47,
+  "text": "BGP, SD-WAN, firewalls, patching, even incident response."
+ },
+ {
+  "start": 19.8,
+  "end": 23.84,
+  "text": "Twelve hundred changes in one hour. Forty-one reviewed by a human."
+ },
+ {
+  "start": 24.6,
+  "end": 26.23,
+  "text": "So who is watching the agents?"
+ },
+ {
+  "start": 27.6,
+  "end": 29.21,
+  "text": "And is your data still in Canada?"
+ },
+ {
+  "start": 33.0,
+  "end": 37.88,
+  "text": "IBM SevOne. Sovereign observability, for the age of agentic AI."
+ },
+ {
+  "start": 41.0,
+  "end": 43.54,
+  "text": "Use case one: observe, with Canada first."
+ },
+ {
+  "start": 43.8,
+  "end": 51.3,
+  "text": "SevOne runs in your Montreal, Toronto and Vancouver data centers. Telemetry and agent audit data stay in Canada."
+ },
+ {
+  "start": 51.6,
+  "end": 58.4,
+  "text": "It still sees your U.S. branches, and ties every agent change to its identity, its device, and its effect."
+ },
+ {
+  "start": 65.0,
+  "end": 66.7,
+  "text": "Use case two: anticipate."
+ },
+ {
+  "start": 67.0,
+  "end": 71.98,
+  "text": "At one-twelve, a Devin agent changed an SD-WAN policy. Nothing broke."
+ },
+ {
+  "start": 72.2,
+  "end": 81.41,
+  "text": "But SevOne sees the Toronto to Montreal MPLS link drifting above baseline, and forecasts a breach at eight-forty, before the TSX opens."
+ },
+ {
+  "start": 81.8,
+  "end": 84.27,
+  "text": "With the cause, the users at risk, and the fix."
+ },
+ {
+  "start": 87.0,
+  "end": 88.54,
+  "text": "Use case three: prevent."
+ },
+ {
+  "start": 88.8,
+  "end": 92.91,
+  "text": "A Claude Code agent plans to upgrade both Toronto core routers."
+ },
+ {
+  "start": 93.2,
+  "end": 98.24,
+  "text": "SevOne's pre-flight finds the failover would carry Canadian traffic through Chicago."
+ },
+ {
+  "start": 98.6,
+  "end": 101.05,
+  "text": "That breaks sovereignty. The change is held."
+ },
+ {
+  "start": 101.6,
+  "end": 104.08,
+  "text": "The agent re-plans, and stays in Canada."
+ },
+ {
+  "start": 104.6,
+  "end": 106.44,
+  "text": "Sovereignty becomes a guardrail."
+ },
+ {
+  "start": 108.8,
+  "end": 110.34,
+  "text": "Use case four: react."
+ },
+ {
+  "start": 110.6,
+  "end": 112.89,
+  "text": "A Cursor agent pushes a new WAF rule."
+ },
+ {
+  "start": 114.0,
+  "end": 118.71,
+  "text": "Checkout latency jumps eleven times. SevOne flags it in eight seconds."
+ },
+ {
+  "start": 119.0,
+  "end": 125.88,
+  "text": "It links the anomaly to the change, and the change to the agent, then triggers a rollback through watsonx Orchestrate."
+ },
+ {
+  "start": 127.0,
+  "end": 131.21,
+  "text": "Resolved in forty-seven seconds. The audit trail never leaves Canada."
+ },
+ {
+  "start": 135.0,
+  "end": 136.55,
+  "text": "Use case five: control."
+ },
+ {
+  "start": 137.0,
+  "end": 145.66,
+  "text": "All telemetry, kept in Canada. Every agent change, attributed. And a safe-change score for every agent, based on what it actually did."
+ },
+ {
+  "start": 147.0,
+  "end": 149.01,
+  "text": "Sovereign control. In real time."
+ },
+ {
+  "start": 152.5,
+  "end": 154.58,
+  "text": "Your AI agents act at machine speed."
+ },
+ {
+  "start": 155.2,
+  "end": 158.04,
+  "text": "SevOne observes at machine speed. In Canada."
+ },
+ {
+  "start": 159.4,
+  "end": 162.1,
+  "text": "IBM SevOne. Sovereign by design."
+ }
+]

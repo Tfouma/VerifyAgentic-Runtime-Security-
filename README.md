@@ -32,6 +32,10 @@ reacts to and controls what AI agents change in the network. See
 with a narrator voice, subtitles and a use-case explainer. See
 [`sevone-film-na/README.md`](sevone-film-na/README.md).
 
+`sevone-film-ca/` is the **Canada-first edition**. It puts sovereignty first: data centers in
+Montréal, Toronto and Vancouver, U.S. branches, data residency in Canada and a
+sovereignty-aware pre-flight check. See [`sevone-film-ca/README.md`](sevone-film-ca/README.md).
+
 ## Run it
 
 Needs Python 3.9+. No dependencies.
