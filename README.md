@@ -28,6 +28,10 @@ with a synthesized soundtrack. It shows how IBM SevOne observes, anticipates, pr
 reacts to and controls what AI agents change in the network. See
 [`sevone-film/README.md`](sevone-film/README.md) for the voiceover script and presenter notes.
 
+`sevone-film-na/` is the **North America edition**: U.S. and Canada sites, Eastern time and USD,
+with a narrator voice, subtitles and a use-case explainer. See
+[`sevone-film-na/README.md`](sevone-film-na/README.md).
+
 ## Run it
 
 Needs Python 3.9+. No dependencies.

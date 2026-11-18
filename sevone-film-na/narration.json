@@ -1,0 +1,162 @@
+[
+ {
+  "start": 0.7,
+  "end": 4.45,
+  "text": "Two forty-seven A.M., Eastern. No engineer is awake."
+ },
+ {
+  "start": 4.9,
+  "end": 7.88,
+  "text": "But fourteen AI agents are changing your network."
+ },
+ {
+  "start": 9.6,
+  "end": 13.93,
+  "text": "From New York to Vancouver, your teams have handed the network to AI agents."
+ },
+ {
+  "start": 14.4,
+  "end": 18.87,
+  "text": "BGP, SD-WAN, firewalls, patching, even incident response."
+ },
+ {
+  "start": 19.8,
+  "end": 23.84,
+  "text": "Twelve hundred changes in one hour. Forty-one reviewed by a human."
+ },
+ {
+  "start": 24.6,
+  "end": 26.23,
+  "text": "So who is watching the agents?"
+ },
+ {
+  "start": 28.0,
+  "end": 31.29,
+  "text": "Machine-speed change needs machine-speed observability."
+ },
+ {
+  "start": 33.0,
+  "end": 37.26,
+  "text": "IBM SevOne. Observability, for the age of agentic AI."
+ },
+ {
+  "start": 41.0,
+  "end": 42.63,
+  "text": "Use case one: observe."
+ },
+ {
+  "start": 43.0,
+  "end": 51.73,
+  "text": "SevOne collects SNMP, flow, telemetry, logs and cloud metrics, across the U.S. and Canada, into one real-time view."
+ },
+ {
+  "start": 52.0,
+  "end": 57.87,
+  "text": "And every change an agent makes is tied to its identity, the device it touched, and the effect it had."
+ },
+ {
+  "start": 65.0,
+  "end": 66.7,
+  "text": "Use case two: anticipate."
+ },
+ {
+  "start": 67.0,
+  "end": 71.98,
+  "text": "At one-twelve, a Devin agent changed an SD-WAN policy. Nothing broke."
+ },
+ {
+  "start": 72.2,
+  "end": 81.22,
+  "text": "But SevOne sees the Ashburn to Dallas MPLS link drifting above baseline, and forecasts a breach at eight-forty, before the opening bell."
+ },
+ {
+  "start": 81.6,
+  "end": 84.07,
+  "text": "With the cause, the users at risk, and the fix."
+ },
+ {
+  "start": 87.0,
+  "end": 88.54,
+  "text": "Use case three: prevent."
+ },
+ {
+  "start": 88.8,
+  "end": 92.65,
+  "text": "A Claude Code agent plans to upgrade both core routers at once."
+ },
+ {
+  "start": 92.9,
+  "end": 97.67,
+  "text": "SevOne's pre-flight finds a degraded backup path, and fourteen sites at risk."
+ },
+ {
+  "start": 98.2,
+  "end": 99.89,
+  "text": "The change is held for a human."
+ },
+ {
+  "start": 100.8,
+  "end": 103.43,
+  "text": "The agent re-plans a safe, rolling upgrade."
+ },
+ {
+  "start": 104.0,
+  "end": 106.61,
+  "text": "SevOne's live data becomes the guardrail."
+ },
+ {
+  "start": 108.8,
+  "end": 110.34,
+  "text": "Use case four: react."
+ },
+ {
+  "start": 110.6,
+  "end": 112.89,
+  "text": "A Cursor agent pushes a new WAF rule."
+ },
+ {
+  "start": 114.0,
+  "end": 118.71,
+  "text": "Checkout latency jumps eleven times. SevOne flags it in eight seconds."
+ },
+ {
+  "start": 119.0,
+  "end": 125.88,
+  "text": "It links the anomaly to the change, and the change to the agent, then triggers a rollback through watsonx Orchestrate."
+ },
+ {
+  "start": 127.0,
+  "end": 130.76,
+  "text": "Resolved in forty-seven seconds. Nobody paged at three A.M."
+ },
+ {
+  "start": 135.0,
+  "end": 136.55,
+  "text": "Use case five: control."
+ },
+ {
+  "start": 137.0,
+  "end": 146.58,
+  "text": "Every agent change, attributed. Thirty-seven risky changes, held. And a safe-change score for every agent, based on what it actually did to your network."
+ },
+ {
+  "start": 147.2,
+  "end": 149.36,
+  "text": "That's real control. In real time."
+ },
+ {
+  "start": 152.5,
+  "end": 154.58,
+  "text": "Your AI agents act at machine speed."
+ },
+ {
+  "start": 155.2,
+  "end": 157.1,
+  "text": "SevOne observes at machine speed."
+ },
+ {
+  "start": 159.4,
+  "end": 162.7,
+  "text": "IBM SevOne. See everything. Control everything."
+ }
+]

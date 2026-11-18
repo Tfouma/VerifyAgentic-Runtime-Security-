@@ -1,0 +1,97 @@
+WEBVTT
+
+00:00:00.700 --> 00:00:04.750
+Two forty-seven A.M., Eastern. No engineer is awake.
+
+00:00:04.900 --> 00:00:08.180
+But fourteen AI agents are changing your network.
+
+00:00:09.600 --> 00:00:14.230
+From New York to Vancouver, your teams have handed the network to AI agents.
+
+00:00:14.400 --> 00:00:19.170
+BGP, SD-WAN, firewalls, patching, even incident response.
+
+00:00:19.800 --> 00:00:24.140
+Twelve hundred changes in one hour. Forty-one reviewed by a human.
+
+00:00:24.600 --> 00:00:26.530
+So who is watching the agents?
+
+00:00:28.000 --> 00:00:31.590
+Machine-speed change needs machine-speed observability.
+
+00:00:33.000 --> 00:00:37.560
+IBM SevOne. Observability, for the age of agentic AI.
+
+00:00:41.000 --> 00:00:42.930
+Use case one: observe.
+
+00:00:43.000 --> 00:00:52.030
+SevOne collects SNMP, flow, telemetry, logs and cloud metrics, across the U.S. and Canada, into one real-time view.
+
+00:00:52.000 --> 00:00:58.170
+And every change an agent makes is tied to its identity, the device it touched, and the effect it had.
+
+00:01:05.000 --> 00:01:07.000
+Use case two: anticipate.
+
+00:01:07.000 --> 00:01:12.280
+At one-twelve, a Devin agent changed an SD-WAN policy. Nothing broke.
+
+00:01:12.200 --> 00:01:21.520
+But SevOne sees the Ashburn to Dallas MPLS link drifting above baseline, and forecasts a breach at eight-forty, before the opening bell.
+
+00:01:21.600 --> 00:01:24.370
+With the cause, the users at risk, and the fix.
+
+00:01:27.000 --> 00:01:28.840
+Use case three: prevent.
+
+00:01:28.800 --> 00:01:32.950
+A Claude Code agent plans to upgrade both core routers at once.
+
+00:01:32.900 --> 00:01:37.970
+SevOne's pre-flight finds a degraded backup path, and fourteen sites at risk.
+
+00:01:38.200 --> 00:01:40.190
+The change is held for a human.
+
+00:01:40.800 --> 00:01:43.730
+The agent re-plans a safe, rolling upgrade.
+
+00:01:44.000 --> 00:01:46.910
+SevOne's live data becomes the guardrail.
+
+00:01:48.800 --> 00:01:50.640
+Use case four: react.
+
+00:01:50.600 --> 00:01:53.190
+A Cursor agent pushes a new WAF rule.
+
+00:01:54.000 --> 00:01:59.010
+Checkout latency jumps eleven times. SevOne flags it in eight seconds.
+
+00:01:59.000 --> 00:02:06.180
+It links the anomaly to the change, and the change to the agent, then triggers a rollback through watsonx Orchestrate.
+
+00:02:07.000 --> 00:02:11.060
+Resolved in forty-seven seconds. Nobody paged at three A.M.
+
+00:02:15.000 --> 00:02:16.850
+Use case five: control.
+
+00:02:17.000 --> 00:02:26.880
+Every agent change, attributed. Thirty-seven risky changes, held. And a safe-change score for every agent, based on what it actually did to your network.
+
+00:02:27.200 --> 00:02:29.660
+That's real control. In real time.
+
+00:02:32.500 --> 00:02:34.880
+Your AI agents act at machine speed.
+
+00:02:35.200 --> 00:02:37.400
+SevOne observes at machine speed.
+
+00:02:39.400 --> 00:02:43.000
+IBM SevOne. See everything. Control everything.
