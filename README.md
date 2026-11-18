@@ -21,6 +21,13 @@ illustration, not IBM software.
 | `demo/agents.py` | The three scripted agents |
 | `demo/scenario.py` | Scenario engine used by the CLI and the tests |
 
+## Also in this repo: SevOne demo film
+
+`sevone-film/` contains **"Observability in the Age of Agentic AI"**, a 2 min 46 s demo film
+with a synthesized soundtrack. It shows how IBM SevOne observes, anticipates, prevents,
+reacts to and controls what AI agents change in the network. See
+[`sevone-film/README.md`](sevone-film/README.md) for the voiceover script and presenter notes.
+
 ## Run it
 
 Needs Python 3.9+. No dependencies.

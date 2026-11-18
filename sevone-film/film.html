@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SevOne Agentic Observability</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* The film is dark by design (cinematic). Tokens are defined for both themes so the
+   chrome around the stage follows the viewer's preference. */
+:root {
+  --page: #000; --chrome-ink: #c6cede;
+  --bg: #04060d; --panel: rgba(14, 20, 36, .78); --panel-2: rgba(20, 28, 48, .9);
+  --line: rgba(120, 145, 200, .18); --line-2: rgba(120, 145, 200, .32);
+  --ink: #eef2fa; --dim: #98a3bd; --faint: #5d6984;
+  --blue: #4589ff; --cyan: #33b1ff; --purple: #a56eff; --teal: #3ddbd9;
+  --red: #fa4d56; --green: #42be65; --yellow: #f1c21b; --orange: #ff832b;
+  --sans: "IBM Plex Sans", Inter, system-ui, sans-serif;
+  --mono: "IBM Plex Mono", "DejaVu Sans Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --page: #e9ecf2; --chrome-ink: #1d2433; } }
+:root[data-theme="light"] { --page: #e9ecf2; --chrome-ink: #1d2433; }
+:root[data-theme="dark"] { --page: #000; --chrome-ink: #c6cede; }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--page); overflow: hidden; }
+body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+
+#viewport { position: fixed; inset: 0; display: grid; place-items: center; }
+#stage {
+  position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px;
+  transform-origin: 0 0; background: var(--bg); overflow: hidden;
+}
+#bgc { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+#camera { position: absolute; inset: 0; transform-origin: 50% 50%; }
+.scene { position: absolute; inset: 0; opacity: 0; visibility: hidden; }
+.scene.on { visibility: visible; }
+
+#flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; mix-blend-mode: screen; }
+#vignette { position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(1300px 820px at 50% 50%, transparent 62%, rgba(0,0,0,.6) 100%); }
+#scan { position: absolute; inset: 0; pointer-events: none; opacity: .06;
+  background: repeating-linear-gradient(0deg, #fff 0 1px, transparent 1px 3px); }
+#fadeblack { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; }
+
+/* HUD */
+#hud { position: absolute; inset: 0; pointer-events: none; font-family: var(--mono); font-size: 15px; color: var(--dim); }
+#hud .tl { position: absolute; left: 56px; top: 40px; display: flex; gap: 14px; align-items: center; letter-spacing: .18em; }
+#hud .rec { width: 10px; height: 10px; border-radius: 50%; background: var(--red); box-shadow: 0 0 12px var(--red); }
+#hud .tr { position: absolute; right: 56px; top: 40px; letter-spacing: .12em; }
+#steps { position: absolute; left: 50%; bottom: 40px; transform: translateX(-50%); display: flex; gap: 10px; }
+#steps span { font-size: 13px; letter-spacing: .2em; padding: 7px 14px; border: 1px solid var(--line); border-radius: 999px; color: var(--faint); background: rgba(8,12,22,.6); }
+#steps span.act { color: #fff; border-color: var(--blue); background: rgba(69,137,255,.22); box-shadow: 0 0 24px rgba(69,137,255,.35); }
+#steps span.done { color: var(--dim); border-color: var(--line-2); }
+
+/* Typography */
+.mono { font-family: var(--mono); }
+.eyebrow { font-family: var(--mono); font-size: 18px; letter-spacing: .32em; text-transform: uppercase; color: var(--cyan); }
+.huge { font-size: 116px; font-weight: 600; letter-spacing: -0.035em; line-height: 1.02; }
+.big { font-size: 74px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.06; }
+.h2 { font-size: 50px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.12; }
+.lead { font-size: 30px; color: var(--dim); font-weight: 300; line-height: 1.4; }
+.center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.red { color: var(--red); } .green { color: var(--green); } .blue { color: var(--blue); } .cyan { color: var(--cyan); } .yellow { color: var(--yellow); }
+.grad { background: linear-gradient(90deg, #78a9ff, #33b1ff 40%, #3ddbd9 70%, #a56eff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; backdrop-filter: blur(6px); }
+.panel h4 { margin: 0; font-family: var(--mono); font-weight: 500; font-size: 15px; letter-spacing: .2em; text-transform: uppercase; color: var(--dim); }
+
+.stephead { position: absolute; left: 96px; top: 104px; right: 96px; }
+.stephead .num { font-family: var(--mono); font-size: 20px; letter-spacing: .3em; color: var(--cyan); }
+.stephead .t { font-size: 50px; font-weight: 600; letter-spacing: -0.02em; margin-top: 10px; max-width: 1500px; }
+.caption { position: absolute; left: 0; right: 0; bottom: 104px; text-align: center; font-size: 27px; color: #dfe6f5; font-weight: 400; }
+.caption b { color: #fff; font-weight: 600; }
+
+.chip { display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px; border-radius: 999px; border: 1px solid var(--line-2); background: rgba(16,24,44,.85); font-size: 20px; color: #dbe3f3; white-space: nowrap; }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+
+/* S0 */
+#s0 .clock { font-family: var(--mono); font-size: 28px; letter-spacing: .4em; color: var(--dim); }
+#s0 .l1 { font-size: 64px; font-weight: 300; margin-top: 40px; min-height: 80px; }
+#s0 .l2 { font-size: 76px; font-weight: 600; letter-spacing: -0.02em; margin-top: 18px; }
+#s0 .logs { position: absolute; inset: 0; font-family: var(--mono); font-size: 17px; color: rgba(120,160,230,.16); line-height: 1.75; padding: 40px 70px; white-space: pre; overflow: hidden; }
+.caret { display: inline-block; width: .5em; height: 1em; background: var(--cyan); vertical-align: -0.12em; margin-left: 4px; }
+
+/* S1 */
+#s1 .left { position: absolute; left: 96px; top: 230px; width: 640px; }
+#s1 .tasks { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 40px; }
+#s1 .tasks .chip { font-size: 19px; padding: 8px 16px; }
+#orbit { position: absolute; left: 820px; top: 110px; width: 1000px; height: 860px; }
+#orbit .core { position: absolute; left: 500px; top: 430px; width: 250px; height: 250px; margin: -125px; border-radius: 50%;
+  display: grid; place-items: center; text-align: center; font-family: var(--mono); font-size: 17px; letter-spacing: .2em; color: #fff;
+  background: radial-gradient(circle, rgba(69,137,255,.35), rgba(69,137,255,.05) 70%); border: 1px solid rgba(69,137,255,.5); }
+#orbit .agent { position: absolute; transform: translate(-50%, -50%); }
+#orbit .agent .chip { font-size: 18px; box-shadow: 0 8px 30px rgba(0,0,0,.4); }
+#orbit svg { position: absolute; inset: 0; }
+#s1 .counter { position: absolute; left: 96px; bottom: 150px; display: flex; gap: 70px; }
+.stat .v { font-family: var(--mono); font-size: 64px; font-weight: 500; letter-spacing: -0.02em; }
+.stat .k { font-family: var(--mono); font-size: 15px; letter-spacing: .2em; text-transform: uppercase; color: var(--dim); margin-top: 6px; }
+
+/* S2 / S3 */
+#s2 .q { font-size: 128px; font-weight: 600; letter-spacing: -0.04em; }
+#s3 .brand { font-size: 176px; font-weight: 600; letter-spacing: -0.05em; line-height: 1; }
+#s3 .brand .ibm { font-weight: 300; color: #c9d3e8; margin-right: .18em; }
+#s3 .pills { display: flex; gap: 18px; margin-top: 64px; }
+#s3 .pills .chip { font-family: var(--mono); font-size: 22px; letter-spacing: .14em; text-transform: uppercase; padding: 14px 26px; }
+.sweep { position: absolute; top: 0; bottom: 0; width: 280px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent); transform: skewX(-18deg); mix-blend-mode: overlay; }
+
+/* S4 observe */
+#s4 .kpis { position: absolute; left: 96px; right: 96px; top: 250px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }
+.kpi { padding: 20px 24px; }
+.kpi .v { font-family: var(--mono); font-size: 42px; font-weight: 500; color: #fff; }
+.kpi .k { font-family: var(--mono); font-size: 13px; letter-spacing: .18em; text-transform: uppercase; color: var(--dim); margin-top: 4px; }
+#topo { position: absolute; left: 96px; top: 400px; width: 1020px; height: 470px; padding: 18px 22px; }
+#topo svg { position: absolute; left: 0; top: 0; }
+#feed { position: absolute; left: 1140px; top: 400px; width: 684px; height: 470px; padding: 18px 22px; overflow: hidden; }
+.frow { display: grid; grid-template-columns: 92px 1fr; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 17px; }
+.frow .tm { font-family: var(--mono); color: var(--faint); font-size: 15px; padding-top: 2px; }
+.frow .who { font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.frow .what { color: var(--dim); font-size: 15.5px; margin-top: 3px; font-family: var(--mono); }
+.tag { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; padding: 3px 8px; border-radius: 6px; margin-left: auto; }
+.tag.ok { color: var(--green); background: rgba(66,190,101,.13); }
+.tag.watch { color: var(--yellow); background: rgba(241,194,27,.13); }
+.tag.risk { color: var(--red); background: rgba(250,77,86,.15); }
+#s4 .sources { position: absolute; left: 96px; right: 96px; top: 890px; display: flex; gap: 12px; justify-content: center; }
+#s4 .sources .chip { font-family: var(--mono); font-size: 16px; padding: 7px 14px; }
+
+/* S5 anticipate */
+#chart5 { position: absolute; left: 96px; top: 260px; width: 1160px; height: 600px; padding: 22px 26px; }
+#cards5 { position: absolute; left: 1290px; top: 260px; width: 534px; display: flex; flex-direction: column; gap: 16px; }
+.icard { padding: 20px 24px; }
+.icard .k { font-family: var(--mono); font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: var(--dim); }
+.icard .v { font-size: 26px; font-weight: 600; margin-top: 8px; line-height: 1.25; }
+.icard .s { font-size: 18px; color: var(--dim); margin-top: 6px; line-height: 1.4; }
+.icard.alert { border-color: rgba(250,77,86,.55); background: rgba(60,14,22,.7); }
+.icard.reco { border-color: rgba(66,190,101,.45); }
+
+/* S6 prevent */
+#plan6 { position: absolute; left: 96px; top: 280px; width: 560px; padding: 28px 30px; }
+#plan6 .agentname { display: flex; gap: 12px; align-items: center; font-size: 24px; font-weight: 600; }
+#plan6 .cmd { font-family: var(--mono); font-size: 17px; color: #cfe0ff; background: rgba(0,0,0,.35); border-radius: 10px; padding: 16px 18px; margin-top: 18px; line-height: 1.65; }
+#plan6 .ttl { color: var(--dim); font-size: 19px; margin-top: 16px; }
+#arrow6 { position: absolute; left: 660px; top: 380px; width: 260px; height: 120px; }
+#checks6 { position: absolute; left: 930px; top: 280px; width: 894px; padding: 26px 30px; }
+.chk { display: grid; grid-template-columns: 44px 1fr; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--line); align-items: start; }
+.chk .ic { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 20px; }
+.chk .ic.ok { background: rgba(66,190,101,.18); color: var(--green); }
+.chk .ic.no { background: rgba(250,77,86,.2); color: var(--red); }
+.chk .a { font-size: 22px; font-weight: 600; }
+.chk .b { font-size: 17px; color: var(--dim); font-family: var(--mono); margin-top: 4px; }
+#verdict6 { position: absolute; left: 96px; top: 700px; width: 560px; padding: 24px 30px; border-color: rgba(250,77,86,.7); background: rgba(70,12,20,.82); box-shadow: 0 0 60px rgba(250,77,86,.25); }
+#verdict6 .v { font-size: 44px; font-weight: 700; color: var(--red); letter-spacing: .02em; }
+#verdict6 .s { font-size: 19px; color: #f2c7cb; margin-top: 8px; font-family: var(--mono); }
+#replan6 { position: absolute; left: 930px; top: 790px; width: 894px; padding: 20px 30px; border-color: rgba(66,190,101,.6); background: rgba(10,44,26,.78); }
+#replan6 .v { font-size: 23px; font-weight: 600; color: #b9f0c9; }
+
+/* S7 react */
+#chart7 { position: absolute; left: 96px; top: 250px; width: 1260px; height: 430px; padding: 20px 24px; }
+#clocks7 { position: absolute; left: 1384px; top: 250px; width: 440px; display: flex; flex-direction: column; gap: 16px; }
+#clocks7 .panel { padding: 22px 26px; }
+#clocks7 .v { font-family: var(--mono); font-size: 62px; font-weight: 500; }
+#clocks7 .k { font-family: var(--mono); font-size: 14px; letter-spacing: .2em; color: var(--dim); text-transform: uppercase; }
+#clocks7 .s { font-size: 17px; color: var(--dim); margin-top: 4px; }
+#chain7 { position: absolute; left: 96px; right: 96px; top: 712px; height: 200px; }
+.ccard { position: absolute; top: 0; width: 386px; height: 160px; padding: 18px 22px; }
+.ccard .k { font-family: var(--mono); font-size: 13px; letter-spacing: .2em; text-transform: uppercase; }
+.ccard .v { font-size: 22px; font-weight: 600; margin-top: 10px; line-height: 1.28; }
+.ccard .s { font-size: 16px; color: var(--dim); margin-top: 8px; font-family: var(--mono); line-height: 1.45; }
+
+/* S8 control */
+#s8 .grid { position: absolute; left: 96px; right: 96px; top: 270px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+#s8 .grid .panel { padding: 26px 28px; }
+#s8 .grid .v { font-family: var(--mono); font-size: 64px; font-weight: 500; letter-spacing: -0.02em; }
+#s8 .grid .k { font-size: 20px; color: var(--dim); margin-top: 6px; line-height: 1.35; }
+#trust { position: absolute; left: 96px; right: 96px; top: 520px; padding: 20px 28px; }
+.trow { display: grid; grid-template-columns: 340px 200px 200px 200px 1fr 170px; gap: 16px; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 20px; }
+.trow.h { font-family: var(--mono); font-size: 13px; letter-spacing: .18em; text-transform: uppercase; color: var(--faint); }
+.trow .n { font-weight: 600; display: flex; align-items: center; gap: 10px; }
+.trow .m { font-family: var(--mono); color: #cdd6ea; }
+.bar { height: 10px; background: rgba(255,255,255,.07); border-radius: 6px; overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 6px; }
+.status { font-family: var(--mono); font-size: 14px; letter-spacing: .12em; padding: 5px 10px; border-radius: 6px; text-align: center; }
+.foot { position: absolute; right: 96px; bottom: 70px; font-family: var(--mono); font-size: 14px; color: var(--faint); letter-spacing: .08em; }
+
+/* S9 */
+#s9 .a { font-size: 82px; font-weight: 300; letter-spacing: -0.03em; }
+#s9 .b { font-size: 82px; font-weight: 600; letter-spacing: -0.03em; margin-top: 10px; }
+#s9 .end .brand { font-size: 150px; font-weight: 600; letter-spacing: -0.05em; }
+#s9 .end .brand .ibm { font-weight: 300; color: #c9d3e8; margin-right: .18em; }
+#s9 .end .tag2 { font-family: var(--mono); font-size: 26px; letter-spacing: .32em; text-transform: uppercase; color: var(--dim); margin-top: 34px; }
+#s9 .end .tag3 { font-size: 34px; margin-top: 26px; color: #dfe6f5; font-weight: 300; }
+#s9 .disc { position: absolute; left: 0; right: 0; bottom: 60px; text-align: center; font-family: var(--mono); font-size: 14px; color: var(--faint); letter-spacing: .06em; }
+
+/* Player chrome (hidden in render mode) */
+#player { position: fixed; left: 0; right: 0; bottom: 0; padding: 12px 16px; display: flex; gap: 12px; align-items: center;
+  background: linear-gradient(transparent, rgba(0,0,0,.85)); color: #dfe6f5; font-family: var(--mono); font-size: 13px; z-index: 10; transition: opacity .3s; }
+#player button { font: inherit; background: rgba(255,255,255,.12); color: #fff; border: 1px solid rgba(255,255,255,.2); border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+#player input[type=range] { flex: 1; min-width: 80px; accent-color: #4589ff; }
+#player .chap { display: flex; gap: 6px; flex-wrap: wrap; }
+#player .chap button { padding: 6px 10px; font-size: 12px; }
+body.idle #player { opacity: 0; }
+#bigplay { position: fixed; inset: 0; display: grid; place-items: center; z-index: 11; background: rgba(0,0,0,.55); cursor: pointer; }
+#bigplay div { font-family: var(--sans); color: #fff; font-size: 22px; text-align: center; }
+#bigplay .btn { width: 110px; height: 110px; border-radius: 50%; background: #4589ff; display: grid; place-items: center; margin: 0 auto 18px; box-shadow: 0 0 60px rgba(69,137,255,.6); }
+#bigplay .btn::after { content: ""; border-left: 34px solid #fff; border-top: 21px solid transparent; border-bottom: 21px solid transparent; margin-left: 10px; }
+body.render #player, body.render #bigplay { display: none; }
+@media (max-width: 640px) { #player .chap { display: none; } }
+</style>
+</head>
+<body>
+<div id="viewport">
+<div id="stage">
+  <canvas id="bgc" width="1920" height="1080"></canvas>
+  <div id="camera">
+
+  <!-- S0 · Cold open -->
+  <section class="scene" id="s0" data-start="0" data-end="9">
+    <div class="logs" data-in="1.6" data-dur="2" data-fx="fade" id="logs0"></div>
+    <div class="center">
+      <div class="clock" data-in="0.5" data-dur="0.8">SUNDAY · 02:47 AM · CET</div>
+      <div class="l1" data-type="No engineer is awake." data-in="1.8" data-dur="1.3"></div>
+      <div class="l2" data-in="4.2" data-dur="0.9">But <span class="red">14 AI agents</span> are changing your network.</div>
+    </div>
+  </section>
+
+  <!-- S1 · The new operating model -->
+  <section class="scene" id="s1" data-start="9" data-end="24">
+    <div class="left">
+      <div class="eyebrow" data-in="0.3">The new operating model</div>
+      <div class="h2" style="margin-top:18px" data-in="0.7" data-dur="0.8">Your teams delegated the network to <span class="grad">AI agents</span>.</div>
+      <div class="tasks" id="tasks1"></div>
+    </div>
+    <div id="orbit"><svg width="1000" height="860" id="orbitsvg"></svg><div class="core" data-in="0.4" data-fx="scale">YOUR<br>NETWORK</div></div>
+    <div class="counter">
+      <div class="stat" data-in="2.2"><div class="v" data-count="1284" data-cin="2.4" data-cdur="10">0</div><div class="k">Agent changes · last 60 min</div></div>
+      <div class="stat" data-in="3.2"><div class="v red" data-count="41" data-cin="3.4" data-cdur="9">0</div><div class="k">Reviewed by a human</div></div>
+    </div>
+  </section>
+
+  <!-- S2 · The question -->
+  <section class="scene" id="s2" data-start="24" data-end="32">
+    <div class="center">
+      <div class="q" id="q2" data-in="0" data-dur="0.25" data-fx="scale">Who is watching<br>the <span class="red">agents</span>?</div>
+      <div class="lead" style="margin-top:50px" data-in="3.4" data-dur="0.9">Machine-speed change demands machine-speed observability.</div>
+    </div>
+  </section>
+
+  <!-- S3 · Title -->
+  <section class="scene" id="s3" data-start="32" data-end="40">
+    <div class="center">
+      <div class="eyebrow" data-in="0.6">Observability in the age of agentic AI</div>
+      <div class="brand" style="margin-top:28px;position:relative;overflow:hidden" data-in="0" data-dur="0.5" data-fx="scale"><span class="ibm">IBM</span><span class="grad">SevOne</span><div class="sweep" id="sweep3"></div></div>
+      <div class="pills" id="pills3"></div>
+    </div>
+  </section>
+
+  <!-- S4 · OBSERVE -->
+  <section class="scene" id="s4" data-start="40" data-end="64">
+    <div class="stephead"><div class="num" data-in="0.2">01 — OBSERVE</div><div class="t" data-in="0.5" data-dur="0.8">One real-time picture: every device, every flow, <span class="cyan">every agent action</span>.</div></div>
+    <div class="kpis">
+      <div class="panel kpi" data-in="1.2"><div class="v" data-count="18420" data-cin="1.2" data-cdur="2">0</div><div class="k">Devices polled</div></div>
+      <div class="panel kpi" data-in="1.35"><div class="v" data-count="1.42" data-dec="2" data-suf="M" data-cin="1.35" data-cdur="2">0</div><div class="k">Interfaces</div></div>
+      <div class="panel kpi" data-in="1.5"><div class="v" data-count="6.2" data-dec="1" data-suf="M" data-cin="1.5" data-cdur="2">0</div><div class="k">Flows / second</div></div>
+      <div class="panel kpi" data-in="1.65"><div class="v" data-count="92" data-suf="M" data-cin="1.65" data-cdur="2">0</div><div class="k">Metrics / minute</div></div>
+      <div class="panel kpi" data-in="1.8"><div class="v cyan" data-count="14" data-cin="1.8" data-cdur="2">0</div><div class="k">AI agents tracked</div></div>
+    </div>
+    <div class="panel" id="topo" data-in="2.2"><h4>Live topology · hybrid WAN</h4><svg id="toposvg" width="1020" height="470"></svg></div>
+    <div class="panel" id="feed" data-in="2.4"><h4>Agent change stream · attributed</h4><div style="position:absolute;left:22px;right:22px;top:52px;bottom:12px;overflow:hidden"><div id="feedrows"></div></div></div>
+    <div class="sources" id="src4"></div>
+  </section>
+
+  <!-- S5 · ANTICIPATE -->
+  <section class="scene" id="s5" data-start="64" data-end="86">
+    <div class="stephead"><div class="num" data-in="0.2">02 — ANTICIPATE</div><div class="t" data-in="0.5" data-dur="0.8">See the outage <span class="yellow">before</span> it happens.</div></div>
+    <div class="panel" id="chart5" data-in="1"><h4>MPLS PAR ↔ FRA · 10 Gb/s · utilization</h4><svg id="c5" width="1160" height="560" style="position:absolute;left:0;top:40px"></svg></div>
+    <div id="cards5">
+      <div class="panel icard alert" data-in="11.4"><div class="k red">Forecast · capacity breach</div><div class="v">95% threshold crossed at 08:40</div><div class="s">in 5 h 53 min · confidence 91%</div></div>
+      <div class="panel icard" data-in="13"><div class="k">Probable cause</div><div class="v">Trend +31% since 01:12</div><div class="s">SD-WAN policy "VOICE-PRIO" changed by <b style="color:#fff">Devin</b> agent</div></div>
+      <div class="panel icard" data-in="14.6"><div class="k">Business at risk</div><div class="v">3 sites · 2,310 users</div><div class="s">VoIP, trading desk, SAP</div></div>
+      <div class="panel icard reco" data-in="16.2"><div class="k green">Recommended action</div><div class="v">Restore class weights or shift bulk to SD-WAN internet path</div></div>
+    </div>
+    <div class="caption" data-in="18" style="bottom:70px">Baselines + forecasting turn <b>agent side-effects</b> into early warnings.</div>
+  </section>
+
+  <!-- S6 · PREVENT -->
+  <section class="scene" id="s6" data-start="86" data-end="108">
+    <div class="stephead"><div class="num" data-in="0.2">03 — PREVENT</div><div class="t" data-in="0.5" data-dur="0.8">Check the <span class="red">blast radius</span> before an agent acts.</div></div>
+    <div class="panel" id="plan6" data-in="1.2" data-fx="left">
+      <div class="agentname"><span class="dot" style="background:#d97757;width:14px;height:14px"></span>Claude Code agent</div>
+      <div class="cmd">plan: upgrade IOS-XE 17.9 → 17.12<br>targets: core-rtr-01, core-rtr-02<br>mode: <span style="color:#ffb3b8">parallel</span><br>eta: 18 min</div>
+      <div class="ttl">Before acting, the agent's tool calls SevOne for a pre-flight check.</div>
+    </div>
+    <svg id="arrow6" width="260" height="120" data-in="3" data-fx="fade"></svg>
+    <div class="panel" id="checks6" data-in="3.6"><h4>SevOne pre-flight · live data</h4>
+      <div class="chk" data-in="4.4" data-fx="left"><div class="ic ok">✓</div><div><div class="a">Device health</div><div class="b">core-rtr-01 · CPU 34% · memory 61% · 0 errors</div></div></div>
+      <div class="chk" data-in="5.6" data-fx="left"><div class="ic no">✕</div><div><div class="a">Redundant path degraded</div><div class="b">core-rtr-02 Te0/1/0 · 1.8% loss · last 20 min</div></div></div>
+      <div class="chk" data-in="6.8" data-fx="left"><div class="ic no">✕</div><div><div class="a">Blast radius too large</div><div class="b">14 sites · 6,800 users · 212 apps on both nodes</div></div></div>
+      <div class="chk" data-in="8" data-fx="left"><div class="ic no">✕</div><div><div class="a">Business window</div><div class="b">market open 09:00 · trading peak forecast</div></div></div>
+      <div class="chk" data-in="9.2" data-fx="left" style="border:0"><div class="ic ok">✓</div><div><div class="a">Rollback image verified</div><div class="b">checksum OK · config snapshot taken</div></div></div>
+    </div>
+    <div class="panel" id="verdict6" data-in="11" data-dur="0.25" data-fx="scale"><div class="v">⛔ HOLD</div><div class="s">Blocked by policy · approval required<br>CHG-20931 opened · on-call paged</div></div>
+    <div class="panel" id="replan6" data-in="15" data-fx="up"><div class="v">✓ Agent re-plans: rolling upgrade, core-rtr-01 first, after the 02 path is fixed — approved.</div></div>
+    <div class="caption" data-in="17.5" style="bottom:60px">SevOne data becomes the <b>guardrail</b> your agents consult before they act.</div>
+  </section>
+
+  <!-- S7 · REACT -->
+  <section class="scene" id="s7" data-start="108" data-end="134">
+    <div class="stephead"><div class="num" data-in="0.2">04 — REACT</div><div class="t" data-in="0.5" data-dur="0.8">When something breaks, find <span class="red">the agent behind it</span> in seconds.</div></div>
+    <div class="panel" id="chart7" data-in="1"><h4>checkout-api · round-trip latency (ms) · 1 s resolution</h4><svg id="c7" width="1260" height="390" style="position:absolute;left:0;top:40px"></svg></div>
+    <div id="clocks7">
+      <div class="panel" data-in="1.4"><div class="k">Time to detect</div><div class="v" id="mttd">--:--</div><div class="s">anomaly vs. learned baseline</div></div>
+      <div class="panel" data-in="1.6"><div class="k">Time to resolve</div><div class="v" id="mttr">--:--</div><div class="s" id="mttrs">waiting for incident</div></div>
+    </div>
+    <div id="chain7"><svg id="chainsvg" width="1728" height="200" style="position:absolute;left:0;top:0"></svg>
+      <div class="panel ccard" style="left:0;border-color:rgba(250,77,86,.5)" data-in="6.6"><div class="k red">① Anomaly</div><div class="v">Latency ×11 on checkout-api</div><div class="s">6% loss at waf-edge · 10:14:11</div></div>
+      <div class="panel ccard" style="left:447px;border-color:rgba(241,194,27,.5)" data-in="8.6"><div class="k yellow">② Correlated change</div><div class="v">WAF rule set updated 8 s earlier</div><div class="s">rule 942100 · paranoia level 4</div></div>
+      <div class="panel ccard" style="left:894px;border-color:rgba(69,137,255,.6)" data-in="10.6"><div class="k blue">③ Actor</div><div class="v">Cursor agent · session 7f3a</div><div class="s">repo infra-waf · commit a91c2e</div></div>
+      <div class="panel ccard" style="left:1341px;border-color:rgba(66,190,101,.6)" data-in="12.6"><div class="k green">④ Automated action</div><div class="v">Webhook → watsonx Orchestrate</div><div class="s">rollback · notify on-call · RCA filed</div></div>
+    </div>
+    <div class="caption" data-in="21" style="bottom:66px">Anomaly → change → agent → fix. <b>Correlated automatically, fully auditable.</b></div>
+  </section>
+
+  <!-- S8 · CONTROL -->
+  <section class="scene" id="s8" data-start="134" data-end="152">
+    <div class="stephead"><div class="num" data-in="0.2">05 — CONTROL</div><div class="t" data-in="0.5" data-dur="0.8">Real control of your environment. <span class="green">In real time.</span></div></div>
+    <div class="grid">
+      <div class="panel" data-in="1.2"><div class="v green" data-count="100" data-suf="%" data-cin="1.3" data-cdur="2.2">0</div><div class="k">of agent changes attributed to an identity and a measured effect</div></div>
+      <div class="panel" data-in="1.5"><div class="v yellow" data-count="37" data-cin="1.6" data-cdur="2.2">0</div><div class="k">risky changes held before they ran this month</div></div>
+      <div class="panel" data-in="1.8"><div class="v cyan" data-count="47" data-suf=" s" data-cin="1.9" data-cdur="2.2">0</div><div class="k">mean time to resolve agent-caused incidents (was 4 h 12 min)</div></div>
+      <div class="panel" data-in="2.1"><div class="v" data-count="2.4" data-dec="1" data-pre="€" data-suf="M" data-cin="2.2" data-cdur="2.2">0</div><div class="k">downtime cost avoided this quarter</div></div>
+    </div>
+    <div class="panel" id="trust" data-in="3.2"><div class="trow h"><div>Agent</div><div>Changes · 30 d</div><div>Incidents caused</div><div>Auto-rollbacks</div><div>Safe-change score</div><div>Status</div></div><div id="trows"></div></div>
+    <div class="foot" data-in="4">Illustrative figures for a demo scenario</div>
+  </section>
+
+  <!-- S9 · Close -->
+  <section class="scene" id="s9" data-start="152" data-end="166">
+    <div class="center" id="close1">
+      <div class="a" data-in="0.3" data-dur="0.9">Your AI agents act at machine speed.</div>
+      <div class="b" data-in="2.6" data-dur="0.9"><span class="grad">SevOne</span> observes at machine speed.</div>
+    </div>
+    <div class="center end" id="close2">
+      <div class="brand" data-in="6.5" data-dur="0.45" data-fx="scale"><span class="ibm">IBM</span><span class="grad">SevOne</span></div>
+      <div class="tag2" data-in="7.6">Observe · Anticipate · Prevent · React · Control</div>
+      <div class="tag3" data-in="8.6">Observability in the age of agentic AI.</div>
+    </div>
+    <div class="disc" data-in="9.4">Demo scenario. Devices, agents, events and figures are simulated for illustration.</div>
+  </section>
+
+  </div>
+  <div id="hud">
+    <div class="tl"><span class="rec"></span><span>SEVONE · LIVE</span></div>
+    <div class="tr" id="tc">00:00:00</div>
+    <div id="steps"><span>01 OBSERVE</span><span>02 ANTICIPATE</span><span>03 PREVENT</span><span>04 REACT</span><span>05 CONTROL</span></div>
+  </div>
+  <div id="vignette"></div><div id="scan"></div><div id="flash"></div><div id="fadeblack"></div>
+</div>
+</div>
+
+<div id="bigplay"><div><div class="btn"></div>Play with sound · 2 min 46 s</div></div>
+<div id="player">
+  <button id="pp">Play</button>
+  <span id="tcur">0:00</span>
+  <input type="range" id="scrub" min="0" max="166" step="0.05" value="0" aria-label="Seek">
+  <span>2:46</span>
+  <div class="chap">
+    <button data-t="0">Intro</button><button data-t="40">Observe</button><button data-t="64">Anticipate</button><button data-t="86">Prevent</button><button data-t="108">React</button><button data-t="134">Control</button>
+  </div>
+</div>
+<audio id="audio" src="soundtrack.mp3" preload="auto"></audio>
+
+<script>
+(() => {
+const DURATION = 166;
+// Impact times — must match soundtrack.py
+const IMPACTS = [[0.5,1],[9,.45],[24,1],[32,1.2],[40,.45],[64,.45],[86,.45],[97,1],[108,.45],[113,1],[134,.5],[152,.8],[158.5,1.2]];
+
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const easeOut = x => 1 - Math.pow(1 - x, 3);
+const easeInOut = x => x < .5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3) / 2;
+const lerp = (a, b, t) => a + (b - a) * t;
+const NS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+function rand(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+const fmt2 = n => String(Math.floor(n)).padStart(2, '0');
+
+/* ---------- Build dynamic content ---------- */
+// S0 logs
+const LOGS = [
+ 'codex@edge-rtr-02> set protocols bgp group EDGE neighbor 10.40.1.2 local-preference 200',
+ 'devin@sdwan-ctrl-01> policy app-route VOICE-PRIO sla-class weight 70 -> 85',
+ 'claude-code@fw-par-01> add rule DMZ->APP allow tcp/8443 tag auto-ticket-55871',
+ 'orchestrate@lb-f5-03> tmsh modify ltm pool checkout-api members drain 10.8.3.14',
+ 'cursor@waf-edge> apply ruleset crs-4.2 paranoia=4 scope=/checkout/*',
+ 'bedrock-agent@aws-tgw-eu1> enable route-propagation rtb-0a91 attachment vpn-77',
+ 'bob@core-rtr-01> install add file bootflash:ios-xe-17.12.bin activate staged',
+ 'grok-agent@mpls-pe-07> policy-map WAN-QOS class BULK bandwidth percent 20 -> 35',
+ 'copilot-sre@k8s-prod> kubectl rollout restart deploy/ingress-nginx -n edge',
+ 'orchestrate@itdr> revoke session svc-netops-04 risk=high reason=impossible-travel',
+ 'codex@mpls-pe-02> commit confirmed 5 comment "agent-run 8812 auto-remediation"',
+ 'devin@sdwan-ctrl-01> template push BRANCH-v42 to 38 edges',
+];
+let logtxt = ''; for (let i = 0; i < 34; i++) logtxt += `[02:${fmt2(10 + i)}:${fmt2((i*37)%60)}] ` + LOGS[i % LOGS.length] + '\n';
+$('#logs0').textContent = logtxt;
+
+// S1 tasks + orbit
+const TASKS = ['Router config','BGP','SD-WAN','Firewall','WAF','Load balancing','MPLS','WAN','Cloud','Patching','Upgrades','Root cause','Incident mgmt','ITDR'];
+TASKS.forEach((t, i) => { const c = document.createElement('span'); c.className = 'chip'; c.textContent = t; c.dataset.in = (3 + i * 0.32).toFixed(2); c.dataset.dur = '0.45'; c.dataset.fx = 'scale'; $('#tasks1').appendChild(c); });
+const AGENTS = [
+ ['watsonx Orchestrate','#4589ff'],['IBM Bob','#33b1ff'],['Devin','#3ddbd9'],['Windsurf','#08bdba'],
+ ['Codex','#e8e8e8'],['Claude Code','#d97757'],['Cursor','#a56eff'],['Grok','#bfc6d4'],
+ ['Amazon Bedrock Agents','#ff9900'],['Copilot agents','#8a3ffc'],['Open-source agents','#42be65'],['Custom MCP agents','#f1c21b'],
+];
+const orbitSvg = $('#orbitsvg');
+const orbitEls = AGENTS.map(([n, c], i) => {
+  const d = document.createElement('div'); d.className = 'agent';
+  d.innerHTML = `<span class="chip"><span class="dot" style="background:${c}"></span>${n}</span>`;
+  $('#orbit').appendChild(d);
+  const line = svgEl('line', { stroke: c, 'stroke-opacity': .28, 'stroke-width': 1.5 }, orbitSvg);
+  const pk = svgEl('circle', { r: 4, fill: c }, orbitSvg);
+  return { d, line, pk, c, i };
+});
+
+// S3 pills
+['Observe','Anticipate','Prevent','React','Control'].forEach((p, i) => { const c = document.createElement('span'); c.className = 'chip'; c.textContent = p; c.dataset.in = (2.4 + i * .35).toFixed(2); c.dataset.fx = 'up'; $('#pills3').appendChild(c); });
+
+// S4 sources
+['SNMP','NetFlow · IPFIX · sFlow','gNMI streaming telemetry','Syslog · traps','REST APIs','AWS · Azure metrics','Change & agent audit logs'].forEach((p, i) => {
+  const c = document.createElement('span'); c.className = 'chip'; c.textContent = p; c.dataset.in = (3 + i * .25).toFixed(2); c.dataset.fx = 'up'; $('#src4').appendChild(c); });
+
+// S4 topology
+const NODES = {
+  par: [300, 220, 'DC Paris', 'core'], fra: [700, 220, 'DC Frankfurt', 'core'],
+  aws: [930, 110, 'AWS eu-west-1', 'cloud'], az: [930, 340, 'Azure West EU', 'cloud'],
+  lyo: [110, 110, 'Lyon'], mil: [110, 360, 'Milan'], mad: [300, 420, 'Madrid'],
+  lon: [470, 70, 'London'], bru: [520, 420, 'Brussels'], zur: [770, 420, 'Zurich'],
+};
+const LINKS = [
+  ['par','fra','#4589ff',5,'MPLS'],['par','lyo','#4589ff',2.5],['par','mil','#33b1ff',2.5],['par','mad','#33b1ff',2.5],
+  ['par','lon','#4589ff',2.5],['fra','lon','#33b1ff',2],['par','bru','#33b1ff',2],['fra','bru','#4589ff',2.5],['fra','zur','#4589ff',2.5],
+  ['fra','aws','#a56eff',3],['fra','az','#a56eff',3],['par','aws','#a56eff',2],['mil','mad','#33b1ff',1.5],['zur','az','#a56eff',1.5],
+];
+const topo = $('#toposvg');
+const tg = svgEl('g', { transform: 'translate(10,40)' }, topo);
+for (const k in NODES) NODES[k][1] = 30 + NODES[k][1] * 0.8;
+const linkEls = LINKS.map(([a, b, c, w], i) => {
+  const [x1, y1] = NODES[a], [x2, y2] = NODES[b];
+  svgEl('line', { x1, y1, x2, y2, stroke: c, 'stroke-opacity': .35, 'stroke-width': w }, tg);
+  const p1 = svgEl('circle', { r: 3.5, fill: c }, tg), p2 = svgEl('circle', { r: 3.5, fill: '#fff', 'fill-opacity': .8 }, tg);
+  return { x1, y1, x2, y2, p1, p2, sp: .25 + (i % 5) * .07, off: i * .37 };
+});
+const nodeEls = {};
+for (const k in NODES) {
+  const [x, y, label, kind] = NODES[k];
+  const g = svgEl('g', { transform: `translate(${x},${y})` }, tg);
+  const ring = svgEl('circle', { r: 14, fill: 'none', stroke: '#33b1ff', 'stroke-width': 2, opacity: 0 }, g);
+  svgEl('circle', { r: kind === 'core' ? 13 : kind === 'cloud' ? 11 : 8, fill: kind === 'cloud' ? '#a56eff' : kind === 'core' ? '#4589ff' : '#33b1ff', stroke: '#04060d', 'stroke-width': 3 }, g);
+  const t = svgEl('text', { y: kind === 'core' ? -24 : -18, 'text-anchor': 'middle', fill: '#c6d0e6', 'font-size': kind === 'core' ? 17 : 15, 'font-family': 'IBM Plex Sans, Inter, sans-serif', 'font-weight': kind === 'core' ? 600 : 400 }, g);
+  t.textContent = label;
+  nodeEls[k] = { ring };
+}
+// legend
+const lg = svgEl('g', { transform: 'translate(24,448)' }, topo);
+[['MPLS','#4589ff'],['SD-WAN','#33b1ff'],['Cloud / IPsec','#a56eff']].forEach(([n, c], i) => {
+  svgEl('rect', { x: i * 150, y: -6, width: 22, height: 4, fill: c }, lg);
+  const t = svgEl('text', { x: i * 150 + 30, y: 0, fill: '#8b97b3', 'font-size': 14, 'font-family': 'IBM Plex Mono, monospace' }, lg); t.textContent = n;
+});
+
+// S4 feed
+const FEED = [
+ ['01:12:04','Devin','#3ddbd9','sdwan-ctrl-01 · app-route policy VOICE-PRIO','watch','sdwan',['par']],
+ ['01:31:40','Codex','#e8e8e8','edge-rtr-02 · BGP local-pref 100 → 200','ok','',['lon']],
+ ['01:58:12','Claude Code','#d97757','fw-par-01 · 3 rules DMZ → APP','ok','',['par']],
+ ['02:05:55','watsonx Orchestrate','#4589ff','lb-f5-03 · drain pool member checkout-api','ok','',['fra']],
+ ['02:17:31','Cursor','#a56eff','waf-edge · ruleset CRS 4.2 update','watch','',['fra']],
+ ['02:29:08','Bedrock agent','#ff9900','aws-tgw-eu1 · route propagation enabled','ok','',['aws']],
+ ['02:41:47','IBM Bob','#33b1ff','core-rtr-01 · IOS-XE 17.12 staged','ok','',['par']],
+ ['02:47:02','Grok agent','#bfc6d4','mpls-pe-07 · QoS BULK 20% → 35%','risk','',['zur']],
+];
+const FEED_T0 = 3.2, FEED_STEP = 1.9; let ROWH = 70;
+FEED.forEach(([tm, who, c, what, st], i) => {
+  const r = document.createElement('div'); r.className = 'frow';
+  r.innerHTML = `<div class="tm">${tm}</div><div><div class="who"><span class="dot" style="background:${c}"></span>${who}<span class="tag ${st}">${st === 'ok' ? 'NO IMPACT' : st === 'watch' ? 'WATCH' : 'RISK'}</span></div><div class="what">${what}</div></div>`;
+  r.dataset.in = (FEED_T0 + i * FEED_STEP).toFixed(2); r.dataset.fx = 'left';
+  $('#feedrows').appendChild(r);
+});
+
+// S5 chart
+const c5 = $('#c5');
+const C5 = { x0: 80, x1: 1120, y0: 470, y1: 30 }; // plot area
+const hx = h => C5.x0 + (h / 12) * (C5.x1 - C5.x0);
+const py = v => C5.y0 - (v / 100) * (C5.y0 - C5.y1);
+for (let v = 0; v <= 100; v += 25) { svgEl('line', { x1: C5.x0, x2: C5.x1, y1: py(v), y2: py(v), stroke: 'rgba(120,145,200,.14)' }, c5); const t = svgEl('text', { x: C5.x0 - 14, y: py(v) + 5, 'text-anchor': 'end', fill: '#5d6984', 'font-size': 15, 'font-family': 'IBM Plex Mono, monospace' }, c5); t.textContent = v + '%'; }
+for (let h = 0; h <= 12; h += 2) { const t = svgEl('text', { x: hx(h), y: C5.y0 + 30, 'text-anchor': 'middle', fill: '#5d6984', 'font-size': 15, 'font-family': 'IBM Plex Mono, monospace' }, c5); t.textContent = fmt2(h) + ':00'; }
+const base = h => 38 + 14 * Math.sin((h - 3) / 24 * Math.PI * 2) + 10 * Math.exp(-Math.pow((h - 10) / 2.2, 2));
+let band = ''; let bandLow = [];
+for (let h = 0; h <= 12; h += 0.1) { band += (band ? 'L' : 'M') + hx(h).toFixed(1) + ',' + py(base(h) + 9).toFixed(1); bandLow.push(hx(h).toFixed(1) + ',' + py(base(h) - 9).toFixed(1)); }
+band += 'L' + bandLow.reverse().join('L') + 'Z';
+svgEl('path', { d: band, fill: 'rgba(69,137,255,.13)' }, c5);
+const r5 = rand(7);
+let act = '';
+const actual = h => base(h) + (h > 1.2 ? (h - 1.2) * 9.5 : 0) + (r5() - .5) * 5;
+const NOW = 3.0;
+for (let h = 0; h <= NOW; h += 0.04) act += (act ? 'L' : 'M') + hx(h).toFixed(1) + ',' + py(actual(h)).toFixed(1);
+const clip5 = svgEl('clipPath', { id: 'clip5' }, svgEl('defs', {}, c5)); const clipRect5 = svgEl('rect', { x: 0, y: 0, width: 0, height: 560 }, clip5);
+svgEl('path', { d: act, fill: 'none', stroke: '#33b1ff', 'stroke-width': 3.5, 'clip-path': 'url(#clip5)' }, c5);
+let fc = 'M' + hx(NOW) + ',' + py(actual(NOW) - 1);
+const fval = h => base(NOW) + (NOW - 1.2) * 9.5 + (h - NOW) * 4.8 + (base(h) - base(NOW)) * .6;
+for (let h = NOW; h <= 9.3; h += 0.1) fc += 'L' + hx(h).toFixed(1) + ',' + py(Math.min(108, fval(h))).toFixed(1);
+const clipF = svgEl('clipPath', { id: 'clipF' }, c5.querySelector('defs')); const clipRectF = svgEl('rect', { x: 0, y: 0, width: 0, height: 560 }, clipF);
+const fcPath = svgEl('path', { d: fc, fill: 'none', stroke: '#f1c21b', 'stroke-width': 3, 'stroke-dasharray': '10 8', opacity: 0, 'clip-path': 'url(#clipF)' }, c5);
+const thr = svgEl('line', { x1: C5.x0, x2: C5.x1, y1: py(95), y2: py(95), stroke: '#fa4d56', 'stroke-width': 2, 'stroke-dasharray': '6 6', opacity: 0 }, c5);
+const thrT = svgEl('text', { x: C5.x1, y: py(95) - 10, 'text-anchor': 'end', fill: '#fa4d56', 'font-size': 15, 'font-family': 'IBM Plex Mono, monospace', opacity: 0 }, c5); thrT.textContent = 'THRESHOLD 95%';
+const evG = svgEl('g', { opacity: 0 }, c5);
+svgEl('line', { x1: hx(1.2), x2: hx(1.2), y1: C5.y1, y2: C5.y0, stroke: '#3ddbd9', 'stroke-width': 2, 'stroke-dasharray': '4 5' }, evG);
+const evT = svgEl('text', { x: hx(1.2) + 10, y: py(80), fill: '#3ddbd9', 'font-size': 15, 'font-family': 'IBM Plex Mono, monospace' }, evG); evT.textContent = '01:12 · Devin · SD-WAN policy';
+const nowG = svgEl('g', { opacity: 0 }, c5);
+svgEl('line', { x1: hx(NOW), x2: hx(NOW), y1: C5.y1, y2: C5.y0, stroke: 'rgba(255,255,255,.4)', 'stroke-width': 1.5 }, nowG);
+const nowT = svgEl('text', { x: hx(NOW) + 8, y: C5.y0 - 10, fill: '#fff', 'font-size': 15, 'font-family': 'IBM Plex Mono, monospace' }, nowG); nowT.textContent = 'NOW 02:47';
+// breach point: solve fval(h) = 95
+let hb = NOW; while (fval(hb) < 95 && hb < 12) hb += 0.01;
+const brG = svgEl('g', { opacity: 0, transform: `translate(${hx(hb)},${py(95)})` }, c5);
+const brRing = svgEl('circle', { r: 12, fill: 'none', stroke: '#fa4d56', 'stroke-width': 3 }, brG);
+svgEl('circle', { r: 7, fill: '#fa4d56' }, brG);
+const brT = svgEl('text', { x: 0, y: -26, 'text-anchor': 'middle', fill: '#fff', 'font-size': 18, 'font-weight': 600, 'font-family': 'IBM Plex Sans, sans-serif' }, brG); brT.textContent = 'Breach 08:40';
+const legend5 = svgEl('g', { transform: `translate(${C5.x0},${C5.y0 + 58})` }, c5);
+[['Measured','#33b1ff'],['Learned baseline band','rgba(69,137,255,.5)'],['Forecast','#f1c21b']].forEach(([n, c], i) => {
+  svgEl('rect', { x: i * 280, y: -7, width: 24, height: 5, fill: c }, legend5);
+  const t = svgEl('text', { x: i * 280 + 34, y: 0, fill: '#8b97b3', 'font-size': 15, 'font-family': 'IBM Plex Mono, monospace' }, legend5); t.textContent = n; });
+
+// S6 arrow
+const a6 = $('#arrow6');
+svgEl('line', { x1: 10, y1: 60, x2: 230, y2: 60, stroke: '#4589ff', 'stroke-width': 3, 'stroke-dasharray': '8 8', id: 'a6line' }, a6);
+svgEl('path', { d: 'M226,46 L250,60 L226,74 Z', fill: '#4589ff' }, a6);
+const a6t = svgEl('text', { x: 130, y: 40, 'text-anchor': 'middle', fill: '#8b97b3', 'font-size': 15, 'font-family': 'IBM Plex Mono, monospace' }, a6); a6t.textContent = 'GET /preflight';
+const a6p = svgEl('circle', { r: 6, cy: 60, cx: 10, fill: '#fff' }, a6);
+
+// S7 latency chart
+const c7 = $('#c7');
+const C7 = { x0: 80, x1: 1200, y0: 330, y1: 20, max: 560 };
+const sx = s => C7.x0 + (s / 180) * (C7.x1 - C7.x0); // seconds 0..180 → 10:13:30..10:16:30
+const sy = v => C7.y0 - (v / C7.max) * (C7.y0 - C7.y1);
+[0, 100, 200, 300, 400].forEach(v => { svgEl('line', { x1: C7.x0, x2: C7.x1, y1: sy(v), y2: sy(v), stroke: 'rgba(120,145,200,.14)' }, c7); const t = svgEl('text', { x: C7.x0 - 12, y: sy(v) + 5, 'text-anchor': 'end', fill: '#5d6984', 'font-size': 14, 'font-family': 'IBM Plex Mono, monospace' }, c7); t.textContent = v; });
+['10:13:30','10:14:00','10:14:30','10:15:00','10:15:30','10:16:00','10:16:30'].forEach((l, i) => { const t = svgEl('text', { x: sx(i * 30), y: C7.y0 + 28, 'text-anchor': 'middle', fill: '#5d6984', 'font-size': 14, 'font-family': 'IBM Plex Mono, monospace' }, c7); t.textContent = l; });
+svgEl('rect', { x: C7.x0, y: sy(55), width: C7.x1 - C7.x0, height: sy(25) - sy(55), fill: 'rgba(69,137,255,.12)' }, c7);
+// data: change at s=33 (10:14:03), detection s=41, rollback s=80 (10:14:50), recovered ~88
+const r7 = rand(11); const lat = [];
+for (let s = 0; s <= 180; s++) {
+  let v = 38 + (r7() - .5) * 10;
+  if (s >= 34 && s < 80) v = 380 + 50 * Math.sin(s * .9) + (r7() - .5) * 60;
+  if (s >= 80 && s < 90) v = lerp(380, 40, (s - 80) / 10) + (r7() - .5) * 20;
+  lat.push(Math.max(20, v));
+}
+const latPath = svgEl('path', { fill: 'none', stroke: '#33b1ff', 'stroke-width': 3, 'stroke-linejoin': 'round' }, c7);
+const latHead = svgEl('circle', { r: 6, fill: '#fff' }, c7);
+function mk7(s, color, label, y, end) { const g = svgEl('g', { opacity: 0 }, c7); svgEl('line', { x1: sx(s), x2: sx(s), y1: C7.y1, y2: C7.y0, stroke: color, 'stroke-width': 2, 'stroke-dasharray': '4 5' }, g); const t = svgEl('text', { x: sx(s) + (end ? -10 : 10), y, 'text-anchor': end ? 'end' : 'start', fill: color, 'font-size': 15, 'font-family': 'IBM Plex Mono, monospace' }, g); t.textContent = label; return g; }
+const m7a = mk7(33, '#f1c21b', '10:14:03 WAF rules · Cursor agent', C7.y1 + 16);
+const m7b = mk7(41, '#fa4d56', '10:14:11 SevOne anomaly · 8 s later', C7.y1 + 42);
+const m7c = mk7(80, '#42be65', '10:14:50 rollback executed', sy(220));
+// Real seconds in chart → scene local time mapping: chart second s shown at local time = 1.6 + s*0.105 (clamped until 19).
+const CH7 = s => 1.6 + s * 0.0995; // s=180 → ~19.5
+// chain connectors
+const chs = $('#chainsvg');
+const chLines = [0,1,2].map(i => svgEl('line', { x1: 386 + i * 447, x2: 447 + i * 447, y1: 80, y2: 80, stroke: '#8b97b3', 'stroke-width': 3, 'stroke-dasharray': '1', pathLength: 1, 'stroke-dashoffset': 1 }, chs));
+
+// S8 trust table
+const TRUST = [
+ ['watsonx Orchestrate','#4589ff',412,0,0,98,'TRUSTED'],
+ ['Claude Code','#d97757',268,0,1,96,'TRUSTED'],
+ ['IBM Bob','#33b1ff',193,0,0,97,'TRUSTED'],
+ ['Devin','#3ddbd9',157,1,1,84,'WATCH'],
+ ['Cursor','#a56eff',121,1,1,79,'WATCH'],
+ ['Grok agent','#bfc6d4',64,2,2,52,'RESTRICTED'],
+];
+TRUST.forEach(([n, c, ch, inc, rb, sc, st], i) => {
+  const r = document.createElement('div'); r.className = 'trow'; r.dataset.in = (3.8 + i * .3).toFixed(2); r.dataset.fx = 'left';
+  const col = st === 'TRUSTED' ? '#42be65' : st === 'WATCH' ? '#f1c21b' : '#fa4d56';
+  r.innerHTML = `<div class="n"><span class="dot" style="background:${c}"></span>${n}</div><div class="m">${ch}</div><div class="m">${inc}</div><div class="m">${rb}</div><div class="bar"><i data-w="${sc}" data-bin="${(4.2 + i * .3).toFixed(2)}" style="width:0;background:${col}"></i></div><div class="status" style="color:${col};background:${col}22">${st}</div>`;
+  $('#trows').appendChild(r);
+});
+
+ROWH = $('#feedrows .frow').getBoundingClientRect().height || 70;
+/* ---------- Animation engine ---------- */
+const scenes = $$('.scene').map(el => ({ el, s: +el.dataset.start, e: +el.dataset.end,
+  items: $$('[data-in]', el), counts: $$('[data-count]', el), types: $$('[data-type]', el) }));
+scenes.forEach(sc => sc.types.forEach(el => el.dataset.full = el.dataset.type));
+
+function applyIn(el, lt) {
+  const tin = +el.dataset.in, d = +(el.dataset.dur || .6), fx = el.dataset.fx || 'up';
+  const p = clamp((lt - tin) / d); const e = easeOut(p);
+  el.style.opacity = e;
+  if (fx === 'up') el.style.transform = `translateY(${(1 - e) * 34}px)`;
+  else if (fx === 'left') el.style.transform = `translateX(${(1 - e) * -40}px)`;
+  else if (fx === 'scale') el.style.transform = `scale(${lerp(1.18, 1, e)})`;
+  else el.style.transform = '';
+}
+function applyCount(el, lt) {
+  const to = +el.dataset.count, p = easeOut(clamp((lt - +el.dataset.cin) / +el.dataset.cdur));
+  const dec = +(el.dataset.dec || 0); const v = to * p;
+  el.textContent = (el.dataset.pre || '') + (dec ? v.toFixed(dec) : Math.round(v).toLocaleString('en-US')) + (el.dataset.suf || '');
+}
+function applyType(el, lt) {
+  const full = el.dataset.full, tin = +el.dataset.in, d = +(el.dataset.dur || 1);
+  const n = Math.floor(clamp((lt - tin) / d) * full.length);
+  const blink = Math.floor(lt * 2.2) % 2 === 0;
+  el.innerHTML = lt < tin - .4 ? '' : full.slice(0, n) + (n < full.length || blink ? '<span class="caret"></span>' : '');
+}
+
+const custom = {
+  s0(lt) {},
+  s1(lt) {
+    AGENTS.forEach((a, i) => {
+      const o = orbitEls[i]; const tin = 1.2 + i * .28; const p = easeOut(clamp((lt - tin) / .8));
+      const ang = (i / AGENTS.length) * Math.PI * 2 + lt * .06 - Math.PI / 2;
+      const rx = lerp(700, i % 2 ? 380 : 330, p), ry = lerp(620, i % 2 ? 360 : 300, p);
+      const x = 500 + Math.cos(ang) * rx, y = 430 + Math.sin(ang) * ry;
+      o.d.style.left = x + 'px'; o.d.style.top = y + 'px'; o.d.style.opacity = p;
+      o.line.setAttribute('x1', x); o.line.setAttribute('y1', y); o.line.setAttribute('x2', 500); o.line.setAttribute('y2', 430);
+      o.line.setAttribute('stroke-opacity', .3 * p);
+      const ph = ((lt * (0.7 + (i % 4) * .15) + i * .31) % 1);
+      o.pk.setAttribute('cx', lerp(x, 500, ph)); o.pk.setAttribute('cy', lerp(y, 430, ph)); o.pk.setAttribute('opacity', p * (lt > 2 ? 1 : 0));
+    });
+  },
+  s2(lt) {
+    const q = $('#q2'); const g = lt < .6 ? (Math.sin(lt * 90) > 0 ? 1 : -1) * (1 - lt / .6) * 14 : 0;
+    q.style.textShadow = g ? `${g}px 0 rgba(250,77,86,.8), ${-g}px 0 rgba(51,177,255,.8)` : 'none';
+    if (lt > 3.4) q.style.transform = `scale(${lerp(1, .82, easeInOut(clamp((lt - 3.4) / 1.2)))})`;
+  },
+  s3(lt) { $('#sweep3').style.left = lerp(-400, 1600, clamp((lt - .8) / 1.6)) + 'px'; },
+  s4(lt) {
+    linkEls.forEach(l => {
+      const a = ((lt * l.sp + l.off) % 1), b = ((lt * l.sp * .8 + l.off + .5) % 1);
+      l.p1.setAttribute('cx', lerp(l.x1, l.x2, a)); l.p1.setAttribute('cy', lerp(l.y1, l.y2, a));
+      l.p2.setAttribute('cx', lerp(l.x2, l.x1, b)); l.p2.setAttribute('cy', lerp(l.y2, l.y1, b));
+    });
+    for (const k in nodeEls) { nodeEls[k].ring.setAttribute('opacity', 0); }
+    FEED.forEach((f, i) => {
+      const dt = lt - (FEED_T0 + i * FEED_STEP);
+      if (dt > 0 && dt < 1.6) f[6].forEach(k => { const r = nodeEls[k].ring; r.setAttribute('opacity', 1 - dt / 1.6); r.setAttribute('r', 14 + dt * 30); r.setAttribute('stroke', f[2]); });
+    });
+    // feed scroll: keep last rows visible
+    const shown = FEED.filter((f, i) => lt > FEED_T0 + i * FEED_STEP).length;
+    const off = Math.max(0, shown - 5) ; const prev = Math.max(0, shown - 6);
+    const k = clamp((lt - (FEED_T0 + (shown - 1) * FEED_STEP)) / .5);
+    $('#feedrows').style.transform = `translateY(${-lerp(prev, off, easeOut(k)) * ROWH}px)`;
+  },
+  s5(lt) {
+    clipRect5.setAttribute('width', lerp(0, hx(NOW) + 4, easeInOut(clamp((lt - 1.5) / 4.5))));
+    evG.setAttribute('opacity', clamp((lt - 4) / .5));
+    nowG.setAttribute('opacity', clamp((lt - 6) / .4));
+    thr.setAttribute('opacity', clamp((lt - 6.5) / .5)); thrT.setAttribute('opacity', clamp((lt - 6.5) / .5));
+    const fp = clamp((lt - 7) / 3.4); fcPath.setAttribute('opacity', fp > 0 ? 1 : 0);
+    clipRectF.setAttribute('x', hx(NOW) - 4); clipRectF.setAttribute('width', (hx(9.3) - hx(NOW) + 8) * easeInOut(fp));
+    const vis = clamp((lt - 10.4) / .4); brG.setAttribute('opacity', vis);
+    brRing.setAttribute('r', 12 + ((lt * 1.2) % 1) * 22); brRing.setAttribute('opacity', vis * (1 - ((lt * 1.2) % 1)));
+  },
+  s6(lt) {
+    const p = ((lt - 3) * .9) % 1; a6p.setAttribute('cx', lerp(10, 230, p < 0 ? 0 : p)); a6p.setAttribute('opacity', lt > 3 && lt < 10.8 ? 1 : 0);
+    const v = $('#verdict6'); const sh = lt > 11 && lt < 11.7 ? Math.sin(lt * 120) * 10 * (1 - (lt - 11) / .7) : 0;
+    if (lt > 11.25) v.style.transform = `translateX(${sh}px)`;
+  },
+  s7(lt) {
+    // map local time to chart seconds
+    const sNow = clamp((lt - 1.6) / 0.0995, 0, 180);
+    let d = ''; for (let s = 0; s <= Math.floor(sNow); s++) d += (s ? 'L' : 'M') + sx(s).toFixed(1) + ',' + sy(lat[s]).toFixed(1);
+    latPath.setAttribute('d', d || 'M0,0');
+    const sf = Math.floor(sNow); latHead.setAttribute('cx', sx(sf)); latHead.setAttribute('cy', sy(lat[sf]));
+    const inc = sNow >= 34 && sNow < 88;
+    latPath.setAttribute('stroke', inc ? '#fa4d56' : '#33b1ff');
+    m7a.setAttribute('opacity', clamp((sNow - 33) / 3)); m7b.setAttribute('opacity', clamp((sNow - 41) / 3)); m7c.setAttribute('opacity', clamp((sNow - 80) / 3));
+    // clocks: detection at chart s 41 (8 s after change), MTTR counts in real chart seconds from 33
+    const mttd = $('#mttd'), mttr = $('#mttr'), mttrs = $('#mttrs');
+    if (sNow < 41) { mttd.textContent = '--:--'; mttd.style.color = ''; }
+    else { mttd.textContent = '00:08'; mttd.style.color = '#fa4d56'; }
+    if (sNow < 33) { mttr.textContent = '--:--'; mttrs.textContent = 'waiting for incident'; mttr.style.color = ''; }
+    else { const el = Math.min(sNow, 80) - 33; mttr.textContent = '00:' + fmt2(el); mttr.style.color = sNow >= 80 ? '#42be65' : '#fff'; mttrs.textContent = sNow >= 80 ? 'resolved · no human paged at 3 AM' : 'auto-remediation running…'; }
+    chLines.forEach((l, i) => l.setAttribute('stroke-dashoffset', 1 - easeOut(clamp((lt - (8 + i * 2)) / .6))));
+  },
+  s8(lt) { $$('#trows .bar i').forEach(b => { b.style.width = (+b.dataset.w * easeOut(clamp((lt - +b.dataset.bin) / 1))) + '%'; }); },
+  s9(lt) {
+    $('#close1').style.opacity = 1 - clamp((lt - 5.6) / .6);
+    $('#close1').style.transform = `scale(${lerp(1, 1.06, clamp(lt / 6))})`;
+  },
+};
+
+/* Background canvas: perspective grid + drifting particles, tinted per scene. */
+const bg = $('#bgc'), ctx = bg.getContext('2d');
+const PR = rand(3); const parts = Array.from({ length: 140 }, () => ({ x: PR() * 1920, y: PR() * 1080, z: .3 + PR() * .7, s: PR() }));
+function tintAt(t) {
+  // [time, r, g, b]
+  const K = [[0, 30, 60, 140], [9, 40, 90, 200], [24, 160, 30, 50], [32, 40, 100, 230], [86, 40, 100, 230], [96.8, 40, 100, 230], [97, 170, 30, 45], [100.5, 50, 90, 200], [112.5, 40, 100, 230], [113, 180, 30, 45], [125, 120, 40, 60], [127, 30, 140, 90], [134, 30, 140, 90], [152, 40, 100, 230]];
+  let i = 0; while (i < K.length - 1 && K[i + 1][0] <= t) i++;
+  const a = K[Math.max(0, i - 1)], b = K[i], q = clamp((t - b[0]) / .6);
+  return [1, 2, 3].map(k => lerp(a[k], b[k], q));
+}
+function drawBg(t) {
+  const [r, g, b] = tintAt(t);
+  ctx.fillStyle = '#04060d'; ctx.fillRect(0, 0, 1920, 1080);
+  const gr = ctx.createRadialGradient(960, 380, 50, 960, 380, 1100);
+  gr.addColorStop(0, `rgba(${r|0},${g|0},${b|0},.34)`); gr.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = gr; ctx.fillRect(0, 0, 1920, 1080);
+  // perspective floor grid
+  ctx.save(); ctx.strokeStyle = `rgba(${r|0},${g|0},${b|0},.22)`; ctx.lineWidth = 1;
+  const hz = 700, sp = (t * 40) % 60;
+  for (let i = 0; i < 22; i++) { const z = (i * 60 + sp); const y = hz + Math.pow(z / 1300, 1.8) * 520; if (y > 1080) break; ctx.globalAlpha = clamp((y - hz) / 300); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1920, y); ctx.stroke(); }
+  ctx.globalAlpha = .55;
+  for (let i = -16; i <= 16; i++) { ctx.beginPath(); ctx.moveTo(960 + i * 30, hz); ctx.lineTo(960 + i * 260, 1080); ctx.stroke(); }
+  ctx.restore();
+  // particles
+  for (const p of parts) {
+    const x = (p.x + t * 18 * p.z) % 1920, y = (p.y - t * 6 * p.z + 1080) % 1080;
+    const tw = .4 + .6 * Math.abs(Math.sin(t * (1 + p.s * 2) + p.s * 10));
+    ctx.fillStyle = `rgba(${150 + r * .4 | 0},${190 + g * .2 | 0},255,${.35 * p.z * tw})`;
+    ctx.beginPath(); ctx.arc(x, y, 1.2 + p.z * 1.6, 0, 7); ctx.fill();
+  }
+}
+
+function render(t) {
+  // impacts → flash + shake + zoom punch
+  let flash = 0, shake = 0, punch = 0;
+  for (const [it, w] of IMPACTS) { const d = t - it; if (d >= 0 && d < 1.2) { flash = Math.max(flash, w * .55 * Math.exp(-d * 7)); shake = Math.max(shake, w * 12 * Math.exp(-d * 8)); punch = Math.max(punch, w * .035 * Math.exp(-d * 5)); } }
+  $('#flash').style.opacity = flash;
+  const sxv = shake * Math.sin(t * 97), syv = shake * Math.cos(t * 83);
+  drawBg(t);
+  let active = null;
+  for (const sc of scenes) {
+    const lt = t - sc.s, dur = sc.e - sc.s;
+    const vis = lt > -0.05 && lt < dur;
+    sc.el.classList.toggle('on', vis);
+    if (!vis) continue;
+    active = sc;
+    const op = clamp(lt / .35) * clamp((dur - lt) / .45);
+    sc.el.style.opacity = op;
+    sc.items.forEach(el => applyIn(el, lt));
+    sc.counts.forEach(el => applyCount(el, lt));
+    sc.types.forEach(el => applyType(el, lt));
+    custom[sc.el.id] && custom[sc.el.id](lt, dur);
+    const zoom = 1 + .035 * (lt / dur) + punch;
+    $('#camera').style.transform = `translate(${sxv}px,${syv}px) scale(${zoom})`;
+  }
+  // HUD
+  const showHud = t > 40 && t < 152;
+  $('#hud .tl').style.opacity = $('#hud .tr').style.opacity = t > 152.5 ? 0 : 1;
+  $('#hud').style.opacity = t < 9 ? 0 : 1;
+  $('#steps').style.opacity = showHud ? 1 : 0;
+  const stepIdx = t < 64 ? 0 : t < 86 ? 1 : t < 108 ? 2 : t < 134 ? 3 : 4;
+  $$('#steps span').forEach((s, i) => { s.className = i === stepIdx ? 'act' : i < stepIdx ? 'done' : ''; });
+  const clock = 2 * 3600 + 47 * 60 + t * 7;
+  $('#tc').textContent = `${fmt2(clock / 3600)}:${fmt2((clock % 3600) / 60)}:${fmt2(clock % 60)}  UTC+1`;
+  $('#fadeblack').style.opacity = t < 0.5 ? 1 - t / .5 : clamp((t - 164) / 1.6);
+}
+
+/* ---------- Scale stage to window ---------- */
+function fit() {
+  const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+  $('#stage').style.transform = `scale(${s}) translate(-50%, -50%)`;
+  $('#stage').style.transformOrigin = '0 0';
+  $('#stage').style.left = '50%'; $('#stage').style.top = '50%';
+  $('#stage').style.transform = `translate(-50%, -50%) scale(${s})`;
+  $('#stage').style.transformOrigin = '50% 50%';
+}
+addEventListener('resize', fit); fit();
+
+/* ---------- Modes ---------- */
+const params = new URLSearchParams(location.search);
+window.__seek = t => render(t);
+window.__duration = DURATION;
+if (params.has('render')) {
+  document.body.classList.add('render');
+  $('#stage').style.transform = 'none'; $('#stage').style.left = '0'; $('#stage').style.top = '0';
+  removeEventListener('resize', fit);
+  render(+params.get('t') || 0);
+  return;
+}
+const audio = $('#audio'); let playing = false, t0 = 0, clockStart = 0, cur = +params.get('t') || 0, audioOK = true;
+audio.addEventListener('error', () => { audioOK = false; });
+const now = () => playing ? (audioOK && !audio.paused ? audio.currentTime : (performance.now() - clockStart) / 1000 + t0) : cur;
+function play() {
+  playing = true; t0 = cur; clockStart = performance.now(); $('#pp').textContent = 'Pause'; $('#bigplay').style.display = 'none';
+  if (audioOK) { try { audio.currentTime = cur; const pr = audio.play(); pr && pr.catch(() => { audioOK = false; }); } catch (e) { audioOK = false; } }
+}
+function pause() { cur = now(); playing = false; audio.pause(); $('#pp').textContent = 'Play'; }
+function seek(t) { cur = clamp(t, 0, DURATION); if (playing) { t0 = cur; clockStart = performance.now(); if (audioOK) audio.currentTime = cur; } render(cur); }
+$('#pp').onclick = () => playing ? pause() : play();
+$('#bigplay').onclick = play;
+$('#scrub').oninput = e => seek(+e.target.value);
+$$('#player .chap button').forEach(b => b.onclick = () => { seek(+b.dataset.t); if (!playing) play(); });
+addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); playing ? pause() : play(); } if (e.code === 'ArrowRight') seek(now() + 5); if (e.code === 'ArrowLeft') seek(now() - 5); });
+let idleT; addEventListener('mousemove', () => { document.body.classList.remove('idle'); clearTimeout(idleT); idleT = setTimeout(() => playing && document.body.classList.add('idle'), 2200); });
+function loop() {
+  const t = now();
+  if (playing && t >= DURATION) { pause(); cur = DURATION; }
+  render(Math.min(t, DURATION));
+  $('#scrub').value = t; $('#tcur').textContent = `${Math.floor(t / 60)}:${fmt2(t % 60)}`;
+  requestAnimationFrame(loop);
+}
+render(cur); loop();
+})();
+</script>
+</body>
+</html>
