@@ -1,0 +1,162 @@
+[
+ {
+  "start": 0.7,
+  "end": 4.7,
+  "text": "Ten fourteen, Tuesday morning. Branch services are slowing down."
+ },
+ {
+  "start": 5.2,
+  "end": 7.11,
+  "text": "And nobody has opened a ticket yet."
+ },
+ {
+  "start": 9.6,
+  "end": 13.11,
+  "text": "Part two: from the first symptom to a closed ticket, end to end."
+ },
+ {
+  "start": 14.4,
+  "end": 18.56,
+  "text": "Detect, enrich, ticket, notify. Levels one and two are automated."
+ },
+ {
+  "start": 19.4,
+  "end": 21.41,
+  "text": "Level three keeps a human in the loop."
+ },
+ {
+  "start": 24.6,
+  "end": 26.09,
+  "text": "So who owns this incident?"
+ },
+ {
+  "start": 27.6,
+  "end": 31.44,
+  "text": "Machines handle levels one and two. People decide at level three."
+ },
+ {
+  "start": 33.0,
+  "end": 36.03,
+  "text": "IBM SevOne. From incident, to resolution."
+ },
+ {
+  "start": 41.0,
+  "end": 42.82,
+  "text": "Step one: detect and enrich."
+ },
+ {
+  "start": 43.2,
+  "end": 48.6,
+  "text": "A failing optic triggers twenty-three alerts. SevOne correlates them into one incident."
+ },
+ {
+  "start": 49.6,
+  "end": 54.58,
+  "text": "ITAM and the CMDB add the asset, the owner group, and the business service."
+ },
+ {
+  "start": 55.4,
+  "end": 60.2,
+  "text": "Card payments. Tier one. Under support contract, with the last change on record."
+ },
+ {
+  "start": 65.0,
+  "end": 66.24,
+  "text": "Step two: the ticket."
+ },
+ {
+  "start": 67.0,
+  "end": 70.45,
+  "text": "SevOne opens a ServiceNow incident in six seconds."
+ },
+ {
+  "start": 71.0,
+  "end": 76.34,
+  "text": "Configuration item, priority, assignment group, and evidence, filled in automatically."
+ },
+ {
+  "start": 77.4,
+  "end": 81.12,
+  "text": "One ticket, not twenty-three, and it stays in sync both ways."
+ },
+ {
+  "start": 87.0,
+  "end": 88.75,
+  "text": "Step three: notify and route."
+ },
+ {
+  "start": 89.0,
+  "end": 94.26,
+  "text": "NetOps South is paged in Teams. DevSecOps gets the agent change in Slack."
+ },
+ {
+  "start": 95.4,
+  "end": 97.73,
+  "text": "The service owner is told what to expect."
+ },
+ {
+  "start": 98.6,
+  "end": 101.92,
+  "text": "The policy is clear: levels one and two run automatically."
+ },
+ {
+  "start": 102.6,
+  "end": 104.27,
+  "text": "Level three needs a human."
+ },
+ {
+  "start": 108.8,
+  "end": 110.49,
+  "text": "Step four: levels one and two."
+ },
+ {
+  "start": 110.8,
+  "end": 114.49,
+  "text": "Level one triages, and fails traffic over to the backup path."
+ },
+ {
+  "start": 115.2,
+  "end": 119.65,
+  "text": "Service is restored in forty-seven seconds. Nobody was paged to fix it."
+ },
+ {
+  "start": 120.6,
+  "end": 126.41,
+  "text": "Level two finds the failing optic, opens the vendor case, and reserves a spare from ITAM."
+ },
+ {
+  "start": 127.4,
+  "end": 131.29,
+  "text": "The hardware swap is a risky change. It escalates to level three."
+ },
+ {
+  "start": 135.0,
+  "end": 136.75,
+  "text": "Step five: the human in the loop."
+ },
+ {
+  "start": 137.0,
+  "end": 140.85,
+  "text": "A level three engineer reviews the evidence, and approves the change."
+ },
+ {
+  "start": 142.0,
+  "end": 148.33,
+  "text": "After the swap, SevOne verifies zero loss, and the incident closes itself, with ITAM updated."
+ },
+ {
+  "start": 152.5,
+  "end": 154.41,
+  "text": "Machines handle levels one and two."
+ },
+ {
+  "start": 155.2,
+  "end": 156.88,
+  "text": "People decide at level three."
+ },
+ {
+  "start": 159.4,
+  "end": 162.43,
+  "text": "IBM SevOne. From incident, to resolution."
+ }
+]

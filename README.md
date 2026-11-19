@@ -41,6 +41,11 @@ built around use cases from a public-sector bank NMS RFP: L2/L3 topology, primar
 links, flap damping, dormant ports, approval gating with dry run, and config rollback. See
 [`sevone-film-bank/README.md`](sevone-film-bank/README.md).
 
+`sevone-film-part2/` is **Part 2: incident to resolution**. SevOne detects and correlates an
+incident, ITAM and the CMDB enrich it, a ServiceNow incident opens, and NetOps and DevSecOps are
+notified. L1 and L2 are automated, and L3 keeps a human in the loop. See
+[`sevone-film-part2/README.md`](sevone-film-part2/README.md).
+
 ## Run it
 
 Needs Python 3.9+. No dependencies.

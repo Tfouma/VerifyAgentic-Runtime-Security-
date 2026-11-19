@@ -1,0 +1,97 @@
+WEBVTT
+
+00:00:00.700 --> 00:00:05.000
+Ten fourteen, Tuesday morning. Branch services are slowing down.
+
+00:00:05.200 --> 00:00:07.410
+And nobody has opened a ticket yet.
+
+00:00:09.600 --> 00:00:13.410
+Part two: from the first symptom to a closed ticket, end to end.
+
+00:00:14.400 --> 00:00:18.860
+Detect, enrich, ticket, notify. Levels one and two are automated.
+
+00:00:19.400 --> 00:00:21.710
+Level three keeps a human in the loop.
+
+00:00:24.600 --> 00:00:26.390
+So who owns this incident?
+
+00:00:27.600 --> 00:00:31.740
+Machines handle levels one and two. People decide at level three.
+
+00:00:33.000 --> 00:00:36.330
+IBM SevOne. From incident, to resolution.
+
+00:00:41.000 --> 00:00:43.120
+Step one: detect and enrich.
+
+00:00:43.200 --> 00:00:48.900
+A failing optic triggers twenty-three alerts. SevOne correlates them into one incident.
+
+00:00:49.600 --> 00:00:54.880
+ITAM and the CMDB add the asset, the owner group, and the business service.
+
+00:00:55.400 --> 00:01:00.500
+Card payments. Tier one. Under support contract, with the last change on record.
+
+00:01:05.000 --> 00:01:06.540
+Step two: the ticket.
+
+00:01:07.000 --> 00:01:10.750
+SevOne opens a ServiceNow incident in six seconds.
+
+00:01:11.000 --> 00:01:16.640
+Configuration item, priority, assignment group, and evidence, filled in automatically.
+
+00:01:17.400 --> 00:01:21.420
+One ticket, not twenty-three, and it stays in sync both ways.
+
+00:01:27.000 --> 00:01:29.050
+Step three: notify and route.
+
+00:01:29.000 --> 00:01:34.560
+NetOps South is paged in Teams. DevSecOps gets the agent change in Slack.
+
+00:01:35.400 --> 00:01:38.030
+The service owner is told what to expect.
+
+00:01:38.600 --> 00:01:42.220
+The policy is clear: levels one and two run automatically.
+
+00:01:42.600 --> 00:01:44.570
+Level three needs a human.
+
+00:01:48.800 --> 00:01:50.790
+Step four: levels one and two.
+
+00:01:50.800 --> 00:01:54.790
+Level one triages, and fails traffic over to the backup path.
+
+00:01:55.200 --> 00:01:59.950
+Service is restored in forty-seven seconds. Nobody was paged to fix it.
+
+00:02:00.600 --> 00:02:06.710
+Level two finds the failing optic, opens the vendor case, and reserves a spare from ITAM.
+
+00:02:07.400 --> 00:02:11.590
+The hardware swap is a risky change. It escalates to level three.
+
+00:02:15.000 --> 00:02:17.050
+Step five: the human in the loop.
+
+00:02:17.000 --> 00:02:21.150
+A level three engineer reviews the evidence, and approves the change.
+
+00:02:22.000 --> 00:02:28.630
+After the swap, SevOne verifies zero loss, and the incident closes itself, with ITAM updated.
+
+00:02:32.500 --> 00:02:34.710
+Machines handle levels one and two.
+
+00:02:35.200 --> 00:02:37.180
+People decide at level three.
+
+00:02:39.400 --> 00:02:42.730
+IBM SevOne. From incident, to resolution.

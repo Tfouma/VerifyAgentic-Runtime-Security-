@@ -1,0 +1,837 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SevOne Incident Part 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* The film is dark by design (cinematic). Tokens are defined for both themes so the
+   chrome around the stage follows the viewer's preference. */
+:root {
+  --page: #000; --chrome-ink: #c6cede;
+  --bg: #04060d; --panel: rgba(14, 20, 36, .78); --panel-2: rgba(20, 28, 48, .9);
+  --line: rgba(120, 145, 200, .18); --line-2: rgba(120, 145, 200, .32);
+  --ink: #eef2fa; --dim: #98a3bd; --faint: #5d6984;
+  --blue: #4589ff; --cyan: #33b1ff; --purple: #a56eff; --teal: #3ddbd9;
+  --red: #fa4d56; --green: #42be65; --yellow: #f1c21b; --orange: #ff832b;
+  --sans: "IBM Plex Sans", Inter, system-ui, sans-serif;
+  --mono: "IBM Plex Mono", "DejaVu Sans Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --page: #e9ecf2; --chrome-ink: #1d2433; } }
+:root[data-theme="light"] { --page: #e9ecf2; --chrome-ink: #1d2433; }
+:root[data-theme="dark"] { --page: #000; --chrome-ink: #c6cede; }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--page); overflow: hidden; }
+body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+
+#viewport { position: fixed; inset: 0; display: grid; place-items: center; }
+#stage {
+  position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px;
+  transform-origin: 0 0; background: var(--bg); overflow: hidden;
+}
+#bgc { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+#camera { position: absolute; inset: 0; transform-origin: 50% 50%; }
+.scene { position: absolute; inset: 0; opacity: 0; visibility: hidden; }
+.scene.on { visibility: visible; }
+
+#flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; mix-blend-mode: screen; }
+#vignette { position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(1300px 820px at 50% 50%, transparent 62%, rgba(0,0,0,.6) 100%); }
+#scan { position: absolute; inset: 0; pointer-events: none; opacity: .06;
+  background: repeating-linear-gradient(0deg, #fff 0 1px, transparent 1px 3px); }
+#fadeblack { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; }
+
+/* HUD */
+#hud { position: absolute; inset: 0; pointer-events: none; font-family: var(--mono); font-size: 15px; color: var(--dim); }
+#hud .tl { position: absolute; left: 56px; top: 40px; display: flex; gap: 14px; align-items: center; letter-spacing: .18em; }
+#hud .rec { width: 10px; height: 10px; border-radius: 50%; background: var(--red); box-shadow: 0 0 12px var(--red); }
+#hud .tr { position: absolute; right: 56px; top: 40px; letter-spacing: .12em; }
+#steps { position: absolute; left: 50%; bottom: 40px; transform: translateX(-50%); display: flex; gap: 10px; }
+#steps span { font-size: 13px; letter-spacing: .2em; padding: 7px 14px; border: 1px solid var(--line); border-radius: 999px; color: var(--faint); background: rgba(8,12,22,.6); }
+#steps span.act { color: #fff; border-color: var(--blue); background: rgba(69,137,255,.22); box-shadow: 0 0 24px rgba(69,137,255,.35); }
+#steps span.done { color: var(--dim); border-color: var(--line-2); }
+
+/* Typography */
+.mono { font-family: var(--mono); }
+.eyebrow { font-family: var(--mono); font-size: 18px; letter-spacing: .32em; text-transform: uppercase; color: var(--cyan); }
+.huge { font-size: 116px; font-weight: 600; letter-spacing: -0.035em; line-height: 1.02; }
+.big { font-size: 74px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.06; }
+.h2 { font-size: 50px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.12; }
+.lead { font-size: 30px; color: var(--dim); font-weight: 300; line-height: 1.4; }
+.center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.red { color: var(--red); } .green { color: var(--green); } .blue { color: var(--blue); } .cyan { color: var(--cyan); } .yellow { color: var(--yellow); }
+.grad { background: linear-gradient(90deg, #78a9ff, #33b1ff 40%, #3ddbd9 70%, #a56eff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; backdrop-filter: blur(6px); }
+.panel h4 { margin: 0; font-family: var(--mono); font-weight: 500; font-size: 15px; letter-spacing: .2em; text-transform: uppercase; color: var(--dim); }
+
+.stephead { position: absolute; left: 96px; top: 104px; right: 96px; }
+.stephead .num { font-family: var(--mono); font-size: 20px; letter-spacing: .3em; color: var(--cyan); }
+.stephead .uc { font-size: 15px; letter-spacing: .16em; text-transform: uppercase; color: #dfe6f5; margin-left: 22px; padding: 6px 14px; border-radius: 999px; border: 1px solid rgba(51,177,255,.45); background: rgba(51,177,255,.12); vertical-align: 3px; }
+.stephead .t { font-size: 50px; font-weight: 600; letter-spacing: -0.02em; margin-top: 10px; max-width: 1500px; }
+.caption { position: absolute; left: 0; right: 0; bottom: 104px; text-align: center; font-size: 27px; color: #dfe6f5; font-weight: 400; }
+.caption b { color: #fff; font-weight: 600; }
+
+.chip { display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px; border-radius: 999px; border: 1px solid var(--line-2); background: rgba(16,24,44,.85); font-size: 20px; color: #dbe3f3; white-space: nowrap; }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+
+/* S0 */
+#s0 .clock { font-family: var(--mono); font-size: 28px; letter-spacing: .4em; color: var(--dim); }
+#s0 .l1 { font-size: 64px; font-weight: 300; margin-top: 40px; min-height: 80px; }
+#s0 .l2 { font-size: 76px; font-weight: 600; letter-spacing: -0.02em; margin-top: 18px; }
+#s0 .logs { position: absolute; inset: 0; font-family: var(--mono); font-size: 17px; color: rgba(120,160,230,.16); line-height: 1.75; padding: 40px 70px; white-space: pre; overflow: hidden; }
+.caret { display: inline-block; width: .5em; height: 1em; background: var(--cyan); vertical-align: -0.12em; margin-left: 4px; }
+
+/* S1 */
+#s1 .left { position: absolute; left: 96px; top: 230px; width: 640px; }
+#s1 .tasks { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 40px; }
+#s1 .tasks .chip { font-size: 19px; padding: 8px 16px; }
+#orbit { position: absolute; left: 820px; top: 110px; width: 1000px; height: 860px; }
+#orbit .core { position: absolute; left: 500px; top: 430px; width: 250px; height: 250px; margin: -125px; border-radius: 50%;
+  display: grid; place-items: center; text-align: center; font-family: var(--mono); font-size: 17px; letter-spacing: .2em; color: #fff;
+  background: radial-gradient(circle, rgba(69,137,255,.35), rgba(69,137,255,.05) 70%); border: 1px solid rgba(69,137,255,.5); }
+#orbit .agent { position: absolute; transform: translate(-50%, -50%); }
+#orbit .agent .chip { font-size: 18px; box-shadow: 0 8px 30px rgba(0,0,0,.4); }
+#orbit svg { position: absolute; inset: 0; }
+#s1 .counter { position: absolute; left: 96px; bottom: 150px; display: flex; gap: 70px; }
+.stat .v { font-family: var(--mono); font-size: 64px; font-weight: 500; letter-spacing: -0.02em; }
+.stat .k { font-family: var(--mono); font-size: 15px; letter-spacing: .2em; text-transform: uppercase; color: var(--dim); margin-top: 6px; }
+
+/* S2 / S3 */
+#s2 .q { font-size: 128px; font-weight: 600; letter-spacing: -0.04em; }
+#s3 .brand { font-size: 176px; font-weight: 600; letter-spacing: -0.05em; line-height: 1; }
+#s3 .brand .ibm { font-weight: 300; color: #c9d3e8; margin-right: .18em; }
+#s3 .pills { display: flex; gap: 18px; margin-top: 64px; }
+#s3 .pills .chip { font-family: var(--mono); font-size: 22px; letter-spacing: .14em; text-transform: uppercase; padding: 14px 26px; }
+.sweep { position: absolute; top: 0; bottom: 0; width: 280px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent); transform: skewX(-18deg); mix-blend-mode: overlay; }
+
+/* S4 observe */
+#s4 .kpis { position: absolute; left: 96px; right: 96px; top: 250px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }
+.kpi { padding: 20px 24px; }
+.kpi .v { font-family: var(--mono); font-size: 42px; font-weight: 500; color: #fff; }
+.kpi .k { font-family: var(--mono); font-size: 13px; letter-spacing: .18em; text-transform: uppercase; color: var(--dim); margin-top: 4px; }
+#topo { position: absolute; left: 96px; top: 400px; width: 1020px; height: 470px; padding: 18px 22px; }
+#topo svg { position: absolute; left: 0; top: 0; }
+#feed { position: absolute; left: 1140px; top: 400px; width: 684px; height: 470px; padding: 18px 22px; overflow: hidden; }
+.frow { display: grid; grid-template-columns: 92px 1fr; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 17px; }
+.frow .tm { font-family: var(--mono); color: var(--faint); font-size: 15px; padding-top: 2px; }
+.frow .who { font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.frow .what { color: var(--dim); font-size: 15.5px; margin-top: 3px; font-family: var(--mono); }
+.tag { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; padding: 3px 8px; border-radius: 6px; margin-left: auto; }
+.tag.ok { color: var(--green); background: rgba(66,190,101,.13); }
+.tag.watch { color: var(--yellow); background: rgba(241,194,27,.13); }
+.tag.risk { color: var(--red); background: rgba(250,77,86,.15); }
+#s4 .sources { position: absolute; left: 96px; right: 96px; top: 890px; display: flex; gap: 12px; justify-content: center; }
+#s4 .sources .chip { font-family: var(--mono); font-size: 16px; padding: 7px 14px; }
+
+/* S5 anticipate */
+#chart5 { position: absolute; left: 96px; top: 260px; width: 1160px; height: 600px; padding: 22px 26px; }
+#cards5 { position: absolute; left: 1290px; top: 260px; width: 534px; display: flex; flex-direction: column; gap: 16px; }
+.icard { padding: 20px 24px; }
+.icard .k { font-family: var(--mono); font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: var(--dim); }
+.icard .v { font-size: 26px; font-weight: 600; margin-top: 8px; line-height: 1.25; }
+.icard .s { font-size: 18px; color: var(--dim); margin-top: 6px; line-height: 1.4; }
+.icard.alert { border-color: rgba(250,77,86,.55); background: rgba(60,14,22,.7); }
+.icard.reco { border-color: rgba(66,190,101,.45); }
+
+/* S6 prevent */
+#plan6 { position: absolute; left: 96px; top: 280px; width: 560px; padding: 28px 30px; }
+#plan6 .agentname { display: flex; gap: 12px; align-items: center; font-size: 24px; font-weight: 600; }
+#plan6 .cmd { font-family: var(--mono); font-size: 17px; color: #cfe0ff; background: rgba(0,0,0,.35); border-radius: 10px; padding: 16px 18px; margin-top: 18px; line-height: 1.65; }
+#plan6 .ttl { color: var(--dim); font-size: 19px; margin-top: 16px; }
+#arrow6 { position: absolute; left: 660px; top: 380px; width: 260px; height: 120px; }
+#checks6 { position: absolute; left: 930px; top: 280px; width: 894px; padding: 26px 30px; }
+.chk { display: grid; grid-template-columns: 44px 1fr; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--line); align-items: start; }
+.chk .ic { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 20px; }
+.chk .ic.ok { background: rgba(66,190,101,.18); color: var(--green); }
+.chk .ic.no { background: rgba(250,77,86,.2); color: var(--red); }
+.chk .a { font-size: 22px; font-weight: 600; }
+.chk .b { font-size: 17px; color: var(--dim); font-family: var(--mono); margin-top: 4px; }
+#verdict6 { position: absolute; left: 96px; top: 700px; width: 560px; padding: 24px 30px; border-color: rgba(250,77,86,.7); background: rgba(70,12,20,.82); box-shadow: 0 0 60px rgba(250,77,86,.25); }
+#verdict6 .v { font-size: 38px; font-weight: 700; color: var(--red); letter-spacing: .02em; }
+#verdict6 .s { font-size: 19px; color: #f2c7cb; margin-top: 8px; font-family: var(--mono); }
+#replan6 { position: absolute; left: 930px; top: 790px; width: 894px; padding: 20px 30px; border-color: rgba(66,190,101,.6); background: rgba(10,44,26,.78); }
+#replan6 .v { font-size: 23px; font-weight: 600; color: #b9f0c9; }
+
+/* S7 react */
+#chart7 { position: absolute; left: 96px; top: 250px; width: 1260px; height: 430px; padding: 20px 24px; }
+#clocks7 { position: absolute; left: 1384px; top: 250px; width: 440px; display: flex; flex-direction: column; gap: 16px; }
+#clocks7 .panel { padding: 22px 26px; }
+#clocks7 .v { font-family: var(--mono); font-size: 62px; font-weight: 500; }
+#clocks7 .k { font-family: var(--mono); font-size: 14px; letter-spacing: .2em; color: var(--dim); text-transform: uppercase; }
+#clocks7 .s { font-size: 17px; color: var(--dim); margin-top: 4px; }
+#chain7 { position: absolute; left: 96px; right: 96px; top: 712px; height: 200px; }
+.ccard { position: absolute; top: 0; width: 386px; height: 160px; padding: 18px 22px; }
+.ccard .k { font-family: var(--mono); font-size: 13px; letter-spacing: .2em; text-transform: uppercase; }
+.ccard .v { font-size: 22px; font-weight: 600; margin-top: 10px; line-height: 1.28; }
+.ccard .s { font-size: 16px; color: var(--dim); margin-top: 8px; font-family: var(--mono); line-height: 1.45; }
+
+/* S8 control */
+#s8 .grid { position: absolute; left: 96px; right: 96px; top: 270px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+#s8 .grid .panel { padding: 26px 28px; }
+#s8 .grid .v { font-family: var(--mono); font-size: 64px; font-weight: 500; letter-spacing: -0.02em; }
+#s8 .grid .k { font-size: 20px; color: var(--dim); margin-top: 6px; line-height: 1.35; }
+#trust { position: absolute; left: 96px; right: 96px; top: 520px; padding: 20px 28px; }
+.trow { display: grid; grid-template-columns: 340px 200px 200px 200px 1fr 170px; gap: 16px; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 20px; }
+.trow.h { font-family: var(--mono); font-size: 13px; letter-spacing: .18em; text-transform: uppercase; color: var(--faint); }
+.trow .n { font-weight: 600; display: flex; align-items: center; gap: 10px; }
+.trow .m { font-family: var(--mono); color: #cdd6ea; }
+.bar { height: 10px; background: rgba(255,255,255,.07); border-radius: 6px; overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 6px; }
+.status { font-family: var(--mono); font-size: 14px; letter-spacing: .12em; padding: 5px 10px; border-radius: 6px; text-align: center; }
+.foot { position: absolute; right: 96px; bottom: 70px; font-family: var(--mono); font-size: 14px; color: var(--faint); letter-spacing: .08em; }
+
+/* S9 */
+#s9 .a { font-size: 82px; font-weight: 300; letter-spacing: -0.03em; }
+#s9 .b { font-size: 82px; font-weight: 600; letter-spacing: -0.03em; margin-top: 10px; }
+#s9 .end .brand { font-size: 150px; font-weight: 600; letter-spacing: -0.05em; }
+#s9 .end .brand .ibm { font-weight: 300; color: #c9d3e8; margin-right: .18em; }
+#s9 .end .tag2 { font-family: var(--mono); font-size: 26px; letter-spacing: .32em; text-transform: uppercase; color: var(--dim); margin-top: 34px; }
+#s9 .end .tag3 { font-size: 34px; margin-top: 26px; color: #dfe6f5; font-weight: 300; }
+#s9 .disc { position: absolute; left: 0; right: 0; bottom: 60px; text-align: center; font-family: var(--mono); font-size: 14px; color: var(--faint); letter-spacing: .06em; }
+
+
+/* ---------- Part 2 additions ---------- */
+#pipe { position: absolute; left: 96px; right: 96px; top: 470px; height: 260px; }
+#pipe svg { position: absolute; left: 0; top: 0; }
+.stage { position: absolute; top: 40px; width: 216px; height: 190px; padding: 18px 18px; box-sizing: border-box; }
+.stage .n { font-family: var(--mono); font-size: 14px; letter-spacing: .2em; color: var(--dim); }
+.stage .h { font-size: 26px; font-weight: 600; margin-top: 8px; }
+.stage .s { font-size: 16px; color: var(--dim); margin-top: 6px; line-height: 1.35; }
+.stage .tag { position: absolute; left: 18px; bottom: 16px; margin: 0; font-size: 12px; }
+.stage.auto { border-color: rgba(66,190,101,.55); }
+.stage.human { border-color: rgba(241,194,27,.7); background: rgba(60,48,10,.55); }
+#s1 .counter2 { position: absolute; left: 96px; bottom: 130px; display: flex; gap: 90px; }
+
+.alert-row { display: grid; grid-template-columns: 110px 1fr 90px; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--line); font-family: var(--mono); font-size: 15px; color: #d6deee; }
+.alert-row .sev { font-size: 12px; letter-spacing: .12em; padding: 2px 8px; border-radius: 6px; text-align: center; align-self: center; }
+.sev.crit { color: var(--red); background: rgba(250,77,86,.15); } .sev.maj { color: var(--yellow); background: rgba(241,194,27,.14); }
+#inc4 { position: absolute; left: 22px; right: 22px; top: 150px; padding: 24px 26px; border-color: rgba(250,77,86,.6); background: rgba(70,12,20,.85); }
+#inc4 .k { font-family: var(--mono); font-size: 14px; letter-spacing: .2em; color: #ff8389; }
+#inc4 .v { font-size: 34px; font-weight: 700; margin-top: 10px; }
+#inc4 .d { font-family: var(--mono); font-size: 17px; color: #f2c7cb; margin-top: 12px; line-height: 1.6; }
+#inc4 .big { font-family: var(--mono); font-size: 64px; font-weight: 500; color: #fff; margin-top: 16px; }
+.kv { display: grid; grid-template-columns: 250px 1fr; gap: 16px; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 19px; }
+.kv .k { font-family: var(--mono); font-size: 14px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); padding-top: 4px; }
+.kv .v { color: #eef2fa; }
+.kv .v b { color: var(--cyan); font-weight: 600; }
+
+#snow { position: absolute; left: 96px; top: 250px; width: 1110px; height: 640px; overflow: hidden; }
+#snow .bar { display: flex; align-items: center; gap: 18px; padding: 16px 26px; background: rgba(41,61,101,.85); border-bottom: 1px solid var(--line-2); }
+#snow .bar .t { font-weight: 600; font-size: 20px; } #snow .bar .num { font-family: var(--mono); font-size: 20px; color: var(--cyan); }
+#snow .bar .state { margin-left: auto; font-family: var(--mono); font-size: 14px; letter-spacing: .12em; padding: 5px 12px; border-radius: 6px; color: #b9f0c9; background: rgba(66,190,101,.16); }
+#snow .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0 36px; padding: 10px 26px; }
+#snow .f { padding: 12px 0; border-bottom: 1px solid var(--line); }
+#snow .f .k { font-family: var(--mono); font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+#snow .f .v { font-size: 19px; margin-top: 5px; }
+#snow .f .v .hl { color: var(--yellow); font-weight: 600; }
+#snow .notes { margin: 6px 26px 0; padding: 14px 18px; border-radius: 12px; background: rgba(0,0,0,.3); font-size: 17px; color: #cfe0ff; line-height: 1.5; }
+#snow .chips { display: flex; gap: 10px; margin: 12px 26px 0; }
+#snow .chips .chip { font-family: var(--mono); font-size: 14px; padding: 6px 12px; }
+#side5 { position: absolute; left: 1236px; top: 250px; width: 588px; display: flex; flex-direction: column; gap: 16px; }
+#side5 .panel { padding: 20px 24px; }
+#side5 .k { font-family: var(--mono); font-size: 14px; letter-spacing: .2em; color: var(--dim); text-transform: uppercase; }
+#side5 .v { font-family: var(--mono); font-size: 60px; font-weight: 500; color: var(--green); }
+#side5 ul { margin: 10px 0 0; padding-left: 22px; font-size: 19px; line-height: 1.55; color: #dfe6f5; }
+
+#rules6 { position: absolute; left: 96px; top: 250px; width: 860px; height: 410px; padding: 20px 24px; }
+.rule { display: grid; grid-template-columns: 1fr 220px 120px; gap: 14px; align-items: center; padding: 13px 0; border-bottom: 1px solid var(--line); font-size: 18px; }
+.rule .to { font-family: var(--mono); font-size: 15px; color: var(--cyan); }
+.rule .m { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-align: center; padding: 4px 8px; border-radius: 6px; color: var(--faint); border: 1px solid var(--line); }
+.rule.hit .m { color: #b9f0c9; background: rgba(66,190,101,.18); border-color: rgba(66,190,101,.5); }
+.rule.hit { background: linear-gradient(90deg, rgba(66,190,101,.08), transparent); }
+#msgs6 { position: absolute; left: 990px; top: 250px; width: 834px; height: 410px; padding: 20px 24px; }
+.msg { display: grid; grid-template-columns: 48px 1fr; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.msg .av { width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center; font-family: var(--mono); font-weight: 600; font-size: 15px; color: #0b1020; }
+.msg .ch { font-family: var(--mono); font-size: 14px; color: var(--dim); }
+.msg .tx { font-size: 18px; margin-top: 3px; color: #eef2fa; line-height: 1.4; }
+#tiers6 { position: absolute; left: 96px; right: 96px; top: 690px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.tier { padding: 20px 24px; }
+.tier .k { font-family: var(--mono); font-size: 15px; letter-spacing: .2em; text-transform: uppercase; }
+.tier .v { font-size: 24px; font-weight: 600; margin-top: 8px; }
+.tier .s { font-size: 17px; color: var(--dim); margin-top: 6px; }
+.tier.auto { border-color: rgba(66,190,101,.55); } .tier.auto .k { color: var(--green); }
+.tier.human { border-color: rgba(241,194,27,.75); background: rgba(60,48,10,.6); } .tier.human .k { color: var(--yellow); }
+
+#appr8 { position: absolute; left: 96px; top: 250px; width: 900px; padding: 0 0 22px; overflow: hidden; }
+#appr8 .bar { padding: 16px 26px; background: rgba(41,61,101,.85); border-bottom: 1px solid var(--line-2); font-weight: 600; font-size: 19px; display: flex; gap: 14px; align-items: center; }
+#appr8 .bar .mono { font-weight: 400; color: var(--dim); font-size: 14px; margin-left: auto; }
+#appr8 .ttl { font-size: 28px; font-weight: 600; padding: 18px 26px 6px; }
+#appr8 .f { display: grid; grid-template-columns: 170px 1fr; gap: 14px; padding: 9px 26px; font-size: 18px; }
+#appr8 .f .k { font-family: var(--mono); font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); padding-top: 4px; }
+#appr8 .btns { display: flex; gap: 16px; padding: 18px 26px 0; }
+#appr8 .btn { font-size: 20px; font-weight: 600; padding: 12px 34px; border-radius: 10px; border: 1px solid var(--line-2); color: #dfe6f5; }
+#appr8 .btn.ok { background: rgba(66,190,101,.2); border-color: rgba(66,190,101,.7); color: #b9f0c9; }
+#appr8 .btn.ok.pressed { background: #42be65; color: #06210f; box-shadow: 0 0 40px rgba(66,190,101,.55); }
+#stamp8 { position: absolute; left: 140px; top: 650px; padding: 14px 22px; border: 3px solid var(--green); border-radius: 12px; color: var(--green); font-family: var(--mono); font-size: 22px; font-weight: 600; letter-spacing: .08em; transform: rotate(-6deg); background: rgba(6,33,15,.85); }
+#time8 { position: absolute; left: 1030px; top: 250px; width: 794px; padding: 20px 26px; }
+.tl { display: grid; grid-template-columns: 96px 20px 1fr; gap: 12px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.tl .tm { font-family: var(--mono); font-size: 15px; color: var(--dim); padding-top: 3px; }
+.tl .dt { width: 14px; height: 14px; border-radius: 50%; margin-top: 5px; }
+.tl .tx { font-size: 18px; color: #eef2fa; line-height: 1.35; }
+.tl .tx span { color: var(--dim); font-size: 15px; font-family: var(--mono); }
+
+/* Subtitles (CC) */
+#subs { position: absolute; left: 160px; right: 160px; bottom: 92px; text-align: center; pointer-events: none; display: none; z-index: 3; }
+#subs span { display: inline-block; font-size: 32px; line-height: 1.35; font-weight: 500; color: #fff; background: rgba(0,0,0,.74); padding: 8px 20px; border-radius: 10px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+body.cc #subs { display: block; }
+body.cc .caption { display: none; }
+/* Use-case explainer (page only) */
+#ucpanel { position: fixed; inset: 0; z-index: 12; background: rgba(3,6,14,.94); overflow-y: auto; display: none; color: #e8edf7; font-family: var(--sans); }
+#ucpanel.open { display: block; }
+#ucpanel .in { max-width: 1100px; margin: 0 auto; padding: 32px 16px 64px; }
+#ucpanel h2 { font-size: 30px; margin: 4px 0 6px; font-weight: 600; letter-spacing: -0.01em; }
+#ucpanel .sub { color: #98a3bd; font-size: 15px; margin: 0 0 22px; line-height: 1.5; }
+#ucpanel .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+#ucpanel .card { background: rgba(20,28,48,.9); border: 1px solid rgba(120,145,200,.25); border-radius: 14px; padding: 18px 18px 16px; }
+#ucpanel .card .n { font-family: var(--mono); font-size: 12px; letter-spacing: .2em; color: #33b1ff; }
+#ucpanel .card h3 { font-size: 19px; margin: 6px 0 10px; font-weight: 600; }
+#ucpanel dl { margin: 0; font-size: 14.5px; line-height: 1.5; }
+#ucpanel dt { font-family: var(--mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #8b97b3; margin-top: 10px; }
+#ucpanel dd { margin: 2px 0 0; color: #d4dbea; }
+#ucpanel .row { display: flex; gap: 10px; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+#ucpanel button { font: 500 14px var(--sans); background: #4589ff; color: #fff; border: 0; border-radius: 8px; padding: 9px 14px; cursor: pointer; }
+#ucpanel button.ghost { background: rgba(255,255,255,.1); }
+#ucpanel .note { margin-top: 22px; font-size: 13px; color: #8b97b3; line-height: 1.5; }
+body.render #ucpanel { display: none !important; }
+#player button[aria-pressed="true"] { background: #4589ff; border-color: #4589ff; }
+/* Player chrome (hidden in render mode) */
+#player { position: fixed; left: 0; right: 0; bottom: 0; padding: 12px 16px; display: flex; gap: 12px; align-items: center;
+  background: linear-gradient(transparent, rgba(0,0,0,.85)); color: #dfe6f5; font-family: var(--mono); font-size: 13px; z-index: 10; transition: opacity .3s; }
+#player button { font: inherit; background: rgba(255,255,255,.12); color: #fff; border: 1px solid rgba(255,255,255,.2); border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+#player input[type=range] { flex: 1; min-width: 80px; accent-color: #4589ff; }
+#player .chap { display: flex; gap: 6px; flex-wrap: wrap; }
+#player .chap button { padding: 6px 10px; font-size: 12px; }
+body.idle #player { opacity: 0; }
+#bigplay { position: fixed; inset: 0; display: grid; place-items: center; z-index: 11; background: rgba(0,0,0,.55); cursor: pointer; }
+#bigplay div { font-family: var(--sans); color: #fff; font-size: 22px; text-align: center; }
+#bigplay .btn { width: 110px; height: 110px; border-radius: 50%; background: #4589ff; display: grid; place-items: center; margin: 0 auto 18px; box-shadow: 0 0 60px rgba(69,137,255,.6); }
+#bigplay .btn::after { content: ""; border-left: 34px solid #fff; border-top: 21px solid transparent; border-bottom: 21px solid transparent; margin-left: 10px; }
+body.render #player, body.render #bigplay { display: none; }
+@media (max-width: 640px) { #player .chap { display: none; } }
+</style>
+</head>
+<body>
+<div id="viewport">
+<div id="stage">
+  <canvas id="bgc" width="1920" height="1080"></canvas>
+  <div id="camera">
+
+  <!-- S0 · Cold open -->
+  <section class="scene" id="s0" data-start="0" data-end="9">
+    <div class="logs" data-in="1.6" data-dur="2" data-fx="fade" id="logs0"></div>
+    <div class="center">
+      <div class="clock" data-in="0.5" data-dur="0.8">TUESDAY · 10:14 AM</div>
+      <div class="l1" data-type="Branch services are slowing down." data-in="1.8" data-dur="1.4"></div>
+      <div class="l2" data-in="4.6" data-dur="0.9">And <span class="red">nobody</span> has opened a ticket yet.</div>
+    </div>
+  </section>
+
+  <!-- S1 · End-to-end flow -->
+  <section class="scene" id="s1" data-start="9" data-end="24">
+    <div class="stephead" style="top:150px"><div class="eyebrow" data-in="0.3">Part 2 · Incident to resolution</div>
+      <div class="h2" style="margin-top:18px;max-width:1500px" data-in="0.7" data-dur="0.8">From the first symptom to a closed ticket, <span class="grad">end to end</span>.</div></div>
+    <div id="pipe"><svg id="pipesvg" width="1728" height="260"></svg>
+      <div class="panel stage" style="left:0" data-in="1.4"><div class="n">01</div><div class="h">Detect</div><div class="s">SevOne correlates events</div></div>
+      <div class="panel stage" style="left:252px" data-in="1.7"><div class="n">02</div><div class="h">Enrich</div><div class="s">ITAM and CMDB context</div></div>
+      <div class="panel stage" style="left:504px" data-in="2.0"><div class="n">03</div><div class="h">Ticket</div><div class="s">ServiceNow incident</div></div>
+      <div class="panel stage" style="left:756px" data-in="2.3"><div class="n">04</div><div class="h">Notify</div><div class="s">NetOps · DevSecOps</div></div>
+      <div class="panel stage auto" style="left:1008px" data-in="2.6"><div class="n">L1</div><div class="h">Triage</div><div class="s">safe actions</div><span class="tag ok">AUTOMATED</span></div>
+      <div class="panel stage auto" style="left:1260px" data-in="2.9"><div class="n">L2</div><div class="h">Diagnose</div><div class="s">vendor and parts</div><span class="tag ok">AUTOMATED</span></div>
+      <div class="panel stage human" style="left:1512px" data-in="3.2"><div class="n">L3</div><div class="h">Decide</div><div class="s">risky changes</div><span class="tag watch">HUMAN IN THE LOOP</span></div>
+    </div>
+    <div class="counter2">
+      <div class="stat" data-in="4.2"><div class="v green" data-count="82" data-suf="%" data-cin="4.4" data-cdur="6">0</div><div class="k">Incidents closed at L1 / L2</div></div>
+      <div class="stat" data-in="4.8"><div class="v" data-count="6" data-suf=" s" data-cin="5" data-cdur="4">0</div><div class="k">Median time to ticket</div></div>
+      <div class="stat" data-in="5.4"><div class="v yellow" data-count="100" data-suf="%" data-cin="5.6" data-cdur="5">0</div><div class="k">Risky changes approved by a human</div></div>
+    </div>
+  </section>
+
+  <!-- S2 · The question -->
+  <section class="scene" id="s2" data-start="24" data-end="32">
+    <div class="center">
+      <div class="q" id="q2" data-in="0" data-dur="0.25" data-fx="scale">Who owns this<br><span class="red">incident</span>?</div>
+      <div class="lead" style="margin-top:50px" data-in="3.4" data-dur="0.9">Machines should handle Levels 1 and 2. People decide at Level 3.</div>
+    </div>
+  </section>
+
+  <!-- S3 · Title -->
+  <section class="scene" id="s3" data-start="32" data-end="40">
+    <div class="center">
+      <div class="eyebrow" data-in="0.6">Part 2 · Incident to resolution · human in the loop</div>
+      <div class="brand" style="margin-top:28px;position:relative;overflow:hidden" data-in="0" data-dur="0.5" data-fx="scale"><span class="ibm">IBM</span><span class="grad">SevOne</span><div class="sweep" id="sweep3"></div></div>
+      <div class="pills" id="pills3"></div>
+    </div>
+  </section>
+
+  <!-- S4 · DETECT & ENRICH -->
+  <section class="scene" id="s4" data-start="40" data-end="64">
+    <div class="stephead"><div class="num" data-in="0.2">01 — DETECT &amp; ENRICH<span class="uc">Use case · Event correlation · ITAM / CMDB enrichment</span></div><div class="t" data-in="0.5" data-dur="0.8">23 alerts become <span class="cyan">one enriched incident</span>.</div></div>
+    <div class="panel" id="corr4" data-in="1" style="position:absolute;left:96px;top:250px;width:820px;height:640px;padding:20px 22px;overflow:hidden"><h4>SevOne · event correlation</h4>
+      <div id="alerts4" style="margin-top:12px"></div>
+      <div class="panel" id="inc4" data-in="6.4" data-dur="0.5" data-fx="scale">
+        <div class="k">INCIDENT · CORRELATED</div>
+        <div class="v">Hub South primary link degraded</div>
+        <div class="d">core-rtr-hubS-02 · Te0/1/0 · CRC 1,284/min · loss 4.2%<br>37 branches behind this link · backup path healthy<br>duplicates suppressed · flapping damped</div>
+        <div class="big"><span data-count="23" data-cin="6.8" data-cdur="0.1">0</span> → 1</div>
+      </div>
+    </div>
+    <div class="panel" id="itam4" data-in="1.4" style="position:absolute;left:950px;top:250px;width:874px;height:640px;padding:20px 26px"><h4>ITAM / CMDB enrichment · automatic</h4>
+      <div style="margin-top:8px">
+      <div class="kv" data-in="8.0" data-fx="left"><div class="k">Asset</div><div class="v">core-rtr-hubS-02 · ASR 1002-HX</div></div>
+      <div class="kv" data-in="8.7" data-fx="left"><div class="k">Serial · tag</div><div class="v">FXS2231Q0AB · BNK-NET-04412</div></div>
+      <div class="kv" data-in="9.4" data-fx="left"><div class="k">Location</div><div class="v">DC South · rack B12</div></div>
+      <div class="kv" data-in="10.1" data-fx="left"><div class="k">Owner group</div><div class="v"><b>NetOps-South</b></div></div>
+      <div class="kv" data-in="10.8" data-fx="left"><div class="k">Business service</div><div class="v">Card payments · ATM network · <b>Tier 1</b></div></div>
+      <div class="kv" data-in="11.5" data-fx="left"><div class="k">Support contract</div><div class="v">Vendor TAC · 4-hour onsite · to 2027-03</div></div>
+      <div class="kv" data-in="12.2" data-fx="left"><div class="k">Lifecycle</div><div class="v">End of support 2029 · firmware 17.9.4</div></div>
+      <div class="kv" data-in="12.9" data-fx="left" style="border:0"><div class="k">Last change</div><div class="v">02:41 · IBM Bob agent · firmware staged</div></div>
+      </div>
+    </div>
+    <div class="caption" data-in="17.5" style="bottom:120px">SevOne correlates the noise. ITAM and the CMDB add <b>who, what and how critical</b>.</div>
+  </section>
+
+  <!-- S5 · TICKET -->
+  <section class="scene" id="s5" data-start="64" data-end="86">
+    <div class="stephead"><div class="num" data-in="0.2">02 — TICKET<span class="uc">Use case · Automatic ServiceNow incident · bidirectional sync</span></div><div class="t" data-in="0.5" data-dur="0.8">A complete <span class="cyan">ServiceNow</span> incident in six seconds.</div></div>
+    <div class="panel" id="snow" data-in="1">
+      <div class="bar"><span class="t">ServiceNow · Incident</span><span class="num">INC0048213</span><span class="mono" style="font-size:13px;color:var(--faint)">simulated</span><span class="state">NEW → IN PROGRESS</span></div>
+      <div class="fields">
+        <div class="f" data-in="2.0" data-fx="fade"><div class="k">Short description</div><div class="v">Hub South primary link degraded · 4.2% loss</div></div>
+        <div class="f" data-in="2.5" data-fx="fade"><div class="k">Configuration item</div><div class="v">core-rtr-hubS-02 <span style="color:var(--dim)">(from CMDB)</span></div></div>
+        <div class="f" data-in="3.0" data-fx="fade"><div class="k">Business service</div><div class="v">Card payments · ATM network</div></div>
+        <div class="f" data-in="3.5" data-fx="fade"><div class="k">Impact · urgency → priority</div><div class="v">2 · 1 → <span class="hl">P2 (calculated)</span></div></div>
+        <div class="f" data-in="4.0" data-fx="fade"><div class="k">Assignment group</div><div class="v">NetOps-South</div></div>
+        <div class="f" data-in="4.5" data-fx="fade"><div class="k">Caller</div><div class="v">SevOne integration · event 7781</div></div>
+      </div>
+      <div class="notes" data-in="5.4">Work notes · SevOne evidence attached: loss and CRC trend, topology snapshot, last configuration change on the CI.</div>
+      <div class="chips" data-in="6.2"><span class="chip">loss-trend.png</span><span class="chip">topology.svg</span><span class="chip">config-diff.txt</span></div>
+    </div>
+    <div id="side5">
+      <div class="panel" data-in="6.6"><div class="k">Time to ticket</div><div class="v" data-count="6" data-pre="00:0" data-cin="6.8" data-cdur="1.2">00:00</div><div class="s" style="font-size:17px;color:var(--dim)">event → ServiceNow, no human typing</div></div>
+      <div class="panel" data-in="9"><div class="k">Bidirectional sync</div><ul><li>SevOne alert ↔ incident state</li><li>Notes and evidence pushed both ways</li><li>Updates itself when the metric recovers</li></ul></div>
+      <div class="panel" data-in="11.5"><div class="k">Deduplicated</div><div style="font-size:26px;font-weight:600;margin-top:8px">1 ticket, not 23</div></div>
+    </div>
+    <div class="caption" data-in="17.5" style="bottom:120px">CI, priority, owner and evidence, <b>filled in automatically</b>.</div>
+  </section>
+
+  <!-- S6 · NOTIFY & ROUTE -->
+  <section class="scene" id="s6" data-start="86" data-end="108">
+    <div class="stephead"><div class="num" data-in="0.2">03 — NOTIFY &amp; ROUTE<span class="uc">Use case · NetOps or DevSecOps routing · escalation policy</span></div><div class="t" data-in="0.5" data-dur="0.8">The right team, <span class="cyan">on the right channel</span>, in seconds.</div></div>
+    <div class="panel" id="rules6" data-in="1"><h4>Routing rules</h4>
+      <div class="rule" id="r1"><div>Link or device degradation</div><div class="to">→ NetOps-South on-call</div><div class="m">MATCHED</div></div>
+      <div class="rule" id="r2"><div>Agent config change on the CI</div><div class="to">→ DevSecOps (FYI)</div><div class="m">MATCHED</div></div>
+      <div class="rule" id="r3"><div>Vulnerability on the CI</div><div class="to">→ DevSecOps</div><div class="m">NO MATCH</div></div>
+      <div class="rule" id="r4" style="border:0"><div>Tier 1 business service</div><div class="to">→ service owner</div><div class="m">MATCHED</div></div>
+    </div>
+    <div class="panel" id="msgs6" data-in="1.4"><h4>Notifications</h4>
+      <div class="msg" data-in="3.2" data-fx="left"><div class="av" style="background:#33b1ff">NO</div><div><div class="ch">Teams · #netops-south-oncall · paged</div><div class="tx">P2 INC0048213 · Hub South primary link degraded. L1 automation running.</div></div></div>
+      <div class="msg" data-in="5.2" data-fx="left"><div class="av" style="background:#a56eff">DS</div><div><div class="ch">Slack · #devsecops · FYI</div><div class="tx">IBM Bob agent changed core-rtr-hubS-02 at 02:41. No security action needed yet.</div></div></div>
+      <div class="msg" data-in="7.0" data-fx="left" style="border:0"><div class="av" style="background:#f1c21b">SO</div><div><div class="ch">Email · card payments service owner</div><div class="tx">Tier 1 service at risk. Traffic will fail over to the backup path.</div></div></div>
+    </div>
+    <div id="tiers6">
+      <div class="panel tier auto" data-in="10.6" data-dur="0.3" data-fx="scale"><div class="k">L1 · automated</div><div class="v">Triage + safe actions</div><div class="s">pre-approved runbooks only</div></div>
+      <div class="panel tier auto" data-in="10.8" data-dur="0.3" data-fx="scale"><div class="k">L2 · automated</div><div class="v">Diagnosis, vendor, parts</div><div class="s">no production change without policy</div></div>
+      <div class="panel tier human" data-in="11" data-dur="0.3" data-fx="scale"><div class="k">L3 · human in the loop</div><div class="v">Risky changes need approval</div><div class="s">named engineer · evidence attached</div></div>
+    </div>
+    <div class="caption" data-in="17.5" style="bottom:110px">NetOps gets the incident. DevSecOps gets the <b>security context</b>.</div>
+  </section>
+
+  <!-- S7 · L1 + L2 AUTOMATED -->
+  <section class="scene" id="s7" data-start="108" data-end="134">
+    <div class="stephead"><div class="num" data-in="0.2">04 — L1 + L2 AUTOMATED<span class="uc">Use case · Runbooks · failover · diagnosis · vendor case</span></div><div class="t" data-in="0.5" data-dur="0.8">Levels 1 and 2 run <span class="green">by themselves</span>.</div></div>
+    <div class="panel" id="chart7" data-in="1"><h4>Card payments · branch transaction response time (ms)</h4><svg id="c7" width="1260" height="390" style="position:absolute;left:0;top:40px"></svg></div>
+    <div id="clocks7">
+      <div class="panel" data-in="1.4"><div class="k">Time to ticket</div><div class="v" id="mttd">--:--</div><div class="s">event → ServiceNow</div></div>
+      <div class="panel" data-in="1.6"><div class="k">Time to restore service</div><div class="v" id="mttr">--:--</div><div class="s" id="mttrs">waiting for incident</div></div>
+    </div>
+    <div id="chain7"><svg id="chainsvg" width="1728" height="200" style="position:absolute;left:0;top:0"></svg>
+      <div class="panel ccard" style="left:0;border-color:rgba(66,190,101,.55)" data-in="6.6"><div class="k green">① L1 · triage · auto</div><div class="v">Ping, trace, counters, optics</div><div class="s">rx −18.4 dBm · CRC rising</div></div>
+      <div class="panel ccard" style="left:447px;border-color:rgba(66,190,101,.55)" data-in="8.6"><div class="k green">② L1 · safe action · auto</div><div class="v">Fail over to the backup path</div><div class="s">pre-approved runbook</div></div>
+      <div class="panel ccard" style="left:894px;border-color:rgba(69,137,255,.6)" data-in="13.5"><div class="k blue">③ L2 · diagnosis · auto</div><div class="v">Failing optic on Te0/1/0</div><div class="s">rx −3 dB in 24 h · SFP-10G-LR</div></div>
+      <div class="panel ccard" style="left:1341px;border-color:rgba(241,194,27,.6)" data-in="15.5"><div class="k yellow">④ L2 · logistics · auto</div><div class="v">TAC case + spare reserved</div><div class="s">ITAM: spare in DC South</div></div>
+    </div>
+    <div class="caption" data-in="21" style="bottom:66px">Service restored by automation. The hardware swap <b>escalates to L3</b>.</div>
+  </section>
+
+  <!-- S8 · L3 HUMAN IN THE LOOP -->
+  <section class="scene" id="s8" data-start="134" data-end="152">
+    <div class="stephead"><div class="num" data-in="0.2">05 — L3 · HUMAN IN THE LOOP<span class="uc">Use case · Approval · change · verification · closure</span></div><div class="t" data-in="0.5" data-dur="0.8">People decide. <span class="green">SevOne verifies.</span></div></div>
+    <div class="panel" id="appr8" data-in="1">
+      <div class="bar">Approval request · ServiceNow + Teams<span class="mono">simulated</span></div>
+      <div class="ttl">CHG0031877 · Replace optic on core-rtr-hubS-02 Te0/1/0</div>
+      <div class="f"><div class="k">Window</div><div>Tonight 22:00–22:30 · traffic stays on backup</div></div>
+      <div class="f"><div class="k">Risk</div><div>Low · rollback: reinsert the original optic</div></div>
+      <div class="f"><div class="k">Evidence</div><div>SevOne optics trend · TAC confirmation · spare reserved</div></div>
+      <div class="f"><div class="k">Requested by</div><div>L2 automation · approver: L3 NetOps engineer</div></div>
+      <div class="btns"><div class="btn ok" id="ok8">Approve</div><div class="btn">Reject</div><div class="btn">Ask for info</div></div>
+    </div>
+    <div id="stamp8" data-in="4.4" data-dur="0.25" data-fx="scale">✓ APPROVED · L3 ENGINEER · 10:31</div>
+    <div class="panel" id="time8" data-in="1.4"><h4>End-to-end timeline · INC0048213</h4>
+      <div class="tl" data-in="5.4" data-fx="left"><div class="tm">10:14:03</div><div class="dt" style="background:#fa4d56"></div><div class="tx">Detected <span>· SevOne</span></div></div>
+      <div class="tl" data-in="5.8" data-fx="left"><div class="tm">10:14:05</div><div class="dt" style="background:#33b1ff"></div><div class="tx">Enriched <span>· ITAM / CMDB</span></div></div>
+      <div class="tl" data-in="6.2" data-fx="left"><div class="tm">10:14:09</div><div class="dt" style="background:#33b1ff"></div><div class="tx">Incident opened <span>· ServiceNow</span></div></div>
+      <div class="tl" data-in="6.6" data-fx="left"><div class="tm">10:14:12</div><div class="dt" style="background:#33b1ff"></div><div class="tx">NetOps paged, DevSecOps informed</div></div>
+      <div class="tl" data-in="7.0" data-fx="left"><div class="tm">10:14:50</div><div class="dt" style="background:#42be65"></div><div class="tx">L1 failover · service restored <span>· auto</span></div></div>
+      <div class="tl" data-in="7.4" data-fx="left"><div class="tm">10:16:10</div><div class="dt" style="background:#42be65"></div><div class="tx">L2 diagnosis, TAC case, spare <span>· auto</span></div></div>
+      <div class="tl" data-in="7.8" data-fx="left"><div class="tm">10:31:00</div><div class="dt" style="background:#f1c21b"></div><div class="tx">L3 change approved <span>· human</span></div></div>
+      <div class="tl" data-in="9.6" data-fx="left"><div class="tm">22:18:40</div><div class="dt" style="background:#42be65"></div><div class="tx">Optic replaced · SevOne verifies 0% loss</div></div>
+      <div class="tl" data-in="10.4" data-fx="left"><div class="tm">22:25:00</div><div class="dt" style="background:#42be65"></div><div class="tx">Back on primary · incident resolved · ITAM serial updated</div></div>
+    </div>
+    <div class="foot" data-in="4" style="bottom:110px">Illustrative scenario · ServiceNow, Teams and Slack screens are simulated</div>
+  </section>
+
+  <!-- S9 · Close -->
+  <section class="scene" id="s9" data-start="152" data-end="166">
+    <div class="center" id="close1">
+      <div class="a" data-in="0.3" data-dur="0.9">Machines handle Levels 1 and 2.</div>
+      <div class="b" data-in="2.6" data-dur="0.9"><span class="grad">People</span> decide at Level 3.</div>
+    </div>
+    <div class="center end" id="close2">
+      <div class="brand" data-in="6.5" data-dur="0.45" data-fx="scale"><span class="ibm">IBM</span><span class="grad">SevOne</span></div>
+      <div class="tag2" data-in="7.6">Detect · Enrich · Ticket · Notify · Resolve</div>
+      <div class="tag3" data-in="8.6">Part 2 · Incident to resolution, with a human in the loop</div>
+    </div>
+    <div class="disc" data-in="9.4">Demo scenario. Devices, agents, tickets, messages and figures are simulated for illustration. Narration: synthetic voice.</div>
+  </section>
+
+  </div>
+  <div id="hud">
+    <div class="tl"><span class="rec"></span><span>SEVONE · LIVE</span></div>
+    <div class="tr" id="tc">00:00:00</div>
+    <div id="steps"><span>01 DETECT</span><span>02 TICKET</span><span>03 NOTIFY</span><span>04 L1 + L2</span><span>05 L3 HUMAN</span></div>
+  </div>
+  <div id="subs"><span></span></div><div id="vignette"></div><div id="scan"></div><div id="flash"></div><div id="fadeblack"></div>
+</div>
+</div>
+
+<div id="bigplay"><div><div class="btn"></div>Play Part 2 with narration · 2 min 46 s<br><span style="font-size:15px;color:#98a3bd">Part 2 · incident to resolution · subtitles on</span></div></div>
+<div id="player">
+  <button id="pp">Play</button>
+  <span id="tcur">0:00</span>
+  <input type="range" id="scrub" min="0" max="166" step="0.05" value="0" aria-label="Seek">
+  <span>2:46</span>
+  <button id="ccb" aria-pressed="true" title="Subtitles">CC</button>
+  <button id="ucb">Use cases</button>
+  <div class="chap">
+    <button data-t="0">Intro</button><button data-t="40">Detect</button><button data-t="64">Ticket</button><button data-t="86">Notify</button><button data-t="108">L1 + L2</button><button data-t="134">L3</button>
+  </div>
+</div>
+<div id="ucpanel" role="dialog" aria-label="Use cases"><div class="in">
+  <div class="row"><div><div class="mono" style="font-size:12px;letter-spacing:.24em;color:#33b1ff">SEVONE · PART 2</div><h2>Five steps, incident to resolution</h2></div><button class="ghost" id="ucclose">Close</button></div>
+  <p class="sub">Each card is one chapter. Choose <b>Watch</b> to jump to it. Every scenario is simulated, including the ServiceNow, Teams and Slack screens.</p>
+  <div class="grid" id="ucgrid"></div>
+  <p class="note">Product capabilities: multi-source collection, topology, baselines and anomaly detection, capacity forecasting, alerting, webhooks and REST APIs. Integration patterns built on those APIs: agent attribution (joining change and audit logs), the pre-flight hold (enforced by the agent or orchestrator), and webhook-driven rollback. Confirm current capabilities with the IBM SevOne team.</p>
+</div></div>
+<audio id="audio" src="soundtrack.mp3" preload="auto"></audio>
+
+<script>
+(() => {
+const DURATION = 166;
+// Narration cues [start, end, text], injected by narration.py — keep the markers.
+const NARRATION = /*NARRATION*/[[0.7, 4.7, "Ten fourteen, Tuesday morning. Branch services are slowing down."], [5.2, 7.11, "And nobody has opened a ticket yet."], [9.6, 13.11, "Part two: from the first symptom to a closed ticket, end to end."], [14.4, 18.56, "Detect, enrich, ticket, notify. Levels one and two are automated."], [19.4, 21.41, "Level three keeps a human in the loop."], [24.6, 26.09, "So who owns this incident?"], [27.6, 31.44, "Machines handle levels one and two. People decide at level three."], [33.0, 36.03, "IBM SevOne. From incident, to resolution."], [41.0, 42.82, "Step one: detect and enrich."], [43.2, 48.6, "A failing optic triggers twenty-three alerts. SevOne correlates them into one incident."], [49.6, 54.58, "ITAM and the CMDB add the asset, the owner group, and the business service."], [55.4, 60.2, "Card payments. Tier one. Under support contract, with the last change on record."], [65.0, 66.24, "Step two: the ticket."], [67.0, 70.45, "SevOne opens a ServiceNow incident in six seconds."], [71.0, 76.34, "Configuration item, priority, assignment group, and evidence, filled in automatically."], [77.4, 81.12, "One ticket, not twenty-three, and it stays in sync both ways."], [87.0, 88.75, "Step three: notify and route."], [89.0, 94.26, "NetOps South is paged in Teams. DevSecOps gets the agent change in Slack."], [95.4, 97.73, "The service owner is told what to expect."], [98.6, 101.92, "The policy is clear: levels one and two run automatically."], [102.6, 104.27, "Level three needs a human."], [108.8, 110.49, "Step four: levels one and two."], [110.8, 114.49, "Level one triages, and fails traffic over to the backup path."], [115.2, 119.65, "Service is restored in forty-seven seconds. Nobody was paged to fix it."], [120.6, 126.41, "Level two finds the failing optic, opens the vendor case, and reserves a spare from ITAM."], [127.4, 131.29, "The hardware swap is a risky change. It escalates to level three."], [135.0, 136.75, "Step five: the human in the loop."], [137.0, 140.85, "A level three engineer reviews the evidence, and approves the change."], [142.0, 148.33, "After the swap, SevOne verifies zero loss, and the incident closes itself, with ITAM updated."], [152.5, 154.41, "Machines handle levels one and two."], [155.2, 156.88, "People decide at level three."], [159.4, 162.43, "IBM SevOne. From incident, to resolution."]]/*END_NARRATION*/;
+const USE_CASES = [
+ ['01','Detect & enrich','Event correlation · ITAM / CMDB enrichment',40,'A failing optic on a hub router raises 23 alerts across 37 branches.','SevOne correlates them into one incident; ITAM and the CMDB add the asset, owner group, business service, criticality, support contract, lifecycle and last change.','One enriched incident instead of 23 alerts.'],
+ ['02','Ticket','Automatic ServiceNow incident · bidirectional sync',64,'The NOC would normally retype alert details into a ticket.','SevOne creates the ServiceNow incident with CI, priority, assignment group and evidence, and keeps state in sync both ways.','A complete P2 ticket in 6 s, deduplicated.'],
+ ['03','Notify & route','NetOps or DevSecOps routing · escalation policy',86,'Different teams need different context.','Routing rules page NetOps-South, inform DevSecOps about an agent change on the CI, and tell the service owner; the policy says L1 and L2 are automated and L3 needs a human.','The right team on the right channel within seconds.'],
+ ['04','L1 + L2 automated','Runbooks · failover · diagnosis · vendor case',108,'Card payment response times jump.','L1 triages and fails traffic over to the backup path (pre-approved); L2 diagnoses a failing optic, opens the vendor case and reserves a spare from ITAM.','Service restored in 47 s with nobody paged for the fix.'],
+ ['05','L3 human in the loop','Approval · change · verification · closure',134,'Replacing hardware is a risky change.','An L3 engineer approves the change with the evidence attached; after the swap SevOne verifies 0% loss, traffic returns to primary and the incident closes, with the ITAM record updated.','Humans make the risky call; everything else is automated and logged.'],
+];
+// Impact times — must match soundtrack.py
+const IMPACTS = [[0.5,1],[9,.45],[24,1],[32,1.2],[40,.45],[64,.45],[86,.45],[97,1],[108,.45],[113,1],[134,.5],[152,.8],[158.5,1.2]];
+
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const easeOut = x => 1 - Math.pow(1 - x, 3);
+const easeInOut = x => x < .5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3) / 2;
+const lerp = (a, b, t) => a + (b - a) * t;
+const NS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+function rand(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+const fmt2 = n => String(Math.floor(n)).padStart(2, '0');
+
+/* ---------- Build dynamic content ---------- */
+// S0 logs
+const LOGS = [
+ 'core-rtr-hubS-02: %ETHPORT-5-IF_DOWN_LINK_FAILURE Te0/1/0',
+ 'core-rtr-hubS-02: CRC errors 1284/min on Te0/1/0 (threshold 50)',
+ 'br-0412-rtr: %TRACK-6-STATE 10 ip sla 4 reachability Up -> Down',
+ 'br-0517-rtr: BFD session to 10.40.12.1 down (detect-multiplier)',
+ 'core-rtr-hubS-02: optic rx power -18.4 dBm (low warning -16.0)',
+ 'br-0733-rtr: %LINEPROTO-5-UPDOWN Te0/0/1 changed state to down',
+ 'ipsla-probe-17: core banking portal p95 412 ms (baseline 38 ms)',
+ 'br-0412-rtr: %LINK-3-UPDOWN Gi0/1 changed state to up',
+];
+let logtxt = ''; for (let i = 0; i < 34; i++) logtxt += `[10:${fmt2(13 + (i >> 4))}:${fmt2((i * 7) % 60)}] ` + LOGS[i % LOGS.length] + '\n';
+$('#logs0').textContent = logtxt;
+
+// S1 pipeline connectors and pulses
+const pipe = $('#pipesvg');
+const pipeLinks = [0,1,2,3,4,5].map(i => {
+  const x1 = 216 + i * 252, x2 = x1 + 36, y = 135;
+  svgEl('line', { x1, x2, y1: y, y2: y, stroke: '#4589ff', 'stroke-width': 3, 'stroke-opacity': .6 }, pipe);
+  svgEl('path', { d: `M${x2 - 8},${y - 7} L${x2},${y} L${x2 - 8},${y + 7}`, fill: 'none', stroke: '#4589ff', 'stroke-width': 3 }, pipe);
+  return { x1, x2, y };
+});
+const pulse = svgEl('circle', { r: 9, fill: '#fff', opacity: 0 }, pipe);
+const pulseGlow = svgEl('circle', { r: 22, fill: '#33b1ff', opacity: 0 }, pipe);
+
+// S3 pills
+['Detect','Enrich','Ticket','Notify','Resolve'].forEach((p, i) => { const c = document.createElement('span'); c.className = 'chip'; c.textContent = p; c.dataset.in = (2.4 + i * .35).toFixed(2); c.dataset.fx = 'up'; $('#pills3').appendChild(c); });
+
+// S4 raw alerts
+const ALERTS = [
+ ['10:14:03','core-rtr-hubS-02 · Te0/1/0 CRC errors','crit'], ['10:14:03','core-rtr-hubS-02 · packet loss 4.2%','crit'],
+ ['10:14:04','br-0412-rtr · IP SLA reachability down','maj'], ['10:14:04','br-0517-rtr · BFD session down','maj'],
+ ['10:14:04','br-0733-rtr · Te0/0/1 down','maj'], ['10:14:05','core-rtr-hubS-02 · optic rx power low','crit'],
+ ['10:14:05','br-0412-rtr · Gi0/1 flapping','maj'], ['10:14:05','ipsla-17 · core banking portal slow','maj'],
+ ['10:14:06','br-0811-rtr · BGP neighbor flap','maj'], ['10:14:06','br-0902-rtr · jitter 41 ms','maj'],
+ ['10:14:06','core-rtr-hubS-02 · output drops','crit'], ['10:14:07','… 12 more','maj'],
+];
+ALERTS.forEach(([t, txt, sv], i) => {
+  const r = document.createElement('div'); r.className = 'alert-row';
+  r.innerHTML = `<div>${t}</div><div>${txt}</div><div class="sev ${sv}">${sv === 'crit' ? 'CRITICAL' : 'MAJOR'}</div>`;
+  r.dataset.in = (1.4 + i * 0.32).toFixed(2); r.dataset.fx = 'left'; r.dataset.dur = '.3';
+  $('#alerts4').appendChild(r);
+});
+
+// S7 latency chart
+const c7 = $('#c7');
+const C7 = { x0: 80, x1: 1200, y0: 330, y1: 20, max: 560 };
+const sx = s => C7.x0 + (s / 180) * (C7.x1 - C7.x0); // seconds 0..180 → 10:13:30..10:16:30
+const sy = v => C7.y0 - (v / C7.max) * (C7.y0 - C7.y1);
+[0, 100, 200, 300, 400].forEach(v => { svgEl('line', { x1: C7.x0, x2: C7.x1, y1: sy(v), y2: sy(v), stroke: 'rgba(120,145,200,.14)' }, c7); const t = svgEl('text', { x: C7.x0 - 12, y: sy(v) + 5, 'text-anchor': 'end', fill: '#5d6984', 'font-size': 14, 'font-family': 'IBM Plex Mono, monospace' }, c7); t.textContent = v; });
+['10:13:30','10:14:00','10:14:30','10:15:00','10:15:30','10:16:00','10:16:30'].forEach((l, i) => { const t = svgEl('text', { x: sx(i * 30), y: C7.y0 + 28, 'text-anchor': 'middle', fill: '#5d6984', 'font-size': 14, 'font-family': 'IBM Plex Mono, monospace' }, c7); t.textContent = l; });
+svgEl('rect', { x: C7.x0, y: sy(55), width: C7.x1 - C7.x0, height: sy(25) - sy(55), fill: 'rgba(69,137,255,.12)' }, c7);
+// data: change at s=33 (10:14:03), detection s=41, rollback s=80 (10:14:50), recovered ~88
+const r7 = rand(11); const lat = [];
+for (let s = 0; s <= 180; s++) {
+  let v = 38 + (r7() - .5) * 10;
+  if (s >= 34 && s < 80) v = 380 + 50 * Math.sin(s * .9) + (r7() - .5) * 60;
+  if (s >= 80 && s < 90) v = lerp(380, 40, (s - 80) / 10) + (r7() - .5) * 20;
+  lat.push(Math.max(20, v));
+}
+const latPath = svgEl('path', { fill: 'none', stroke: '#33b1ff', 'stroke-width': 3, 'stroke-linejoin': 'round' }, c7);
+const latHead = svgEl('circle', { r: 6, fill: '#fff' }, c7);
+function mk7(s, color, label, y, end) { const g = svgEl('g', { opacity: 0 }, c7); svgEl('line', { x1: sx(s), x2: sx(s), y1: C7.y1, y2: C7.y0, stroke: color, 'stroke-width': 2, 'stroke-dasharray': '4 5' }, g); const t = svgEl('text', { x: sx(s) + (end ? -10 : 10), y, 'text-anchor': end ? 'end' : 'start', fill: color, 'font-size': 15, 'font-family': 'IBM Plex Mono, monospace' }, g); t.textContent = label; return g; }
+const m7a = mk7(33, '#fa4d56', '10:14:03 loss 4.2% · Hub South primary', C7.y1 + 16);
+const m7b = mk7(39, '#33b1ff', '10:14:09 INC0048213 opened · P2', C7.y1 + 42);
+const m7c = mk7(80, '#42be65', '10:14:50 L1: failover to backup · restored', sy(220));
+// Real seconds in chart → scene local time mapping: chart second s shown at local time = 1.6 + s*0.105 (clamped until 19).
+const CH7 = s => 1.6 + s * 0.0995; // s=180 → ~19.5
+// chain connectors
+const chs = $('#chainsvg');
+const chLines = [0,1,2].map(i => svgEl('line', { x1: 386 + i * 447, x2: 447 + i * 447, y1: 80, y2: 80, stroke: '#8b97b3', 'stroke-width': 3, 'stroke-dasharray': '1', pathLength: 1, 'stroke-dashoffset': 1 }, chs));
+
+/* ---------- Animation engine ---------- */
+const scenes = $$('.scene').map(el => ({ el, s: +el.dataset.start, e: +el.dataset.end,
+  items: $$('[data-in]', el), counts: $$('[data-count]', el), types: $$('[data-type]', el) }));
+scenes.forEach(sc => sc.types.forEach(el => el.dataset.full = el.dataset.type));
+
+function applyIn(el, lt) {
+  const tin = +el.dataset.in, d = +(el.dataset.dur || .6), fx = el.dataset.fx || 'up';
+  const p = clamp((lt - tin) / d); const e = easeOut(p);
+  el.style.opacity = e;
+  if (fx === 'up') el.style.transform = `translateY(${(1 - e) * 34}px)`;
+  else if (fx === 'left') el.style.transform = `translateX(${(1 - e) * -40}px)`;
+  else if (fx === 'scale') el.style.transform = `scale(${lerp(1.18, 1, e)})`;
+  else el.style.transform = '';
+}
+function applyCount(el, lt) {
+  const to = +el.dataset.count, p = easeOut(clamp((lt - +el.dataset.cin) / +el.dataset.cdur));
+  const dec = +(el.dataset.dec || 0); const v = to * p;
+  el.textContent = (el.dataset.pre || '') + (dec ? v.toFixed(dec) : Math.round(v).toLocaleString('en-US')) + (el.dataset.suf || '');
+}
+function applyType(el, lt) {
+  const full = el.dataset.full, tin = +el.dataset.in, d = +(el.dataset.dur || 1);
+  const n = Math.floor(clamp((lt - tin) / d) * full.length);
+  const blink = Math.floor(lt * 2.2) % 2 === 0;
+  el.innerHTML = lt < tin - .4 ? '' : full.slice(0, n) + (n < full.length || blink ? '<span class="caret"></span>' : '');
+}
+
+const custom = {
+  s0(lt) {},
+  s1(lt) {
+    const T = 3.6, per = 1.05, k = lt - T;
+    if (k < 0) { pulse.setAttribute('opacity', 0); pulseGlow.setAttribute('opacity', 0); return; }
+    const pos = (k / per) % 6.6; const i = Math.min(5, Math.floor(pos)); const f = clamp(pos - i);
+    const L = pipeLinks[i]; const x = lerp(L.x1 - 108, L.x2 + 108, f);
+    pulse.setAttribute('cx', x); pulse.setAttribute('cy', L.y); pulse.setAttribute('opacity', pos < 6 ? 1 : 0);
+    pulseGlow.setAttribute('cx', x); pulseGlow.setAttribute('cy', L.y); pulseGlow.setAttribute('opacity', pos < 6 ? .25 : 0);
+  },
+  s2(lt) {
+    const q = $('#q2'); const g = lt < .6 ? (Math.sin(lt * 90) > 0 ? 1 : -1) * (1 - lt / .6) * 14 : 0;
+    q.style.textShadow = g ? `${g}px 0 rgba(250,77,86,.8), ${-g}px 0 rgba(51,177,255,.8)` : 'none';
+    if (lt > 3.4) q.style.transform = `scale(${lerp(1, .82, easeInOut(clamp((lt - 3.4) / 1.2)))})`;
+  },
+  s3(lt) { $('#sweep3').style.left = lerp(-400, 1600, clamp((lt - .8) / 1.6)) + 'px'; },
+  s4(lt) {
+    const a = $('#alerts4'); const k = clamp((lt - 5.6) / .7);
+    a.style.opacity = 1 - k; a.style.transform = `scale(${lerp(1, .9, k)})`; a.style.filter = `blur(${k * 4}px)`;
+  },
+  s5(lt) {},
+  s6(lt) {
+    [['#r1', 2.4], ['#r2', 4.4], ['#r4', 6.4]].forEach(([id, t]) => $(id).classList.toggle('hit', lt > t));
+  },
+  s7(lt) {
+    // map local time to chart seconds
+    const sNow = clamp((lt - 1.6) / 0.0995, 0, 180);
+    let d = ''; for (let s = 0; s <= Math.floor(sNow); s++) d += (s ? 'L' : 'M') + sx(s).toFixed(1) + ',' + sy(lat[s]).toFixed(1);
+    latPath.setAttribute('d', d || 'M0,0');
+    const sf = Math.floor(sNow); latHead.setAttribute('cx', sx(sf)); latHead.setAttribute('cy', sy(lat[sf]));
+    const inc = sNow >= 34 && sNow < 88;
+    latPath.setAttribute('stroke', inc ? '#fa4d56' : '#33b1ff');
+    m7a.setAttribute('opacity', clamp((sNow - 33) / 3)); m7b.setAttribute('opacity', clamp((sNow - 41) / 3)); m7c.setAttribute('opacity', clamp((sNow - 80) / 3));
+    // clocks: detection at chart s 41 (8 s after change), MTTR counts in real chart seconds from 33
+    const mttd = $('#mttd'), mttr = $('#mttr'), mttrs = $('#mttrs');
+    if (sNow < 39) { mttd.textContent = '--:--'; mttd.style.color = ''; }
+    else { mttd.textContent = '00:06'; mttd.style.color = '#33b1ff'; }
+    if (sNow < 33) { mttr.textContent = '--:--'; mttrs.textContent = 'waiting for incident'; mttr.style.color = ''; }
+    else { const el = Math.min(sNow, 80) - 33; mttr.textContent = '00:' + fmt2(el); mttr.style.color = sNow >= 80 ? '#42be65' : '#fff'; mttrs.textContent = sNow >= 80 ? 'restored by L1 · no human paged' : 'L1 automation running…'; }
+    chLines.forEach((l, i) => l.setAttribute('stroke-dashoffset', 1 - easeOut(clamp((lt - [8, 13, 15][i]) / .6))));
+  },
+  s8(lt) { $('#ok8').classList.toggle('pressed', lt > 3.9); },
+  s9(lt) {
+    $('#close1').style.opacity = 1 - clamp((lt - 5.6) / .6);
+    $('#close1').style.transform = `scale(${lerp(1, 1.06, clamp(lt / 6))})`;
+  },
+};
+
+/* Background canvas: perspective grid + drifting particles, tinted per scene. */
+const bg = $('#bgc'), ctx = bg.getContext('2d');
+const PR = rand(3); const parts = Array.from({ length: 140 }, () => ({ x: PR() * 1920, y: PR() * 1080, z: .3 + PR() * .7, s: PR() }));
+function tintAt(t) {
+  // [time, r, g, b]
+  const K = [[0, 120, 30, 50], [9, 40, 90, 200], [24, 160, 30, 50], [32, 40, 100, 230], [40, 140, 40, 60], [64, 40, 100, 230], [86, 40, 100, 230], [96.8, 40, 100, 230], [97, 150, 110, 20], [100.5, 50, 90, 200], [112.5, 40, 100, 230], [113, 180, 30, 45], [117.6, 30, 140, 90], [134, 120, 100, 20], [138, 30, 140, 90], [152, 40, 100, 230]];
+  let i = 0; while (i < K.length - 1 && K[i + 1][0] <= t) i++;
+  const a = K[Math.max(0, i - 1)], b = K[i], q = clamp((t - b[0]) / .6);
+  return [1, 2, 3].map(k => lerp(a[k], b[k], q));
+}
+function drawBg(t) {
+  const [r, g, b] = tintAt(t);
+  ctx.fillStyle = '#04060d'; ctx.fillRect(0, 0, 1920, 1080);
+  const gr = ctx.createRadialGradient(960, 380, 50, 960, 380, 1100);
+  gr.addColorStop(0, `rgba(${r|0},${g|0},${b|0},.34)`); gr.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = gr; ctx.fillRect(0, 0, 1920, 1080);
+  // perspective floor grid
+  ctx.save(); ctx.strokeStyle = `rgba(${r|0},${g|0},${b|0},.22)`; ctx.lineWidth = 1;
+  const hz = 700, sp = (t * 40) % 60;
+  for (let i = 0; i < 22; i++) { const z = (i * 60 + sp); const y = hz + Math.pow(z / 1300, 1.8) * 520; if (y > 1080) break; ctx.globalAlpha = clamp((y - hz) / 300); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1920, y); ctx.stroke(); }
+  ctx.globalAlpha = .55;
+  for (let i = -16; i <= 16; i++) { ctx.beginPath(); ctx.moveTo(960 + i * 30, hz); ctx.lineTo(960 + i * 260, 1080); ctx.stroke(); }
+  ctx.restore();
+  // particles
+  for (const p of parts) {
+    const x = (p.x + t * 18 * p.z) % 1920, y = (p.y - t * 6 * p.z + 1080) % 1080;
+    const tw = .4 + .6 * Math.abs(Math.sin(t * (1 + p.s * 2) + p.s * 10));
+    ctx.fillStyle = `rgba(${150 + r * .4 | 0},${190 + g * .2 | 0},255,${.35 * p.z * tw})`;
+    ctx.beginPath(); ctx.arc(x, y, 1.2 + p.z * 1.6, 0, 7); ctx.fill();
+  }
+}
+
+function render(t) {
+  // impacts → flash + shake + zoom punch
+  let flash = 0, shake = 0, punch = 0;
+  for (const [it, w] of IMPACTS) { const d = t - it; if (d >= 0 && d < 1.2) { flash = Math.max(flash, w * .55 * Math.exp(-d * 7)); shake = Math.max(shake, w * 12 * Math.exp(-d * 8)); punch = Math.max(punch, w * .035 * Math.exp(-d * 5)); } }
+  $('#flash').style.opacity = flash;
+  const sxv = shake * Math.sin(t * 97), syv = shake * Math.cos(t * 83);
+  drawBg(t);
+  let active = null;
+  for (const sc of scenes) {
+    const lt = t - sc.s, dur = sc.e - sc.s;
+    const vis = lt > -0.05 && lt < dur;
+    sc.el.classList.toggle('on', vis);
+    if (!vis) continue;
+    active = sc;
+    const op = clamp(lt / .35) * clamp((dur - lt) / .45);
+    sc.el.style.opacity = op;
+    sc.items.forEach(el => applyIn(el, lt));
+    sc.counts.forEach(el => applyCount(el, lt));
+    sc.types.forEach(el => applyType(el, lt));
+    custom[sc.el.id] && custom[sc.el.id](lt, dur);
+    const zoom = 1 + .035 * (lt / dur) + punch;
+    $('#camera').style.transform = `translate(${sxv}px,${syv}px) scale(${zoom})`;
+  }
+  // HUD
+  const showHud = t > 40 && t < 152;
+  $('#hud .tl').style.opacity = $('#hud .tr').style.opacity = t > 152.5 ? 0 : 1;
+  $('#hud').style.opacity = t < 9 ? 0 : 1;
+  $('#steps').style.opacity = showHud ? 1 : 0;
+  const stepIdx = t < 64 ? 0 : t < 86 ? 1 : t < 108 ? 2 : t < 134 ? 3 : 4;
+  $$('#steps span').forEach((s, i) => { s.className = i === stepIdx ? 'act' : i < stepIdx ? 'done' : ''; });
+  const clock = 2 * 3600 + 47 * 60 + t * 7;
+  $('#tc').textContent = `${fmt2(clock / 3600)}:${fmt2((clock % 3600) / 60)}:${fmt2(clock % 60)}  `;
+  const cue = NARRATION.find(c => t >= c[0] && t < c[1] + .35);
+  const sub = $('#subs span'); const txt = cue ? cue[2] : '';
+  if (sub.textContent !== txt) sub.textContent = txt;
+  sub.style.visibility = txt ? 'visible' : 'hidden';
+  $('#fadeblack').style.opacity = t < 0.5 ? 1 - t / .5 : clamp((t - 164) / 1.6);
+}
+
+/* ---------- Scale stage to window ---------- */
+function fit() {
+  const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+  $('#stage').style.transform = `scale(${s}) translate(-50%, -50%)`;
+  $('#stage').style.transformOrigin = '0 0';
+  $('#stage').style.left = '50%'; $('#stage').style.top = '50%';
+  $('#stage').style.transform = `translate(-50%, -50%) scale(${s})`;
+  $('#stage').style.transformOrigin = '50% 50%';
+}
+addEventListener('resize', fit); fit();
+
+/* ---------- Modes ---------- */
+const params = new URLSearchParams(location.search);
+window.__seek = t => render(t);
+window.__duration = DURATION;
+if (params.get('cc') === '1') document.body.classList.add('cc');
+if (params.has('render')) {
+  document.body.classList.add('render');
+  $('#stage').style.transform = 'none'; $('#stage').style.left = '0'; $('#stage').style.top = '0';
+  removeEventListener('resize', fit);
+  render(+params.get('t') || 0);
+  return;
+}
+const audio = $('#audio'); let playing = false, t0 = 0, clockStart = 0, cur = +params.get('t') || 0, audioOK = true;
+audio.addEventListener('error', () => { audioOK = false; });
+const now = () => playing ? (audioOK && !audio.paused ? audio.currentTime : (performance.now() - clockStart) / 1000 + t0) : cur;
+function play() {
+  playing = true; t0 = cur; clockStart = performance.now(); $('#pp').textContent = 'Pause'; $('#bigplay').style.display = 'none';
+  if (audioOK) { try { audio.currentTime = cur; const pr = audio.play(); pr && pr.catch(() => { audioOK = false; }); } catch (e) { audioOK = false; } }
+}
+function pause() { cur = now(); playing = false; audio.pause(); $('#pp').textContent = 'Play'; }
+function seek(t) { cur = clamp(t, 0, DURATION); if (playing) { t0 = cur; clockStart = performance.now(); if (audioOK) audio.currentTime = cur; } render(cur); }
+$('#pp').onclick = () => playing ? pause() : play();
+document.body.classList.toggle('cc', params.get('cc') !== '0');
+$('#ccb').setAttribute('aria-pressed', document.body.classList.contains('cc'));
+$('#ccb').onclick = () => { const on = !document.body.classList.contains('cc'); document.body.classList.toggle('cc', on); $('#ccb').setAttribute('aria-pressed', on); render(now()); };
+USE_CASES.forEach(([n, name, title, at, problem, how, outcome]) => {
+  const c = document.createElement('div'); c.className = 'card';
+  c.innerHTML = `<div class="n">${n} · ${name.toUpperCase()}</div><h3></h3><dl><dt>Situation</dt><dd class="p"></dd><dt>How SevOne helps</dt><dd class="h"></dd><dt>Outcome</dt><dd class="o"></dd></dl><div style="margin-top:14px"><button>Watch · ${Math.floor(at / 60)}:${fmt2(at % 60)}</button></div>`;
+  c.querySelector('h3').textContent = title; c.querySelector('.p').textContent = problem; c.querySelector('.h').textContent = how; c.querySelector('.o').textContent = outcome;
+  c.querySelector('button').onclick = () => { $('#ucpanel').classList.remove('open'); seek(at); if (!playing) play(); };
+  $('#ucgrid').appendChild(c);
+});
+$('#ucb').onclick = () => { if (playing) pause(); $('#ucpanel').classList.add('open'); };
+$('#ucclose').onclick = () => $('#ucpanel').classList.remove('open');
+$('#bigplay').onclick = play;
+$('#scrub').oninput = e => seek(+e.target.value);
+$$('#player .chap button').forEach(b => b.onclick = () => { seek(+b.dataset.t); if (!playing) play(); });
+addEventListener('keydown', e => { if (e.code === 'Escape') $('#ucpanel').classList.remove('open'); if (e.code === 'Space') { e.preventDefault(); playing ? pause() : play(); } if (e.code === 'ArrowRight') seek(now() + 5); if (e.code === 'ArrowLeft') seek(now() - 5); });
+let idleT; addEventListener('mousemove', () => { document.body.classList.remove('idle'); clearTimeout(idleT); idleT = setTimeout(() => playing && document.body.classList.add('idle'), 2200); });
+function loop() {
+  const t = now();
+  if (playing && t >= DURATION) { pause(); cur = DURATION; }
+  render(Math.min(t, DURATION));
+  $('#scrub').value = t; $('#tcur').textContent = `${Math.floor(t / 60)}:${fmt2(t % 60)}`;
+  requestAnimationFrame(loop);
+}
+render(cur); loop();
+})();
+</script>
+</body>
+</html>
