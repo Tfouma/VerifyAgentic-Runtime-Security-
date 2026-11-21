@@ -47,6 +47,7 @@ Deterministic and safe to use on stage or in a recording. It runs anywhere and h
 | Terminal narrator | `demo/run.py` | `python3 -m demo.run` for a CLI walkthrough |
 | **Breach Console** | `demo/dashboard.html` | The visual for the room and the video |
 | **Lateral Movement Map** | `demo/attack_map.html` | Architecture view per step: the path the request takes, the chain of agents it passed through, and the five background checks (identity → delegation → policy → behavior → response) |
+| **Demo film** | `demo/film/the-agent-that-went-rogue.mp4` | The film from section 3A, ready to play (about 5 minutes, 1080p, burned-in captions, no audio) |
 
 **Why simulate first:** a live attack on stage can fail. A scripted one runs the same
 way every time, so you can rehearse the timing and cut the video frame by frame.
@@ -72,28 +73,47 @@ Ask your IBM Client Engineering team to stand up Tier B. It is a proof of value,
 
 ## 3. What content should you plan?
 
-### A. Recorded video (about 3 minutes). Storyboard:
+### A. Recorded video. Core storyboard (3 minutes):
 
 | Time | Scene | On screen | Voiceover (short version) |
 |------|-------|-----------|--------------------------|
 | 0:00–0:20 | **Cold open** | Black screen, then the Breach Console | "Your bank just deployed AI agents to help customers. Here's what happens when one of them turns." |
-| 0:20–0:40 | **Meet the agents** | Agent Fleet panel | "One customer-service agent, trusted and registered. Two helpers it recruits. Nobody registered those." |
+| 0:20–0:40 | **Meet the agents** | Agent Fleet panel | "One customer-service agent: the bank's own, sanctioned and trusted. Two helpers it recruits. Nobody registered those." |
 | 0:40–1:30 | **Controls OFF** | Click *Run attack* and watch four ALLOWED steps land | "A hidden instruction in a support ticket. Every customer record pulled. Accounts ranked. Two hundred and fifty thousand gone. Then one-eighty more. Nothing stopped it." |
 | 1:30–1:45 | **The number** | Impact panel: 5 records, **$430,000** | Silence. Let it land. |
 | 1:45–2:35 | **Controls ON** | Flip the switch, replay, and watch four BLOCKED steps | "Same agents. Same attack. This time, every action is checked against who the agent is and what a human actually authorized it to do." |
 | 2:35–2:50 | **The contrast** | 0 records, **$0** | "Zero records. Zero dollars. Every agent quarantined, with a full audit trail back to an accountable human." |
 | 2:50–3:00 | **Call to action** | Title card | "Your agents are already in production. Is anything checking them?" |
 
-**How to record:** screen-capture the published Breach Console at 1080p (OBS or
-QuickTime), full-screen browser, zoom 110–125%. Record OFF and ON as separate takes.
-Add the voiceover afterwards.
+**Ready to play:** `demo/film/the-agent-that-went-rogue.mp4` (about 5 minutes, 1080p) follows
+this storyboard and adds what the console alone can't show:
+
+- **Two Lateral Movement Map scenes.** After the OFF run, the diagram shows how the attack
+  hopped from the ticket through three agents to the money, with the 200 OK responses and an
+  empty "behind the request" panel. After the ON run, it shows who was really asking, the
+  403s, and the five checks (identity, delegation, policy, behavior, response) as each fires.
+- **Objective tags.** Captions tag scenes with three objectives for AI agent governance:
+  visibility & inventory, governance & accountability, lifecycle & controls (the kill
+  switch). A closing card sums up what the demo showed for each one.
+- **Camera work instead of dimming.** The camera zooms into the panel that matters, and the
+  wide shots keep the "What this is" disclaimer on screen.
+
+The voiceover lines run as burned-in captions, so the film works in a room with the sound
+off. The file has no audio track.
+
+**To re-record** after changing either page, run `node demo/film/record_film.js`. It needs
+Node 18+, Playwright with Chromium, and ffmpeg, and takes about seven minutes.
+`FILM_CLIENT=Name` puts a client's name on the objective tags. Keep client-named cuts out of
+this repository, which is public. To capture the console by hand instead, screen-record the
+published Breach Console at 1080p (OBS or QuickTime) in a full-screen browser at 110–125%
+zoom, with OFF and ON as separate takes.
 
 ### B. Live workshop (about 90 minutes)
 
 | Block | Time | Content |
 |-------|------|---------|
 | **1. The shift** | 10 min | AI agents are now an identity problem. They log in, hold tokens, call APIs and act on behalf of people. Most IAM programmes were built for humans. |
-| **2. Show the video** | 5 min | Play the 3-minute film. Don't explain it yet. |
+| **2. Show the video** | 5 min | Play the film (`demo/film/the-agent-that-went-rogue.mp4`, about 5 minutes). Don't explain it yet. |
 | **3. Live replay** | 15 min | Run the Breach Console live. Pause on each step and ask the room, *"Would you catch this today?"* |
 | **4. Unpack the controls** | 20 min | Open the Lateral Movement Map. Step through the chain with controls off, then on. Show where each lateral hop lands and which of the five controls in section 4 fires. |
 | **5. Their environment** | 25 min | Discovery conversation (questions in section 5). Whiteboard their agent landscape. |

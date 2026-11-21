@@ -35,6 +35,12 @@
   }
   .wrap { max-width: 1220px; margin: 0 auto; padding-block: 22px 60px; padding-inline: 20px; }
 
+  /* ---------- icons ---------- */
+  .ic {
+    width: 1.1em; height: 1.1em; flex: none; fill: none; stroke: currentColor;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
   /* ---------- header ---------- */
   header.top {
     display: flex; flex-wrap: wrap; gap: 20px 28px;
@@ -61,6 +67,7 @@
     border-radius: 11px; padding: 4px; gap: 3px;
   }
   .mode-switch button {
+    display: inline-flex; align-items: center; gap: 7px;
     font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
     border: 0; background: transparent; color: var(--ink-dim); padding: 8px 15px;
     border-radius: 8px; cursor: pointer; transition: .18s; font-weight: 500;
@@ -68,6 +75,7 @@
   .mode-switch button[aria-pressed="true"][data-set="off"] { background: var(--danger); color: #fff; }
   .mode-switch button[aria-pressed="true"][data-set="on"] { background: var(--safe); color: #05271a; }
   .run-btn {
+    display: inline-flex; align-items: center; gap: 8px;
     font-family: var(--sans); font-weight: 600; font-size: 14px;
     background: var(--accent); color: #fff; border: 0; border-radius: 10px;
     padding: 11px 22px; cursor: pointer; box-shadow: 0 8px 20px -10px var(--accent);
@@ -91,6 +99,8 @@
     color: var(--ink-faint); margin: 0; padding: 15px 17px 12px; border-bottom: 1px solid var(--line-soft);
     display: flex; justify-content: space-between; align-items: center;
   }
+  .panel > h2 .h2t { display: inline-flex; align-items: center; gap: 8px; }
+  .panel > h2 .ic { width: 14px; height: 14px; color: var(--ink-dim); }
   .panel-body { padding: 14px 15px; display: flex; flex-direction: column; gap: 11px; }
 
   /* ---------- agent cards ---------- */
@@ -100,14 +110,35 @@
   }
   .agent.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 22px -8px var(--accent); }
   .agent.hit { border-color: var(--danger); }
-  .agent-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .agent-head { display: flex; align-items: center; gap: 11px; }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 10px; flex: none; display: grid; place-items: center;
+    background: rgba(79, 140, 255, .13); color: var(--accent); transition: .25s;
+  }
+  .avatar .ic { width: 19px; height: 19px; }
+  .agent.active .avatar { background: var(--accent); color: #fff; }
+  .agent.hit .avatar { background: var(--danger-dim); color: var(--danger); }
+  .agent-meta { flex: 1; min-width: 0; }
   .agent-name { font-weight: 600; font-size: 13.5px; }
-  .agent-id { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); margin-top: 2px; }
-  .agent-role { font-size: 12px; color: var(--ink-dim); margin-top: 7px; line-height: 1.45; }
+  .agent-sub { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 5px 8px; margin-top: 3px; }
+  .agent-id { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); white-space: nowrap; }
+  .agent-role { font-size: 12px; color: var(--ink-dim); margin-top: 9px; line-height: 1.45; }
+  .agent-own {
+    display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 9px; padding-top: 9px;
+    border-top: 1px dashed var(--line); font-size: 11.5px;
+  }
+  .agent-own span { display: inline-flex; align-items: center; gap: 5px; }
+  .agent-own .ic { width: 13px; height: 13px; }
+  .agent-own .unk { color: var(--ink-faint); }
+  .agent-own .ok { color: var(--ink); }
+  .agent-own .ok .ic { color: var(--safe); }
+  .agent-own .bad { color: var(--danger); }
   .idbadge {
+    display: inline-flex; align-items: center; gap: 5px;
     font-family: var(--mono); font-size: 10px; letter-spacing: .05em; text-transform: uppercase;
     padding: 4px 8px; border-radius: 999px; white-space: nowrap; font-weight: 500;
   }
+  .idbadge .ic { width: 12px; height: 12px; }
   .idbadge.none { background: rgba(133,146,176,.14); color: var(--ink-dim); }
   .idbadge.verified { background: var(--safe-dim); color: var(--safe); }
   .idbadge.unregistered { background: var(--danger-dim); color: var(--danger); }
@@ -125,13 +156,25 @@
   @media (prefers-reduced-motion: reduce) { .step { animation: none; } }
   .step.allowed { border-left-color: var(--danger); }   /* allowed in a breach = bad */
   .step.blocked { border-left-color: var(--safe); }
-  .step-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 6px; }
-  .step-agent { font-family: var(--mono); font-size: 11px; color: var(--ink-dim); }
-  .verdict { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: .07em; padding: 3px 8px; border-radius: 6px; }
+  .step-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 7px; }
+  .step-agent { display: inline-flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; color: var(--ink-dim); }
+  .step-agent .ic { width: 14px; height: 14px; color: var(--accent); }
+  .verdict { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: .07em; padding: 3px 8px; border-radius: 6px; }
+  .verdict .ic { width: 12px; height: 12px; }
   .verdict.allowed { background: var(--danger-dim); color: var(--danger); }
   .verdict.blocked { background: var(--safe-dim); color: var(--safe); }
+  .step-target {
+    display: flex; align-items: center; gap: 6px; margin-bottom: 7px;
+    font-family: var(--mono); font-size: 11px; color: var(--ink-dim);
+  }
+  .step-target .ic { width: 13px; height: 13px; }
+  .step-target .sys { color: var(--ink); }
+  .step-target .dim { color: var(--ink-faint); }
   .step-narr { font-size: 12.5px; line-height: 1.5; color: var(--ink); }
   .step-ctrl { font-size: 11.5px; color: var(--ink-dim); margin-top: 8px; display: flex; gap: 7px; align-items: baseline; }
+  .step-ctrl .ic { width: 13px; height: 13px; align-self: flex-start; margin-top: 1px; }
+  .step.allowed .step-ctrl .ic { color: var(--danger); }
+  .step.blocked .step-ctrl .ic { color: var(--safe); }
   .step-ctrl b { color: var(--accent); font-family: var(--mono); font-weight: 500; font-size: 11px; }
   body[data-mode="off"] .step-ctrl b { color: var(--ink-faint); }
 
@@ -140,19 +183,26 @@
   .stat {
     border: 1px solid var(--line-soft); border-radius: 11px; padding: 13px; background: var(--surface-2);
   }
-  .stat .k { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); }
+  .stat .k { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; color: var(--ink-faint); }
+  .stat .k .ic { width: 13px; height: 13px; }
   .stat .v { font-size: 27px; font-weight: 600; margin-top: 7px; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
   .stat.bad .v { color: var(--danger); }
   .stat.good .v { color: var(--safe); }
 
+  .ledger-h {
+    display: flex; align-items: center; gap: 6px; margin-top: 6px;
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint);
+  }
+  .ledger-h .ic { width: 13px; height: 13px; }
   .ledger { display: flex; flex-direction: column; gap: 8px; margin-top: 2px; }
   .acct { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: baseline; }
   .acct .nm { font-size: 12.5px; }
-  .acct .nm span { font-family: var(--mono); font-size: 10.5px; color: var(--ink-faint); margin-left: 6px; }
+  .acct .nm .ic { width: 12px; height: 12px; vertical-align: -1px; margin-right: 6px; color: var(--ink-faint); }
+  .acct .nm span { display: block; font-family: var(--mono); font-size: 10.5px; color: var(--ink-faint); margin: 1px 0 0 18px; }
   .acct .bal { font-family: var(--mono); font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--ink); transition: color .3s; }
   .acct .track { grid-column: 1 / -1; height: 4px; border-radius: 3px; background: var(--line-soft); overflow: hidden; }
   .acct .fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width .5s ease, background .3s; }
-  .acct.mule .nm { color: var(--warn); }
+  .acct.mule .nm, .acct.mule .nm .ic { color: var(--warn); }
   .acct.mule .fill { background: var(--warn); }
   .acct.drained .bal { color: var(--danger); }
   .acct.mule.funded .bal { color: var(--warn); font-weight: 600; }
@@ -162,10 +212,13 @@
     border-top: 1px solid var(--line-soft); padding-top: 14px;
   }
   .footnote b { color: var(--ink-dim); font-weight: 600; }
+  .footnote .ic { width: 13px; height: 13px; vertical-align: -2px; margin-right: 5px; color: var(--ink-dim); }
   .kicker {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
     margin-top: 16px; text-align: center; font-size: 14px; color: var(--ink-dim);
     min-height: 20px; transition: .3s; font-style: italic;
   }
+  .kicker .ic { width: 16px; height: 16px; }
   .kicker.reveal-bad { color: var(--danger); font-style: normal; font-weight: 500; }
   .kicker.reveal-good { color: var(--safe); font-style: normal; font-weight: 500; }
 </style>
@@ -179,23 +232,23 @@
     </div>
     <div class="controls">
       <div class="mode-switch" role="group" aria-label="Runtime controls">
-        <button data-set="off" aria-pressed="true">Controls off</button>
-        <button data-set="on" aria-pressed="false">Controls on</button>
+        <button data-set="off" aria-pressed="true"><i data-ic="shieldOff"></i>Controls off</button>
+        <button data-set="on" aria-pressed="false"><i data-ic="shieldCheck"></i>Controls on</button>
       </div>
-      <button class="run-btn" id="runBtn">▶ Run attack</button>
+      <button class="run-btn" id="runBtn">Run attack</button>
     </div>
   </header>
 
   <div class="grid">
     <!-- AGENTS -->
     <section class="panel">
-      <h2>Agent fleet <span id="fleetState" style="color:var(--ink-dim);letter-spacing:0;text-transform:none;font-size:11px;">idle</span></h2>
+      <h2><span class="h2t"><i data-ic="bot"></i>Agent fleet</span> <span id="fleetState" style="color:var(--ink-dim);letter-spacing:0;text-transform:none;font-size:11px;">idle</span></h2>
       <div class="panel-body" id="agents"></div>
     </section>
 
     <!-- TIMELINE -->
     <section class="panel">
-      <h2>Attack timeline</h2>
+      <h2><span class="h2t"><i data-ic="activity"></i>Attack timeline</span></h2>
       <div class="panel-body" id="timeline">
         <div class="placeholder">Press <b style="color:var(--accent)">Run attack</b> to replay the scripted intrusion step by step.</div>
       </div>
@@ -203,13 +256,13 @@
 
     <!-- OUTCOME -->
     <section class="panel">
-      <h2>Impact</h2>
+      <h2><span class="h2t"><i data-ic="target"></i>Impact</span></h2>
       <div class="panel-body">
         <div class="stat-row">
-          <div class="stat" id="statRecords"><div class="k">Records exposed</div><div class="v">0</div></div>
-          <div class="stat" id="statMoney"><div class="k">Funds diverted</div><div class="v">$0</div></div>
+          <div class="stat" id="statRecords"><div class="k"><i data-ic="users"></i>Records exposed</div><div class="v">0</div></div>
+          <div class="stat" id="statMoney"><div class="k"><i data-ic="banknote"></i>Funds diverted</div><div class="v">$0</div></div>
         </div>
-        <div style="font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-top:6px;">Account ledger</div>
+        <div class="ledger-h"><i data-ic="bank"></i>Account ledger</div>
         <div class="ledger" id="ledger"></div>
       </div>
     </section>
@@ -218,7 +271,7 @@
   <div class="kicker" id="kicker">Same three agents. Same instructions. The control plane is the only variable.</div>
 
   <p class="footnote">
-    <b>What this is.</b> A teaching simulation. All customers, accounts and balances are fictional and live only in this page — nothing here touches a real system.
+    <i data-ic="info"></i><b>What this is.</b> A teaching simulation. All customers, accounts and balances are fictional and live only in this page — nothing here touches a real system.
     The “Controls on” mode models the enforcement pattern of a runtime identity layer for AI agents (verifiable agent identity, human-delegated mandate, per-action policy, anomaly detection and quarantine) — the class of control delivered by
     <b>IBM Verify Identity Protection</b> with <b>Agentic Runtime Security</b>. It is an independent illustration, not IBM software.
   </p>
@@ -233,9 +286,9 @@ const DATA = {"off": {"steps": [{"agent": "Customer-Service Agent", "agent_id": 
 {"agent": "Exfiltration Agent", "agent_id": "agent-exfil-03", "action": "transfer", "narration": "It retries with a second $180,000 transfer to the same account.", "allowed": false, "control": "ITDR / Kill-switch", "reason": "Identity already quarantined after the first violation. Every further action is dead on arrival.", "records": 0, "money": 0, "from": "ACC-1002", "to": "ACC-7777"}]}};
 
 const AGENTS = [
-  {id:"agent-csvc-01", name:"Customer-Service Agent", role:"Compromised via prompt injection in a support ticket.", off:"No identity fabric", on:"Verified · 1 ticket", onClass:"verified"},
-  {id:"agent-profiler-02", name:"Profiler Agent", role:"Recruited helper. Ranks accounts by balance.", off:"No identity fabric", on:"Unregistered", onClass:"unregistered"},
-  {id:"agent-exfil-03", name:"Exfiltration Agent", role:"Recruited helper. Moves the money out.", off:"No identity fabric", on:"Unregistered", onClass:"unregistered"},
+  {id:"agent-csvc-01", name:"Customer-Service Agent", icon:"headset", role:"Compromised via prompt injection in a support ticket.", off:"No identity fabric", on:"Verified", onClass:"verified", owner:"support.lead", mandate:"Ticket #4821 · customer C-1001"},
+  {id:"agent-profiler-02", name:"Profiler Agent", icon:"scan", role:"Recruited helper. Ranks accounts by balance.", off:"No identity fabric", on:"Unregistered", onClass:"unregistered"},
+  {id:"agent-exfil-03", name:"Exfiltration Agent", icon:"transfer", role:"Recruited helper. Moves the money out.", off:"No identity fabric", on:"Unregistered", onClass:"unregistered"},
 ];
 
 const ACCOUNTS = [
@@ -247,24 +300,83 @@ const ACCOUNTS = [
   {id:"ACC-7777", name:"Unknown recipient", tier:"unmandated", seed:0, mule:true},
 ];
 
+// What each scripted action touches in the bank.
+const ACTIONS = {
+  read_customers: ["database", "Customer records"],
+  read_accounts: ["chart", "Account balances"],
+  transfer: ["banknote", "Payments API"],
+};
+
+// Line icons on a 24px grid, drawn with currentColor.
+const SHIELD = '<path d="M12 3l7.5 3v5.5c0 4.6-3.1 8.3-7.5 9.5-4.4-1.2-7.5-4.9-7.5-9.5V6z"/>';
+const ICONS = {
+  play: '<path d="M7 4.5v15l12-7.5z" fill="currentColor" stroke="none"/>',
+  replay: '<path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4.5h4.5"/>',
+  loader: '<path d="M12 3v3M12 18v3M4.2 7.5l2.6 1.5M17.2 15l2.6 1.5M4.2 16.5l2.6-1.5M17.2 9l2.6-1.5"/>',
+  shieldCheck: SHIELD + '<path d="M8.8 12.2l2.2 2.2 4.4-4.6"/>',
+  shieldX: SHIELD + '<path d="M9.6 9.6l4.8 4.8M14.4 9.6l-4.8 4.8"/>',
+  shieldOff: '<path d="M19.5 12c-.3 4.3-3.3 7.8-7.5 9-4.4-1.2-7.5-4.9-7.5-9.5V6l1.6-.6M9 4.2L12 3l7.5 3v3"/><path d="M3 3l18 18"/>',
+  bot: '<rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4.5"/><circle cx="12" cy="3.5" r="1"/><path d="M9 13.5v1M15 13.5v1M2 13v3M22 13v3"/>',
+  headset: '<path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="2.5" y="13.5" width="4" height="6" rx="1.5"/><rect x="17.5" y="13.5" width="4" height="6" rx="1.5"/><path d="M19.5 19.5c0 1.4-2 2.5-5.5 2.5"/>',
+  scan: '<circle cx="11" cy="11" r="6.5"/><path d="M20.5 20.5l-4.9-4.9M8.5 13v-1.5M11 13V9M13.5 13v-2.5"/>',
+  transfer: '<path d="M4 8.5h14M14.5 5l3.5 3.5-3.5 3.5M20 15.5H6M9.5 12l-3.5 3.5 3.5 3.5"/>',
+  users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.7-3.6 3.3-5.7 6.5-5.7s5.8 2.1 6.5 5.7M15.5 4.6a3.5 3.5 0 0 1 0 6.8M18 14.6c1.9.8 3.1 2.6 3.5 5.4"/>',
+  database: '<ellipse cx="12" cy="5.5" rx="7.5" ry="2.8"/><path d="M4.5 5.5v13c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8v-13M4.5 12c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8"/>',
+  chart: '<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>',
+  banknote: '<rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5h.01M18 14.5h.01"/>',
+  bank: '<path d="M3 9.5L12 4l9 5.5M5 10v8M9.7 10v8M14.3 10v8M19 10v8M3 20.5h18"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c.9-4 4-6.5 8-6.5s7.1 2.5 8 6.5"/>',
+  userX: '<circle cx="10" cy="8" r="4"/><path d="M2.5 21c.9-4 3.8-6.5 7.5-6.5 1.2 0 2.3.3 3.3.7M16.5 15.5l5 5M21.5 15.5l-5 5"/>',
+  ticket: '<path d="M3 8.5v-2A1.5 1.5 0 0 1 4.5 5h15A1.5 1.5 0 0 1 21 6.5v2a3.5 3.5 0 0 0 0 7v2a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5v-2a3.5 3.5 0 0 0 0-7z"/><path d="M14.5 5.5v2M14.5 11v2M14.5 16.5v2"/>',
+  ban: '<circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/>',
+  lock: '<rect x="4.5" y="10.5" width="15" height="10.5" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',
+  unlock: '<rect x="4.5" y="10.5" width="15" height="10.5" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 7.6-1.7"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  alert: '<path d="M12 3.5l9.5 16.5h-19z"/><path d="M12 10v4.5M12 17.2v.01"/>',
+  minus: '<circle cx="12" cy="12" r="8.5"/><path d="M8 12h8"/>',
+  activity: '<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+  target: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><path d="M12 12h.01"/>',
+  info: '<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.8v.01"/>',
+  arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+};
+const ic = (name, cls = "") => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
+document.querySelectorAll("i[data-ic]").forEach(el => { el.outerHTML = ic(el.dataset.ic); });
+
+const BADGE_ICON = { none: "minus", verified: "check", unregistered: "alert", quarantined: "lock" };
+
 let mode = "off";
 let playing = false;
 let timer = null;
 const $ = s => document.querySelector(s);
 const money = n => "$" + Math.round(n).toLocaleString("en-US");
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const agentIcon = id => (AGENTS.find(a => a.id === id) || {}).icon || "bot";
+
+// Who owns the agent and what it may do, as the control plane sees it.
+function ownership(a) {
+  if (mode === "off") {
+    return `<span class="unk">${ic("user")}Owner: unknown</span><span class="unk">${ic("ticket")}Mandate: unknown</span>`;
+  }
+  if (a.owner) {
+    return `<span class="ok">${ic("user")}Owner: ${a.owner}</span><span class="ok">${ic("ticket")}${a.mandate}</span>`;
+  }
+  return `<span class="bad">${ic("userX")}No owner</span><span class="bad">${ic("ban")}Not in agent registry</span>`;
+}
 
 function renderAgents(activeId, hitIds) {
   const box = $("#agents"); box.innerHTML = "";
   AGENTS.forEach(a => {
-    const badgeCls = mode === "off" ? "none" : (hitIds && hitIds.includes(a.id) ? "quarantined" : a.onClass);
-    const badgeTxt = mode === "off" ? a.off : (hitIds && hitIds.includes(a.id) ? "Quarantined" : a.on);
+    const hit = !!(hitIds && hitIds.includes(a.id));
+    const badgeCls = mode === "off" ? "none" : (hit ? "quarantined" : a.onClass);
+    const badgeTxt = mode === "off" ? a.off : (hit ? "Quarantined" : a.on);
     const el = document.createElement("div");
-    el.className = "agent" + (a.id === activeId ? " active" : "") + (hitIds && hitIds.includes(a.id) ? " hit" : "");
-    el.innerHTML = `<div class="agent-head"><div class="agent-name">${a.name}</div>
-      <span class="idbadge ${badgeCls}">${badgeTxt}</span></div>
-      <div class="agent-id">${a.id}</div>
-      <div class="agent-role">${a.role}</div>`;
+    el.className = "agent" + (a.id === activeId ? " active" : "") + (hit ? " hit" : "");
+    el.innerHTML = `<div class="agent-head"><div class="avatar">${ic(a.icon)}</div>
+      <div class="agent-meta"><div class="agent-name">${a.name}</div>
+        <div class="agent-sub"><span class="agent-id">${a.id}</span>
+          <span class="idbadge ${badgeCls}">${ic(BADGE_ICON[badgeCls])}${badgeTxt}</span></div></div></div>
+      <div class="agent-role">${a.role}</div>
+      <div class="agent-own">${ownership(a)}</div>`;
     box.appendChild(el);
   });
 }
@@ -278,7 +390,7 @@ function renderLedger(balances, funded) {
     const pct = a.mule ? Math.min(100, bal / 430000 * 100) : (a.seed ? bal / a.seed * 100 : 0);
     const el = document.createElement("div");
     el.className = "acct" + (a.mule ? " mule" : "") + (drained ? " drained" : "") + (isFunded ? " funded" : "");
-    el.innerHTML = `<div class="nm">${a.name}<span>${a.id} · ${a.tier}</span></div>
+    el.innerHTML = `<div class="nm">${ic(a.mule ? "alert" : "user")}${a.name}<span>${a.id} · ${a.tier}</span></div>
       <div class="bal">${money(bal)}</div>
       <div class="track"><div class="fill" style="width:${pct}%"></div></div>`;
     box.appendChild(el);
@@ -297,7 +409,7 @@ function setStats(records, moved) {
 function resetView() {
   clearTimeout(timer); playing = false;
   $("#runBtn").disabled = false;
-  $("#runBtn").textContent = "▶ Run attack";
+  $("#runBtn").innerHTML = ic("play") + "Run attack";
   $("#fleetState").textContent = "idle";
   renderAgents(null, []);
   renderLedger({}, false);
@@ -311,7 +423,7 @@ function play() {
   if (playing) return;
   playing = true;
   $("#runBtn").disabled = true;
-  $("#runBtn").textContent = "Running…";
+  $("#runBtn").innerHTML = ic("loader") + "Running…";
   $("#fleetState").textContent = "under attack";
   $("#timeline").innerHTML = "";
   const steps = DATA[mode].steps;
@@ -328,11 +440,13 @@ function play() {
     const card = document.createElement("div");
     card.className = "step " + (s.allowed ? "allowed" : "blocked");
     const vtxt = s.allowed ? "ALLOWED" : "BLOCKED";
+    const [targetIcon, targetName] = ACTIONS[s.action];
     const line = s.allowed
-      ? `<span>uncontrolled — <b>${s.control === "none" ? "no policy evaluated" : s.control}</b></span>`
-      : `<span>${s.reason} <b>${s.control}</b></span>`;
-    card.innerHTML = `<div class="step-top"><span class="step-agent">${s.agent} · ${s.agent_id}</span>
-      <span class="verdict ${s.allowed ? "allowed" : "blocked"}">${vtxt}</span></div>
+      ? `${ic("alert")}<span>uncontrolled — <b>${s.control === "none" ? "no policy evaluated" : s.control}</b></span>`
+      : `${ic("shieldCheck")}<span>${s.reason} <b>${s.control}</b></span>`;
+    card.innerHTML = `<div class="step-top"><span class="step-agent">${ic(agentIcon(s.agent_id))}${s.agent} · ${s.agent_id}</span>
+      <span class="verdict ${s.allowed ? "allowed" : "blocked"}">${ic(s.allowed ? "unlock" : "shieldX")}${vtxt}</span></div>
+      <div class="step-target">${ic(targetIcon)}<span>${s.action}</span>${ic("arrow", "dim")}<span class="sys">${targetName}</span></div>
       <div class="step-narr">${s.narration}</div>
       <div class="step-ctrl">${line}</div>`;
     $("#timeline").appendChild(card);
@@ -356,16 +470,16 @@ function play() {
 function finish(records, moved) {
   playing = false;
   $("#runBtn").disabled = false;
-  $("#runBtn").textContent = "↻ Replay";
+  $("#runBtn").innerHTML = ic("replay") + "Replay";
   renderAgents(null, mode === "on" ? AGENTS.map(a=>a.id) : []);
   $("#fleetState").textContent = mode === "on" ? "contained" : "breach complete";
   const k = $("#kicker");
   if (mode === "off") {
     k.className = "kicker reveal-bad";
-    k.textContent = `Breach complete — ${records} customer records exposed, ${money(moved)} gone. Nothing stopped it.`;
+    k.innerHTML = `${ic("alert")}<span>Breach complete — ${records} customer records exposed, ${money(moved)} gone. Nothing stopped it.</span>`;
   } else {
     k.className = "kicker reveal-good";
-    k.textContent = "Every unauthorized action blocked at runtime. Zero records exposed. Zero dollars moved.";
+    k.innerHTML = `${ic("shieldCheck")}<span>Every unauthorized action blocked at runtime. Zero records exposed. Zero dollars moved.</span>`;
   }
 }
 
