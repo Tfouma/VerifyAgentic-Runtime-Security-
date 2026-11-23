@@ -48,6 +48,7 @@ Deterministic and safe to use on stage or in a recording. It runs anywhere and h
 | **Breach Console** | `demo/dashboard.html` | The visual for the room and the video |
 | **Lateral Movement Map** | `demo/attack_map.html` | Architecture view per step: the path the request takes, the chain of agents it passed through, and the five background checks (identity → delegation → policy → behavior → response) |
 | **Demo film** | `demo/film/the-agent-that-went-rogue.mp4` | The film from section 3A, ready to play (about 5 minutes, 1080p, burned-in captions, no audio) |
+| **Narrated film** | `demo/film/the-agent-that-went-rogue-narrated.mp4` | The same film with a spoken narration track, for rooms with sound or for sending ahead |
 
 **Why simulate first:** a live attack on stage can fail. A scripted one runs the same
 way every time, so you can rehearse the timing and cut the video frame by frame.
@@ -99,7 +100,10 @@ this storyboard and adds what the console alone can't show:
   wide shots keep the "What this is" disclaimer on screen.
 
 The voiceover lines run as burned-in captions, so the film works in a room with the sound
-off. The file has no audio track.
+off. The file has no audio track. `demo/film/the-agent-that-went-rogue-narrated.mp4` adds a
+spoken narration of every caption and title card. Its scenes hold until each line is
+finished, so it runs a little longer. The voice is synthetic (the open-weight Kokoro model),
+so say so if anyone asks. If you would rather use your own voice, record over the silent cut.
 
 **To re-record** after changing either page, run `node demo/film/record_film.js`. It needs
 Node 18+, Playwright with Chromium, and ffmpeg, and takes about seven minutes.

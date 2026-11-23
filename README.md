@@ -16,7 +16,9 @@ illustration, not IBM software.
 | `demo/dashboard.html` | The Breach Console: an interactive visual for the room and the recording |
 | `demo/attack_map.html` | Lateral Movement Map: architecture view of each step, including the request chain across agents and the background checks that run on every call |
 | `demo/film/the-agent-that-went-rogue.mp4` | **The demo film** (about 5 minutes): both runs in the Breach Console plus Lateral Movement Map scenes, with captions tagged to three agent-governance objectives (1080p, no audio) |
+| `demo/film/the-agent-that-went-rogue-narrated.mp4` | The same film with a narrated sound track, paced so each line finishes before the next scene (1080p, AAC audio) |
 | `demo/film/record_film.js` | Re-records the film from the two pages |
+| `demo/film/narrate.py` | Speaks the narration with the open-weight Kokoro text-to-speech model, locally, and mixes it onto one track |
 | `demo/run.py` | Terminal narrator that prints the attack with controls OFF, then ON |
 | `demo/bank.py` | In-memory mock bank |
 | `demo/guardrail.py` | Simulated runtime control layer (agent identity, delegated mandate, per-action policy, quarantine) |
@@ -40,6 +42,20 @@ To re-record the film after changing either page, run `node demo/film/record_fil
 needs Node 18+, Playwright with Chromium, and ffmpeg, and takes about seven minutes.
 `FILM_CLIENT=Name` puts a client's name on the objective tags. Keep client-named cuts out
 of this repository.
+
+For the narrated copy, also install `kokoro-onnx` and `soundfile` in a Python environment,
+download `kokoro-v1.0.onnx` and `voices-v1.0.bin` from the
+[kokoro-onnx model release](https://github.com/thewh1teagle/kokoro-onnx/releases/tag/model-files-v1.0),
+and run:
+
+```bash
+FILM_VOICE=af_heart FILM_PYTHON=/path/to/venv/bin/python \
+KOKORO_MODEL=/path/to/kokoro-v1.0.onnx KOKORO_VOICES=/path/to/voices-v1.0.bin \
+node demo/film/record_film.js demo/film/the-agent-that-went-rogue-narrated.mp4
+```
+
+The narration runs on your machine, so the script text never goes to an outside service.
+`FILM_VOICE` picks any Kokoro voice, for example `am_michael` for a male narrator.
 
 ## The story in one line
 
