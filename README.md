@@ -15,6 +15,7 @@ illustration, not IBM software.
 | `docs/WORKSHOP_PLAN.md` | **Start here.** How many agents you need, which environment to use, the video storyboard, the 90-minute agenda, the talk track, discovery questions, objection handling and the call to action |
 | `demo/dashboard.html` | The Breach Console: an interactive visual for the room and the recording |
 | `demo/attack_map.html` | Lateral Movement Map: architecture view of each step, including the request chain across agents and the background checks that run on every call |
+| `demo/fraud_ring.html` | **Fraud Ring Live**: four attacker crews go after money, personal data, card numbers and phone numbers at a fictional bank and mobile operator, all at once. Flip the controls or pull the kill switch mid-attack |
 | `demo/film/the-agent-that-went-rogue.mp4` | **The demo film** (about 5 minutes): both runs in the Breach Console plus Lateral Movement Map scenes, with captions tagged to three agent-governance objectives (1080p, no audio) |
 | `demo/film/the-agent-that-went-rogue-narrated.mp4` | The same film with a narrated sound track, paced so each line finishes before the next scene (1080p, AAC audio) |
 | `demo/film/record_film.js` | Re-records the film from the two pages |
@@ -36,7 +37,9 @@ python3 -m unittest discover tests # verify the OFF/ON outcomes
 
 For the dashboard, open `demo/dashboard.html` in a browser. Choose **Controls off** or
 **Controls on**, then click **Run attack**. To explain what happens behind each step,
-open `demo/attack_map.html` and step through it or click **Play chain**.
+open `demo/attack_map.html` and step through it or click **Play chain**. For the live
+version with a bank and a mobile operator, open `demo/fraud_ring.html`, press **Start attack**,
+and switch the controls on whenever you like.
 
 To re-record the film after changing either page, run `node demo/film/record_film.js`. It
 needs Node 18+, Playwright with Chromium, and ffmpeg, and takes about seven minutes.

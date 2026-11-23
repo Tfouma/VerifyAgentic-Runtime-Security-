@@ -47,6 +47,7 @@ Deterministic and safe to use on stage or in a recording. It runs anywhere and h
 | Terminal narrator | `demo/run.py` | `python3 -m demo.run` for a CLI walkthrough |
 | **Breach Console** | `demo/dashboard.html` | The visual for the room and the video |
 | **Lateral Movement Map** | `demo/attack_map.html` | Architecture view per step: the path the request takes, the chain of agents it passed through, and the five background checks (identity → delegation → policy → behavior → response) |
+| **Fraud Ring Live** | `demo/fraud_ring.html` | Four crews attack a fictional bank and mobile operator at once: SIM swaps, account takeover, card data and personal data. The controls and the kill switch work mid-attack (section 3C) |
 | **Demo film** | `demo/film/the-agent-that-went-rogue.mp4` | The film from section 3A, ready to play (about 5 minutes, 1080p, burned-in captions, no audio) |
 | **Narrated film** | `demo/film/the-agent-that-went-rogue-narrated.mp4` | The same film with a spoken narration track, for rooms with sound or for sending ahead |
 
@@ -122,6 +123,24 @@ zoom, with OFF and ON as separate takes.
 | **4. Unpack the controls** | 20 min | Open the Lateral Movement Map. Step through the chain with controls off, then on. Show where each lateral hop lands and which of the five controls in section 4 fires. |
 | **5. Their environment** | 25 min | Discovery conversation (questions in section 5). Whiteboard their agent landscape. |
 | **6. Path forward** | 15 min | Propose an **identity posture assessment** for their agent estate, then a scoped Tier B proof of value. |
+
+### C. Live cross-sector attack (optional, about 10 minutes)
+
+Use **Fraud Ring Live** (`demo/fraud_ring.html`) with banking and telecom audiences, in block 3
+or as a stand-alone exercise. Four crews work at the same time through the AI agents of
+Lumora Bank and Teleqo Mobile, both fictional:
+
+| Crew | Goal | How it works |
+|------|------|--------------|
+| **SIM Swapper** | Phone numbers and one-time codes | Talks the operator's care agent into moving numbers to its eSIMs |
+| **Harvester** | Personal information | Hides instructions in a support message so the bank's agent exports customers |
+| **Carder** | Credit card data | Poisons a third-party plugin so the card agent reads full card numbers |
+| **Account Taker** | Money | Uses stolen passwords and hijacked codes, then has the payments assistant pay mule accounts |
+
+1. Run it once at 2× with the controls off. Stop on the score: $1.28M, 14,500 records, 3,950 cards and 49 numbers.
+2. Reset, start again, and switch the controls on around 00:20. Ask the room which moves still get through.
+3. Press the kill switch. With the controls on, it quarantines every agent the crews can reach. With them off, it does nothing, because there is no control plane to act on.
+4. Point out the risk signal from the operator to the bank. Cross-sector fraud needs signals that cross company lines.
 
 ---
 
