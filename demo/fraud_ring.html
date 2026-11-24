@@ -669,7 +669,7 @@ const I18N = {
             noPlane: "Il n'y a aucun plan de contrôle d'exécution sur lequel agir, donc rien ne s'arrête. Les agents continuent de travailler pour les équipes.",
             added: (n) => `${n} ${n <= 1 ? "agent ou outil" : "agents et outils"} de plus en quarantaine. Chaque agent que les équipes peuvent atteindre est maintenant coupé.`,
             already: "Chaque agent que les équipes peuvent atteindre était déjà en quarantaine." },
-    gains: { records: (n) => `${n} dossiers personnels`, cards: (n) => `${n} numéros de carte`, phones: (n) => `${n} numéros de téléphone`,
+    gains: { records: (n) => `${n} profils clients`, cards: (n) => `${n} numéros de carte`, phones: (n) => `${n} numéros de téléphone`,
              accounts: (n) => `${n} comptes bancaires`, and: " et " },
     verdict: {
       good: (b, q, s) => `Chaque geste stoppé. ${b} ${L.pl(+b, "attaque bloquée", "attaques bloquées")}, ${q} agents et outils en quarantaine, ${s} ${L.pl(+s, "signal de risque partagé", "signaux de risque partagés")}. Rien n'a été pris.`,
