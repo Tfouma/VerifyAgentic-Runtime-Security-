@@ -142,6 +142,10 @@ Lumora Bank and Teleqo Mobile, both fictional:
 3. Press the kill switch. With the controls on, it quarantines every agent the crews can reach. With them off, it does nothing, because there is no control plane to act on.
 4. Point out the risk signal from the operator to the bank. Cross-sector fraud needs signals that cross company lines.
 
+If you can't run it live, play `demo/film/fraud-ring-live.mp4`, a narrated film of the same
+sequence. It shows the run with the controls off, the replay with them on, the kill switch,
+and closes on the six checks that stopped the crews.
+
 ---
 
 ## 4. The five controls the demo proves

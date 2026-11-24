@@ -20,6 +20,9 @@ illustration, not IBM software.
 | `demo/film/the-agent-that-went-rogue-narrated.mp4` | The same film with a narrated sound track, paced so each line finishes before the next scene (1080p, AAC audio) |
 | `demo/film/record_film.js` | Re-records the film from the two pages |
 | `demo/film/narrate.py` | Speaks the narration with the open-weight Kokoro text-to-speech model, locally, and mixes it onto one track |
+| `demo/film/fraud-ring-live.mp4` | **Fraud Ring Live, the film** (narrated): the controls-off run, the replay with the controls on and the kill switch, and the six checks that stopped the crews |
+| `demo/film/record_fraud_ring.js` | Re-records the Fraud Ring Live film from `demo/fraud_ring.html` |
+| `demo/film/lib.js` | Stage, camera, captions, narration timing and encoding shared by both film scripts |
 | `demo/run.py` | Terminal narrator that prints the attack with controls OFF, then ON |
 | `demo/bank.py` | In-memory mock bank |
 | `demo/guardrail.py` | Simulated runtime control layer (agent identity, delegated mandate, per-action policy, quarantine) |
@@ -59,6 +62,8 @@ node demo/film/record_film.js demo/film/the-agent-that-went-rogue-narrated.mp4
 
 The narration runs on your machine, so the script text never goes to an outside service.
 `FILM_VOICE` picks any Kokoro voice, for example `am_michael` for a male narrator.
+`demo/film/record_fraud_ring.js` records the Fraud Ring Live film the same way, with or
+without `FILM_VOICE`.
 
 ## The story in one line
 
