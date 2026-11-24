@@ -146,6 +146,10 @@ If you can't run it live, play `demo/film/fraud-ring-live.mp4`, a narrated film 
 sequence. It shows the run with the controls off, the replay with them on, the kill switch,
 and closes on the six checks that stopped the crews.
 
+For French-speaking audiences, switch the page to **FR** (or add `#fr` to its link). Everything on
+the page is then in Canadian French. `demo/film/fraud-ring-live-fr.mp4` is the same film with
+French captions and narration. The French voice is synthetic and has a European French accent.
+
 ---
 
 ## 4. The five controls the demo proves

@@ -21,6 +21,10 @@ import soundfile as sf
 
 RATE = 24000  # Kokoro's output sample rate
 
+# Kokoro voice names start with a language letter: a = American English, b = British
+# English, f = French, and so on. FILM_VOICE_LANG overrides the guess.
+LANGS = {"a": "en-us", "b": "en-gb", "f": "fr-fr", "e": "es", "i": "it", "p": "pt-br", "h": "hi", "j": "ja", "z": "cmn"}
+
 
 def trim(samples, threshold=0.004, keep=0.04):
     """Cut leading and trailing silence so each line's length is its spoken length."""
@@ -37,11 +41,12 @@ def synth(lines_path, out_dir):
     kokoro = Kokoro(os.environ["KOKORO_MODEL"], os.environ["KOKORO_VOICES"])
     voice = os.environ.get("FILM_VOICE", "af_heart")
     speed = float(os.environ.get("FILM_VOICE_SPEED", "1.0"))
+    lang = os.environ.get("FILM_VOICE_LANG") or LANGS.get(voice[:1], "en-us")
     with open(lines_path) as f:
         lines = json.load(f)
     durations = {}
     for key, text in lines.items():
-        samples, rate = kokoro.create(text, voice=voice, speed=speed, lang="en-us")
+        samples, rate = kokoro.create(text, voice=voice, speed=speed, lang=lang)
         if rate != RATE:
             raise ValueError(f"unexpected sample rate {rate}")
         samples = trim(np.asarray(samples, dtype=np.float32))

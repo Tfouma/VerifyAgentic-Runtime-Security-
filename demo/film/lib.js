@@ -275,8 +275,9 @@ function makeDirector(page, frames, { lines, tagFor, durations, cues, sinceFirst
 /*
  * Records one film.
  *   out       output .mp4
- *   pages     [{ id, file, hidden, wrap }] demo pages to load, in stage order. wrap
- *             gives a page the published Artifact skeleton (standards mode).
+ *   pages     [{ id, file, hidden, wrap, hash }] demo pages to load, in stage order.
+ *             wrap gives a page the published Artifact skeleton (standards mode);
+ *             hash opens it at #hash (for example #fr for the French page).
  *   lines     { id: { text, say, tag } } captions and narration
  *   tagFor    turns a line's tag into { icon, text } for the caption's tag row
  *   fakeClock install Playwright's fake clock so step(ms) releases page timers
@@ -292,7 +293,7 @@ async function record({ out, pages, lines = {}, tagFor = () => null, fakeClock =
       fs.writeFileSync(wrapped, PAGE_HEAD + fs.readFileSync(src, 'utf8') + PAGE_TAIL);
       src = wrapped;
     }
-    return `<iframe id="${pg.id}"${pg.hidden ? ' class="off"' : ''} src="file://${src}"></iframe>`;
+    return `<iframe id="${pg.id}"${pg.hidden ? ' class="off"' : ''} src="file://${src}${pg.hash ? '#' + pg.hash : ''}"></iframe>`;
   }).join('\n');
   const stageFile = path.join(dir, 'stage.html');
   fs.writeFileSync(stageFile, `<!doctype html><html><head><meta charset="utf-8">

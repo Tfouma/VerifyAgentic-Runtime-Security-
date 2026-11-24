@@ -15,13 +15,14 @@ illustration, not IBM software.
 | `docs/WORKSHOP_PLAN.md` | **Start here.** How many agents you need, which environment to use, the video storyboard, the 90-minute agenda, the talk track, discovery questions, objection handling and the call to action |
 | `demo/dashboard.html` | The Breach Console: an interactive visual for the room and the recording |
 | `demo/attack_map.html` | Lateral Movement Map: architecture view of each step, including the request chain across agents and the background checks that run on every call |
-| `demo/fraud_ring.html` | **Fraud Ring Live**: four attacker crews go after money, personal data, card numbers and phone numbers at a fictional bank and mobile operator, all at once. Flip the controls or pull the kill switch mid-attack |
+| `demo/fraud_ring.html` | **Fraud Ring Live**: four attacker crews go after money, personal data, card numbers and phone numbers at a fictional bank and mobile operator, all at once. Flip the controls or pull the kill switch mid-attack. In English or Canadian French (EN/FR switch, or `#fr` in the link) |
 | `demo/film/the-agent-that-went-rogue.mp4` | **The demo film** (about 5 minutes): both runs in the Breach Console plus Lateral Movement Map scenes, with captions tagged to three agent-governance objectives (1080p, no audio) |
 | `demo/film/the-agent-that-went-rogue-narrated.mp4` | The same film with a narrated sound track, paced so each line finishes before the next scene (1080p, AAC audio) |
 | `demo/film/record_film.js` | Re-records the film from the two pages |
 | `demo/film/narrate.py` | Speaks the narration with the open-weight Kokoro text-to-speech model, locally, and mixes it onto one track |
 | `demo/film/fraud-ring-live.mp4` | **Fraud Ring Live, the film** (narrated): the controls-off run, the replay with the controls on and the kill switch, and the six checks that stopped the crews |
-| `demo/film/record_fraud_ring.js` | Re-records the Fraud Ring Live film from `demo/fraud_ring.html` |
+| `demo/film/fraud-ring-live-fr.mp4` | The same film in Canadian French: French interface, captions, title cards and narration |
+| `demo/film/record_fraud_ring.js` | Re-records the Fraud Ring Live film from `demo/fraud_ring.html`, in English or French |
 | `demo/film/lib.js` | Stage, camera, captions, narration timing and encoding shared by both film scripts |
 | `demo/run.py` | Terminal narrator that prints the attack with controls OFF, then ON |
 | `demo/bank.py` | In-memory mock bank |
@@ -63,7 +64,8 @@ node demo/film/record_film.js demo/film/the-agent-that-went-rogue-narrated.mp4
 The narration runs on your machine, so the script text never goes to an outside service.
 `FILM_VOICE` picks any Kokoro voice, for example `am_michael` for a male narrator.
 `demo/film/record_fraud_ring.js` records the Fraud Ring Live film the same way, with or
-without `FILM_VOICE`.
+without `FILM_VOICE`. Add `FILM_LANG=fr` and a French voice such as `FILM_VOICE=ff_siwis`
+for the French version.
 
 ## The story in one line
 
