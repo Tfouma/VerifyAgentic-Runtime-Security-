@@ -50,6 +50,8 @@ Deterministic and safe to use on stage or in a recording. It runs anywhere and h
 | **Fraud Ring Live** | `demo/fraud_ring.html` | Four crews attack a fictional bank and mobile operator at once: SIM swaps, account takeover, card data and personal data. The controls and the kill switch work mid-attack (section 3C) |
 | **Demo film** | `demo/film/the-agent-that-went-rogue.mp4` | The film from section 3A, ready to play (about 5 minutes, 1080p, burned-in captions, no audio) |
 | **Narrated film** | `demo/film/the-agent-that-went-rogue-narrated.mp4` | The same film with a spoken narration track, for rooms with sound or for sending ahead |
+| **Identity Attacks, Explained** | `demo/identity_explained.html` | A presenter's explainer in eleven scenes: the three kinds of identity, how a person signs in, how an AI agent should authenticate, protocols, standards, best practices, fraud and non-compliance, lateral movement, ISPM, ITDR and defense in depth. English and French (section 3D) |
+| **Teaching film** | `demo/film/identity-attacks-explained.mp4` | The explainer and two Fraud Ring Live runs as one narrated film with chapter marks (13 minutes). French version: `identity-attacks-explained-fr.mp4` |
 
 **Why simulate first:** a live attack on stage can fail. A scripted one runs the same
 way every time, so you can rehearse the timing and cut the video frame by frame.
@@ -149,6 +151,43 @@ and closes on the six checks that stopped the crews.
 For French-speaking audiences, switch the page to **FR** (or add `#fr` to its link). Everything on
 the page is then in Canadian French. `demo/film/fraud-ring-live-fr.mp4` is the same film with
 French captions and narration. The French voice is synthetic and has a European French accent.
+
+### D. Teaching film: identity attacks, explained (13 minutes)
+
+For architects, security teams and risk owners who need the why behind the demo, play
+`demo/film/identity-attacks-explained.mp4` (or `identity-attacks-explained-fr.mp4` in French)
+before block 4, or send it ahead of the workshop. Players list its chapters, so you can jump
+to any of them:
+
+| Chapter | What it explains |
+|---------|------------------|
+| Three kinds of identity | People, machines and AI agents, and how each proves who it is |
+| How a person signs in | OpenID Connect with PKCE, a passkey (FIDO2 / WebAuthn), adaptive risk, the ID and access tokens and what is inside them, checks on every API call, revocation through Shared Signals and CAEP |
+| How an AI agent should authenticate | Its own identity over mutual TLS, delegation through OAuth token exchange (RFC 8693), the mandate inside the token (limits, ten minutes, bound to the agent's key), a policy check on every tool call, approval on the owner's phone (CIBA), no token passthrough between agents |
+| Protocols and weak links | Recommended, use with care, and legacy: SMS codes, passwords alone, NTLM, LDAP simple bind, static API keys |
+| Standards and regulation | NIST SP 800-63-4, NIST SP 800-207, ISO/IEC 27001, PCI DSS 4.0.1, MITRE ATT&CK, the OWASP Top 10 for LLM applications, OSFI B-13, Québec's Law 25 and DORA |
+| Best practices | Eight practices, each with the attacks it stops |
+| Fraud and non-compliance | Seven fraud patterns, and the eight open doors they walk through |
+| Live attack, controls off | Fraud Ring Live: agent hijacking, a poisoned plugin, a SIM swap, account takeover, mule accounts |
+| Lateral movement | The classic path (stolen session, pass-the-hash, Kerberoasting, admin rights) and the agentic path, with MITRE ATT&CK and OWASP IDs |
+| ISPM | Discovery, the findings that open attack paths, fixes ranked by risk, the posture score |
+| ITDR | Six detections and their automated responses, each opening an incident with context |
+| Live attack, controls on | The same crews against policy, delegation, behavior, shared signals and the kill switch |
+| Defense in depth | Where strong authentication, ISPM, ITDR and runtime controls each cut the attack paths |
+
+It closes on three questions for the room: which identities have no owner, which sign-ins
+still skip phishing-resistant MFA, and who would know if an agent went beyond its mandate tonight.
+
+To teach it live instead, open `demo/identity_explained.html` and step through it with the
+arrow keys or the Next and Back buttons. **EN / FR** switches the language.
+
+Keep three things straight when you present it:
+
+- The standards are summarized, not quoted. Point people to each document for its full text.
+- The ISPM and ITDR numbers are illustrative, and every company, person and record is fictional.
+- The narration comes from Kyutai's Pocket TTS, which runs on your own machine. It sounds much
+  closer to a human narrator than the voice in the older films, but it is still synthetic, so
+  say so if anyone asks. To use your own voice, record the captions over the film.
 
 ---
 

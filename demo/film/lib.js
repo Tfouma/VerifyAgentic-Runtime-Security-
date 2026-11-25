@@ -7,8 +7,9 @@
  * each line finishes before the next beat. Frames come from Chromium's screencast
  * and are encoded to H.264 with ffmpeg.
  *
- * Environment: FILM_VOICE, KOKORO_MODEL, KOKORO_VOICES, FILM_PYTHON (narration),
- * FILM_SPEED (fast preview without narration). See narrate.py for the voice setup.
+ * Environment: FILM_VOICE, FILM_TTS, FILM_TTS_LANGUAGE, KOKORO_MODEL, KOKORO_VOICES,
+ * FILM_PYTHON (narration), FILM_SPEED (fast preview without narration), FILM_CRF (video
+ * quality, default 18). See narrate.py for the voice setup.
  */
 const fs = require('fs');
 const os = require('os');
@@ -24,6 +25,7 @@ const NARRATE_PY = path.join(__dirname, 'narrate.py');
 const NARRATION_GAP = 0.6; // seconds of quiet between a spoken line and the next beat
 const VIEWPORT = { width: 1920, height: 1080 };
 const FPS = 30;
+const CRF = Number(process.env.FILM_CRF) || 18; // x264 quality: lower is sharper and larger
 
 // The skeleton a published Artifact page gets, for pages that need standards mode.
 const PAGE_HEAD = '<!doctype html><html><head><meta charset="utf-8">' +
@@ -104,6 +106,9 @@ function installStage() {
     signal: '<path d="M4.9 15a8 8 0 0 1 0-8M19.1 7a8 8 0 0 1 0 8M8 12.8a3.8 3.8 0 0 1 0-3.6M16 9.2a3.8 3.8 0 0 1 0 3.6"/><circle cx="12" cy="11" r="1.6"/><path d="M12 13v8"/>',
     lock: '<rect x="4.5" y="10.5" width="15" height="10.5" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',
     shieldCheck: SHIELD + '<path d="M8.8 12.2l2.2 2.2 4.4-4.6"/>',
+    alert: '<path d="M12 3.5 2.5 20h19z"/><path d="M12 10v4.5M12 17.5h.01"/>',
+    key: '<circle cx="8" cy="15" r="4.5"/><path d="M11.2 11.8 20 3M16.5 6.5l2.5 2.5M14 9l2 2"/>',
+    users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.8 6.5-5.8s5.9 2.2 6.5 5.8"/><path d="M16 4.6a3.4 3.4 0 0 1 0 6.6M18 14.6c2 .8 3.2 2.6 3.5 5.4"/>',
   };
   const ic = (n) => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]}</svg>`;
   const $ = (id) => document.getElementById(id);
@@ -222,11 +227,28 @@ function encode(frames, endMs, dir, out) {
   fs.writeFileSync(list, lines.join('\n') + '\n');
   execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', list,
     '-vf', `fps=${FPS},scale=1920:1080:flags=lanczos,format=yuv420p`,
-    '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-movflags', '+faststart', out], { stdio: 'inherit' });
+    '-c:v', 'libx264', '-preset', 'slow', '-crf', String(CRF), '-movflags', '+faststart', out], { stdio: 'inherit' });
+}
+
+// Writes chapter marks into the finished file (streams are copied, not re-encoded).
+function addChapters(out, chapters, seconds, dir) {
+  const esc = (t) => t.replace(/[=;#\\\n]/g, (c) => '\\' + c);
+  const ms = (t) => Math.round(t * 1000);
+  const meta = [';FFMETADATA1'];
+  chapters.forEach((c, i) => {
+    const endT = i + 1 < chapters.length ? chapters[i + 1].t : seconds;
+    meta.push('[CHAPTER]', 'TIMEBASE=1/1000', `START=${ms(i === 0 ? 0 : c.t)}`, `END=${ms(endT)}`, `title=${esc(c.title)}`);
+  });
+  const metaFile = path.join(dir, 'chapters.txt');
+  const tmp = path.join(dir, 'chaptered' + path.extname(out));
+  fs.writeFileSync(metaFile, meta.join('\n') + '\n');
+  execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', out, '-i', metaFile, '-map', '0', '-map_metadata', '1',
+    '-map_chapters', '1', '-c', 'copy', '-movflags', '+faststart', tmp], { stdio: 'inherit' });
+  fs.copyFileSync(tmp, out);
 }
 
 // The helpers a film's setup and play steps use.
-function makeDirector(page, frames, { lines, tagFor, durations, cues, sinceFirstFrame }) {
+function makeDirector(page, frames, { lines, tagFor, durations, cues, chapters, sinceFirstFrame }) {
   let t0 = 0, T = 0, speechEnd = -Infinity;
   const now = () => ((Date.now() - t0) / 1000) * SPEED;
   const at = async (sec) => { const wait = t0 + (sec * 1000) / SPEED - Date.now(); if (wait > 0) await sleep(wait); };
@@ -268,7 +290,9 @@ function makeDirector(page, frames, { lines, tagFor, durations, cues, sinceFirst
 
   return {
     start() { t0 = Date.now(); },
-    api: { after, at, stage, frame, frames, speak, caption, ring, press, step, sleep: (ms) => sleep(ms / SPEED) },
+    api: { after, at, stage, frame, frames, speak, caption, ring, press, step, sleep: (ms) => sleep(ms / SPEED),
+      // Marks the start of a chapter; players list the chapters and can jump to them.
+      chapter: (title) => chapters.push({ title, t: sinceFirstFrame() }) },
   };
 }
 
@@ -332,8 +356,9 @@ async function record({ out, pages, lines = {}, tagFor = () => null, fakeClock =
 
     const shots = [];
     const cues = [];
+    const chapters = [];
     const sinceFirstFrame = () => (Date.now() - shots[0].t) / 1000;
-    const director = makeDirector(page, frames, { lines, tagFor, durations, cues, sinceFirstFrame });
+    const director = makeDirector(page, frames, { lines, tagFor, durations, cues, chapters, sinceFirstFrame });
     if (setup) await setup(director.api);
     if (fakeClock) await page.clock.pauseAt(new Date('2026-01-05T10:00:00Z')); // page timers now advance only on cue
 
@@ -368,7 +393,9 @@ async function record({ out, pages, lines = {}, tagFor = () => null, fakeClock =
         '-c:v', 'copy', '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11', '-ar', '48000', '-c:a', 'aac', '-b:a', '160k',
         '-shortest', '-movflags', '+faststart', out], { stdio: 'inherit' });
     }
-    console.log(`Wrote ${out} from ${shots.length} captured frames${NARRATE ? `, with ${cues.length} narrated lines` : ''}`);
+    if (chapters.length) addChapters(out, chapters, (end - shots[0].t) / 1000, dir);
+    console.log(`Wrote ${out} from ${shots.length} captured frames${NARRATE ? `, with ${cues.length} narrated lines` : ''}` +
+      (chapters.length ? `, ${chapters.length} chapters` : ''));
   } finally {
     await browser.close().catch(() => {});
     fs.rmSync(dir, { recursive: true, force: true });

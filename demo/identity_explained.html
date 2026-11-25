@@ -1,0 +1,1003 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Identity Attacks Explained</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  /* A presenter's explainer in eleven scenes, drawn on a fixed 1920x1080 canvas that
+     scales to the window. Each scene reveals itself in steps (Next / Back, or the
+     arrow keys). The demo film drives the same page through window.explain. */
+  :root {
+    color-scheme: dark;
+    --bg: #0a0e1a;
+    --grid: rgba(120, 150, 210, 0.05);
+    --surface: #111726;
+    --surface-2: #161d30;
+    --line: #24304b;
+    --line-soft: #1b2337;
+    --lifeline: #2b3858;
+    --ink: #d7deee;
+    --ink-hi: #eef2fb;
+    --ink-dim: #8f9cb9;
+    --ink-faint: #637091;
+    --accent: #4f8cff;
+    --accent-dim: rgba(79, 140, 255, 0.14);
+    --accent-line: rgba(79, 140, 255, 0.5);
+    --danger: #ff5468;
+    --danger-dim: rgba(255, 84, 104, 0.13);
+    --danger-line: rgba(255, 84, 104, 0.5);
+    --breach-fill: #24151f;
+    --safe: #26d18a;
+    --safe-dim: rgba(38, 209, 138, 0.12);
+    --safe-line: rgba(38, 209, 138, 0.5);
+    --warn: #f5b544;
+    --warn-dim: rgba(245, 181, 68, 0.12);
+    --warn-line: rgba(245, 181, 68, 0.5);
+    --violet: #a78bfa;
+    --violet-dim: rgba(167, 139, 250, 0.12);
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); }
+  body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  .ic { width: 1.1em; height: 1.1em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* The canvas. .fit scales it to the window; .wrap is what the film's camera moves. */
+  .fit { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+  .wrap { position: relative; width: 1920px; height: 1080px; overflow: hidden;
+    background: radial-gradient(1200px 640px at 80% -12%, rgba(15, 98, 254, 0.11), transparent 60%),
+                linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 100% 36px, var(--bg); }
+
+  .scene { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity .9s ease, visibility 0s linear .9s; }
+  .scene.active { opacity: 1; visibility: visible; transition: opacity .9s ease; }
+  .instant, .instant * { transition: none !important; }
+
+  /* Step reveals */
+  [data-s] { opacity: 0; transform: translateY(12px); transition: opacity .7s ease, transform .7s ease; }
+  [data-s].on { opacity: 1; transform: none; }
+  @keyframes glow { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 5px var(--glow, rgba(255, 84, 104, .35)); } }
+  .hl { animation: glow 1.5s ease-in-out infinite; }
+
+  /* Scene header */
+  .hd { position: absolute; left: 80px; right: 80px; top: 54px; display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; }
+  .ey { font-family: var(--mono); font-size: 18px; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-faint); margin: 0 0 10px; }
+  .ti { font-size: 46px; font-weight: 600; letter-spacing: -0.01em; color: var(--ink-hi); margin: 0; line-height: 1.12; max-width: 1180px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; max-width: 640px; }
+  .chip { font-family: var(--mono); font-size: 16px; color: var(--ink-dim); border: 1px solid var(--line); background: var(--surface-2);
+          border-radius: 8px; padding: 6px 12px; white-space: nowrap; }
+  .note { position: absolute; right: 80px; top: 70px; max-width: 560px; text-align: right; font-family: var(--mono); font-size: 15px; line-height: 1.5; color: var(--ink-faint); letter-spacing: .03em; }
+
+  /* ---------- Three kinds of identity ---------- */
+  .ids { position: absolute; left: 80px; right: 80px; top: 230px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 34px; }
+  .idc { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 38px 38px 40px; min-height: 520px; }
+  .idc .big { width: 84px; height: 84px; border-radius: 22px; display: grid; place-items: center; background: var(--accent-dim); color: #8db4ff; margin-bottom: 26px; }
+  .idc .big .ic { width: 44px; height: 44px; }
+  .idc.m .big { background: var(--violet-dim); color: var(--violet); }
+  .idc.a .big { background: var(--warn-dim); color: var(--warn); }
+  .idc h3 { font-size: 36px; margin: 0 0 14px; color: var(--ink-hi); }
+  .idc p { font-size: 24px; line-height: 1.5; color: var(--ink-dim); margin: 0 0 26px; }
+  .idc .how { font-family: var(--mono); font-size: 16px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 10px; }
+  .idc ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+  .idc li { font-size: 21px; color: var(--ink); display: flex; gap: 12px; align-items: center; }
+  .idc li::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; }
+  .idc.m li::before { background: var(--violet); }
+  .idc.a li::before { background: var(--warn); }
+
+  /* ---------- Sequence diagrams ---------- */
+  .seq { position: absolute; top: 196px; height: 700px; }
+  .lane { position: absolute; top: 0; min-height: 96px; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--line);
+          border-radius: 14px; padding: 12px 14px; display: flex; gap: 12px; align-items: center; }
+  .lane .li { width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; flex: none; background: var(--accent-dim); color: #8db4ff; }
+  .lane .li .ic { width: 26px; height: 26px; }
+  .lane.violet .li { background: var(--violet-dim); color: var(--violet); }
+  .lane.warn .li { background: var(--warn-dim); color: var(--warn); }
+  .lane.safe .li { background: var(--safe-dim); color: var(--safe); }
+  .lane b { display: block; font-size: 21px; font-weight: 600; color: var(--ink-hi); line-height: 1.2; }
+  .lane small { display: block; font-size: 15.5px; color: var(--ink-dim); line-height: 1.3; margin-top: 3px; }
+  .seq.tight .lane b { font-size: 18.5px; }
+  .seq.tight .lane small { font-size: 14px; }
+  .seq.tight .lane .li { width: 40px; height: 40px; }
+  .seq.tight .lane { padding: 10px 12px; gap: 10px; }
+  .life { position: absolute; top: 96px; bottom: 0; width: 0; border-left: 2px dashed var(--lifeline); transform: translateX(-1px); }
+  .msg { position: absolute; height: 34px; transform: none !important; }
+  .msg .ln { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--accent); border-radius: 2px;
+             transform: scaleX(0); transition: transform .9s cubic-bezier(.4, 0, .2, 1); }
+  .msg.rtl .ln { transform-origin: 100% 50%; }
+  .msg.ltr .ln { transform-origin: 0 50%; }
+  .msg.on .ln { transform: scaleX(1); }
+  .msg .ln::after { content: ""; position: absolute; top: -6px; border: 7.5px solid transparent; }
+  .msg.ltr .ln::after { right: -3px; border-left: 12px solid var(--c, var(--accent)); border-right: 0; }
+  .msg.rtl .ln::after { left: -3px; border-right: 12px solid var(--c, var(--accent)); border-left: 0; }
+  .msg.both .ln::before { content: ""; position: absolute; top: -6px; left: -3px; border: 7.5px solid transparent; border-right: 12px solid var(--c, var(--accent)); border-left: 0; }
+  .msg .lab { position: absolute; left: -200px; right: -200px; bottom: 7px; text-align: center; font-size: 19.5px; color: var(--ink); white-space: nowrap;
+              opacity: 0; transition: opacity .5s ease .35s; }
+  .msg .lab span { background: var(--bg); padding: 1px 8px; border-radius: 6px; }
+  .msg.on .lab { opacity: 1; }
+  .msg .lab em { font-style: normal; font-family: var(--mono); font-size: 15px; color: var(--ink-dim); margin-left: 6px; }
+  .msg { --c: var(--accent); }
+  .msg .ln { background: var(--c); }
+  .msg.ok { --c: var(--safe); }
+  .msg.bad { --c: var(--danger); }
+  .msg.bad .lab { color: #ff8796; }
+  .msg.ok .lab { color: #6fe3b2; }
+  .msg.dash .ln { background: repeating-linear-gradient(90deg, var(--c) 0 12px, transparent 12px 20px); }
+  .msg.warn { --c: var(--warn); }
+  .msg.warn .lab { color: #ffd27a; }
+  .box { position: absolute; background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+         padding: 10px 14px; font-size: 18px; line-height: 1.4; color: var(--ink); text-align: center; }
+  .box.ok { border-color: var(--safe-line); background: var(--safe-dim); }
+  .box.ok b { color: var(--safe); }
+  .box small { display: block; font-size: 15.5px; color: var(--ink-dim); margin-top: 2px; }
+  .box.line { padding: 6px 12px; font-size: 16.5px; white-space: nowrap; }
+  .box.bad { border-color: var(--danger-line); background: var(--danger-dim); color: #ff8796; }
+
+  /* Token card */
+  .tok { position: absolute; top: 196px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 24px 26px 22px; overflow: hidden; }
+  .tok h4 { margin: 0; font-size: 26px; color: var(--ink-hi); display: flex; align-items: center; gap: 12px; }
+  .tok h4 .ic { color: var(--warn); width: 26px; height: 26px; }
+  .tok .ts { font-family: var(--mono); font-size: 15px; color: var(--ink-faint); margin: 6px 0 16px; }
+  .tok .row { display: grid; grid-template-columns: 74px 1fr 26px; gap: 12px; align-items: center; padding: 11px 0; border-top: 1px solid var(--line-soft); }
+  .tok .cl { font-family: var(--mono); font-size: 15px; color: var(--accent); }
+  .tok .rk { font-size: 15.5px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .06em; font-family: var(--mono); }
+  .tok .rv { font-size: 21px; color: var(--ink-hi); margin-top: 2px; }
+  .tok .ck { color: var(--safe); opacity: 0; transition: opacity .4s ease; }
+  .tok .ck .ic { width: 22px; height: 22px; }
+  .tok.x5 .ck { opacity: 1; }
+  .tok .ft { margin-top: 12px; font-size: 18px; color: var(--safe); display: flex; gap: 10px; align-items: center; }
+  .stamp { position: absolute; left: 50%; top: 52%; transform: translate(-50%, -50%) rotate(-12deg) scale(1.5); border: 5px solid var(--danger);
+           color: var(--danger); font-family: var(--mono); font-weight: 600; font-size: 46px; letter-spacing: .14em; padding: 6px 22px;
+           border-radius: 12px; background: rgba(36, 21, 31, .86); opacity: 0; transition: opacity .5s ease, transform .5s cubic-bezier(.2, 1.4, .4, 1); }
+  .stamp.on { opacity: 1; transform: translate(-50%, -50%) rotate(-12deg) scale(1); }
+
+  /* ---------- Protocol map ---------- */
+  .legend { display: flex; gap: 22px; align-items: center; font-size: 19px; color: var(--ink-dim); }
+  .legend span { display: inline-flex; align-items: center; gap: 9px; }
+  .dot { width: 13px; height: 13px; border-radius: 50%; flex: none; background: var(--safe); }
+  .dot.a { background: var(--warn); }
+  .dot.r { background: var(--danger); }
+  .fams { position: absolute; left: 75px; right: 75px; top: 206px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; }
+  .fam { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 22px 24px 20px; height: 326px; }
+  .fam h3 { margin: 0 0 16px; font-size: 25px; color: var(--ink-hi); display: flex; gap: 12px; align-items: center; }
+  .fam h3 .ic { color: #8db4ff; width: 26px; height: 26px; }
+  .fam .pl { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+  .fam .pl.one { grid-template-columns: 1fr; }
+  .pr { display: flex; gap: 11px; align-items: flex-start; padding: 9px 11px; border-radius: 10px; border: 1px solid var(--line-soft); background: var(--surface-2); }
+  .pr .dot { margin-top: 7px; }
+  .pr b { display: block; font-size: 18.5px; font-weight: 500; color: var(--ink-hi); line-height: 1.3; }
+  .pr small { display: block; font-size: 15px; color: var(--ink-dim); line-height: 1.3; margin-top: 2px; }
+  .pr.r { border-color: var(--danger-line); --glow: rgba(255, 84, 104, .4); }
+  .pr.r small { color: #ff8796; }
+
+  /* ---------- Standards ---------- */
+  .stds { position: absolute; left: 75px; right: 75px; top: 206px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+  .std { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 22px 24px 22px; height: 322px; display: grid; grid-template-columns: 46px 1fr; gap: 0 14px; align-content: start; }
+  .std .sk { width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; background: var(--accent-dim); color: #8db4ff; grid-row: span 2; }
+  .std .sk .ic { width: 25px; height: 25px; }
+  .std h3 { margin: 0; font-size: 24px; color: var(--ink-hi); line-height: 1.22; }
+  .std .sub { font-family: var(--mono); font-size: 14.5px; color: var(--ink-faint); margin: 4px 0 0; letter-spacing: .02em; }
+  .std p { grid-column: 1 / -1; margin: 16px 0 0; font-size: 19px; line-height: 1.45; color: var(--ink-dim); }
+  .std.reg .sk { background: var(--violet-dim); color: var(--violet); }
+  .std.ai .sk { background: var(--warn-dim); color: var(--warn); }
+
+  /* ---------- Best practices ---------- */
+  .pracs { position: absolute; left: 75px; right: 75px; top: 200px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px 26px; }
+  .prac { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px 22px; height: 158px;
+          display: grid; grid-template-columns: 62px 1fr; gap: 4px 18px; align-items: start; }
+  .prac .pn { width: 62px; height: 62px; border-radius: 14px; display: grid; place-items: center; background: var(--safe-dim); color: var(--safe); grid-row: span 3; position: relative; }
+  .prac .pn .ic { width: 30px; height: 30px; }
+  .prac .pn i { position: absolute; top: -8px; left: -8px; width: 26px; height: 26px; border-radius: 50%; background: var(--safe); color: #05271a;
+                font: 600 15px/26px var(--mono); text-align: center; font-style: normal; }
+  .prac h3 { margin: 0; font-size: 24.5px; color: var(--ink-hi); }
+  .prac p { margin: 2px 0 0; font-size: 18.5px; line-height: 1.4; color: var(--ink-dim); }
+  .prac .st { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; align-items: center; }
+  .prac .st span { font-family: var(--mono); font-size: 14px; letter-spacing: .03em; padding: 3px 9px; border-radius: 6px; color: #ff8796;
+                   background: var(--danger-dim); border: 1px solid rgba(255, 84, 104, .28); }
+  .prac .st em { font-style: normal; font-family: var(--mono); font-size: 13.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); }
+
+  /* ---------- Fraud and non-compliance ---------- */
+  .fc { position: absolute; left: 75px; right: 75px; top: 196px; display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+  .col { border-radius: 18px; border: 1px solid var(--line); background: var(--surface); padding: 20px 22px 16px; }
+  .col .ch { display: flex; gap: 14px; align-items: center; margin-bottom: 8px; }
+  .col .ch .ci { width: 50px; height: 50px; border-radius: 13px; display: grid; place-items: center; background: var(--danger-dim); color: var(--danger); flex: none; }
+  .col.nc .ch .ci { background: var(--warn-dim); color: var(--warn); }
+  .col .ch .ic { width: 27px; height: 27px; }
+  .col h3 { margin: 0; font-size: 28px; color: var(--ink-hi); }
+  .col .ch small { display: block; font-size: 17.5px; color: var(--ink-dim); margin-top: 2px; }
+  .it { display: grid; grid-template-columns: 1fr auto; gap: 1px 14px; padding: 7px 2px; border-top: 1px solid var(--line-soft); align-items: center; }
+  .it b { font-size: 20px; font-weight: 500; color: var(--ink-hi); }
+  .it small { grid-column: 1; font-size: 16px; color: var(--ink-dim); }
+  .it .op { grid-row: span 2; grid-column: 2; font-family: var(--mono); font-size: 13.5px; color: #ffd27a; background: var(--warn-dim);
+            border: 1px solid rgba(245, 181, 68, .3); border-radius: 6px; padding: 4px 9px; white-space: nowrap; }
+  .col.fr .it b::before { content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--danger); margin-right: 11px; vertical-align: 3px; }
+
+  /* ---------- Attack graph (lateral movement and the layers) ---------- */
+  .gl { position: absolute; font-family: var(--mono); font-size: 16px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); }
+  .nd { position: absolute; width: 186px; height: 106px; background: var(--surface); border: 1.5px solid var(--line); border-radius: 14px;
+        padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between; transition: border-color .5s ease, background .5s ease; }
+  .nd .ni { display: flex; gap: 10px; align-items: center; color: var(--ink-dim); }
+  .nd .ni .ic { width: 24px; height: 24px; }
+  .nd b { font-size: 19px; font-weight: 600; color: var(--ink-hi); line-height: 1.2; }
+  .nd .ns { font-family: var(--mono); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--danger); opacity: 0; transition: opacity .5s ease; }
+  .nd.hit { border-color: var(--danger); background: var(--breach-fill); }
+  .nd.hit .ni { color: var(--danger); }
+  .nd.hit .ns { opacity: 1; }
+  .eg { position: absolute; height: 3px; background: var(--line); border-radius: 2px; }
+  .eg::before { content: ""; position: absolute; inset: 0; background: var(--danger); border-radius: 2px; transform: scaleX(0); transform-origin: 0 50%; transition: transform .8s ease var(--d, 0s); }
+  .eg::after { content: ""; position: absolute; right: -4px; top: -6px; border: 7.5px solid transparent; border-left: 12px solid var(--line); border-right: 0; transition: border-color .3s ease calc(var(--d, 0s) + .6s); }
+  .eg.hit::before { transform: scaleX(1); }
+  .eg.hit::after { border-left-color: var(--danger); }
+  .el { position: absolute; transform: translateX(-50%); text-align: center; font-size: 17px; line-height: 1.3; color: var(--ink-dim); white-space: nowrap; transition: color .5s ease;
+        background: var(--bg); padding: 0 8px 2px; border-radius: 8px; z-index: 1; }
+  .el em { display: block; font-style: normal; font-family: var(--mono); font-size: 14px; color: var(--ink-faint); }
+  .el.hit { color: #ff8796; }
+  .crown { position: absolute; border: 1.5px solid var(--warn-line); background: rgba(245, 181, 68, .06); border-radius: 18px; padding: 22px 22px; }
+  .crown h4 { margin: 0 0 14px; font-size: 22px; color: var(--warn); display: flex; gap: 10px; align-items: center; }
+  .crown .ic { width: 24px; height: 24px; }
+  .crown div { font-size: 20px; color: var(--ink-hi); padding: 9px 0; border-top: 1px solid rgba(245, 181, 68, .18); }
+  .crown.hit { border-color: var(--danger); background: var(--danger-dim); }
+  .crown.hit h4 { color: var(--danger); }
+  .foot { position: absolute; left: 80px; right: 80px; text-align: center; font-size: 24px; color: var(--ink-hi); }
+  .cut { position: absolute; width: 50px; height: 50px; margin: -25px 0 0 -25px; border-radius: 50%; display: grid; place-items: center;
+         background: #0b2a1f; border: 2px solid var(--safe); color: var(--safe); font: 600 20px/1 var(--mono); box-shadow: 0 0 22px rgba(38, 209, 138, .35);
+         opacity: 0; transform: scale(.4); transition: opacity .45s ease, transform .55s cubic-bezier(.2, 1.5, .4, 1); }
+  .cut.on { opacity: 1; transform: scale(1); }
+  .lyr { position: absolute; left: 75px; right: 75px; top: 196px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  .ly { border: 1px solid var(--line); background: var(--surface); border-radius: 15px; padding: 14px 18px; display: grid; grid-template-columns: 46px 1fr; gap: 2px 14px; height: 124px; }
+  .ly .lc { grid-row: span 2; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: #0b2a1f; border: 2px solid var(--safe);
+            color: var(--safe); font: 600 20px/1 var(--mono); }
+  .ly h4 { margin: 0; font-size: 21px; color: var(--ink-hi); }
+  .ly p { margin: 0; font-size: 16.5px; color: var(--ink-dim); line-height: 1.35; }
+
+  /* ---------- ISPM ---------- */
+  .ispm { position: absolute; left: 70px; right: 70px; top: 238px; display: grid; grid-template-columns: 420px 1fr 468px; gap: 28px; }
+  .pane { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 20px 22px; }
+  .pane h3 { margin: 0 0 14px; font-family: var(--mono); font-size: 16px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-faint); font-weight: 500;
+             display: flex; gap: 10px; align-items: center; }
+  .pane h3 .ic { width: 20px; height: 20px; color: #8db4ff; }
+  .ctr { display: flex; align-items: center; gap: 16px; padding: 14px 0; border-top: 1px solid var(--line-soft); }
+  .ctr .ci { width: 52px; height: 52px; border-radius: 13px; display: grid; place-items: center; background: var(--accent-dim); color: #8db4ff; flex: none; }
+  .ctr .ci .ic { width: 28px; height: 28px; }
+  .ctr.m .ci { background: var(--violet-dim); color: var(--violet); }
+  .ctr.a .ci { background: var(--warn-dim); color: var(--warn); }
+  .ctr .cv { font-size: 40px; font-weight: 600; color: var(--ink-hi); font-variant-numeric: tabular-nums; line-height: 1.05; }
+  .ctr .cn { font-size: 18px; color: var(--ink-dim); }
+  .src { margin-top: 10px; font-size: 17px; line-height: 1.5; color: var(--ink-dim); border-top: 1px solid var(--line-soft); padding-top: 14px; }
+  .fd { display: grid; grid-template-columns: 96px 1fr auto; gap: 14px; align-items: center; padding: 11px 4px; border-top: 1px solid var(--line-soft); transition: opacity .6s ease; }
+  .fd .fv { font-size: 26px; font-weight: 600; color: var(--danger); font-variant-numeric: tabular-nums; text-align: right; transition: color .6s ease; }
+  .fd b { font-size: 20px; font-weight: 500; color: var(--ink-hi); }
+  .fd .op { font-family: var(--mono); font-size: 13.5px; color: #ffd27a; background: var(--warn-dim); border: 1px solid rgba(245, 181, 68, .3);
+            border-radius: 6px; padding: 4px 9px; white-space: nowrap; transition: box-shadow .4s ease; }
+  .fd.x3 .op { box-shadow: 0 0 0 2px rgba(245, 181, 68, .55); }
+  .fd .fx { display: none; color: var(--safe); }
+  .fd.x4 .fv { color: var(--safe); }
+  .fd.x4 .op { opacity: .45; }
+  .score { display: flex; align-items: baseline; gap: 14px; }
+  .score .sv { font-size: 78px; font-weight: 600; color: var(--warn); font-variant-numeric: tabular-nums; line-height: 1; transition: color .8s ease; }
+  .score .sv.good { color: var(--safe); }
+  .score .so { font-size: 24px; color: var(--ink-faint); }
+  .bar { height: 12px; border-radius: 6px; background: var(--line-soft); margin: 14px 0 8px; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 58%; background: var(--warn); border-radius: 6px; transition: width 1.6s ease, background .8s ease; }
+  .bar i.good { width: 86%; background: var(--safe); }
+  .sl { font-size: 17px; color: var(--ink-dim); margin-bottom: 14px; }
+  .fix { display: flex; gap: 12px; align-items: flex-start; padding: 9px 0; border-top: 1px solid var(--line-soft); font-size: 18.5px; line-height: 1.35; color: var(--ink); }
+  .fix .ic { color: var(--safe); width: 22px; height: 22px; margin-top: 2px; }
+
+  /* ---------- ITDR ---------- */
+  .tl { position: absolute; left: 75px; right: 75px; top: 236px; }
+  .tr { display: grid; grid-template-columns: 140px 1fr 380px 520px; gap: 20px; align-items: center; padding: 13px 18px; border-radius: 14px; }
+  .tr.th { font-family: var(--mono); font-size: 14.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); padding-top: 0; padding-bottom: 8px; }
+  .tr.ev { background: var(--surface); border: 1px solid var(--line); margin-bottom: 10px; }
+  .tr .tm { font-family: var(--mono); font-size: 18px; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+  .tr .sg { font-size: 19.5px; color: var(--ink-hi); line-height: 1.35; }
+  .tr .dt { font-size: 19px; font-weight: 600; color: var(--danger); line-height: 1.3; }
+  .tr .dt em { display: block; font-style: normal; font-weight: 400; font-family: var(--mono); font-size: 14.5px; color: var(--ink-faint); margin-top: 2px; }
+  .tr .rs { display: flex; gap: 12px; align-items: flex-start; font-size: 19px; color: #6fe3b2; line-height: 1.35; }
+  .tr .rs .ic { width: 22px; height: 22px; margin-top: 2px; flex: none; }
+  .tr .rs .inc { display: block; font-family: var(--mono); font-size: 13.5px; color: var(--ink-faint); margin-top: 3px; opacity: 0; transition: opacity .5s ease; }
+  .tl.x5 .tr .rs .inc { opacity: 1; }
+  .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 6px; }
+  .kpi { border: 1px solid var(--safe-line); background: var(--safe-dim); border-radius: 13px; padding: 12px 18px; font-size: 20px; color: var(--ink-hi);
+         display: flex; gap: 12px; align-items: center; }
+  .kpi .ic { color: var(--safe); width: 24px; height: 24px; }
+
+  /* ---------- Presenter controls (hidden in the film) ---------- */
+  .nav { position: fixed; right: 16px; bottom: 16px; display: flex; gap: 8px; align-items: center; z-index: 10; font-family: var(--mono); }
+  .nav button { font: 500 13px var(--mono); letter-spacing: .06em; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line);
+                border-radius: 9px; padding: 9px 13px; cursor: pointer; }
+  .nav button:hover { filter: brightness(1.15); }
+  .nav button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .nav .pos { font-size: 12.5px; color: var(--ink-dim); padding: 0 6px; min-width: 120px; text-align: center; }
+  .nav .lang button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  body.film .nav { display: none; }
+</style>
+</head>
+<body>
+<div class="fit" id="fit"><div class="wrap" id="wrap"></div></div>
+<nav class="nav" aria-label="Presenter controls">
+  <span class="lang" role="group" aria-label="Language"><button data-lang="en">EN</button> <button data-lang="fr">FR</button></span>
+  <button id="prev" aria-label="Back">‹</button><span class="pos" id="pos"></span><button id="next" aria-label="Next">›</button>
+</nav>
+<script>
+'use strict';
+/* Everything on screen is fictional: Lumora Bank, Teleqo Mobile, the people, the agents
+   and every number. Values on the ISPM and ITDR scenes are illustrative. */
+const ICONS = {
+  users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.8 6.5-5.8s5.9 2.2 6.5 5.8"/><path d="M16 4.6a3.4 3.4 0 0 1 0 6.6M18 14.6c2 .8 3.2 2.6 3.5 5.4"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4.5 21c.8-4 3.7-6.5 7.5-6.5s6.7 2.5 7.5 6.5"/>',
+  server: '<rect x="3.5" y="3.5" width="17" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="17" height="7" rx="1.6"/><path d="M7.5 7h.01M7.5 17h.01M11.5 7h5M11.5 17h5"/>',
+  bot: '<rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V5M9 13.5h.01M15 13.5h.01M9.5 17h5"/><circle cx="12" cy="3.8" r="1.2"/>',
+  key: '<circle cx="8" cy="15" r="4.5"/><path d="M11.2 11.8 20 3M16.5 6.5l2.5 2.5M14 9l2 2"/>',
+  phone: '<rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M11 18h2"/>',
+  app: '<rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/>',
+  idp: '<path d="M12 3l7.5 3v5.5c0 4.6-3.1 8.3-7.5 9.5-4.4-1.2-7.5-4.9-7.5-9.5V6z"/><circle cx="12" cy="10.5" r="2.3"/><path d="M8.6 16c.7-1.6 1.9-2.4 3.4-2.4s2.7.8 3.4 2.4"/>',
+  api: '<path d="M8 6 3 12l5 6M16 6l5 6-5 6M14 4l-4 16"/>',
+  lock: '<rect x="4.5" y="10.5" width="15" height="10.5" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',
+  idcard: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2.2"/><path d="M5.8 16c.5-1.6 1.7-2.5 3.2-2.5s2.7.9 3.2 2.5M14 10h4M14 13.5h3"/>',
+  signal: '<path d="M4.9 15a8 8 0 0 1 0-8M19.1 7a8 8 0 0 1 0 8M8 12.8a3.8 3.8 0 0 1 0-3.6M16 9.2a3.8 3.8 0 0 1 0 3.6"/><circle cx="12" cy="11" r="1.6"/><path d="M12 13v8"/>',
+  shield: '<path d="M12 3l7.5 3v5.5c0 4.6-3.1 8.3-7.5 9.5-4.4-1.2-7.5-4.9-7.5-9.5V6z"/>',
+  shieldCheck: '<path d="M12 3l7.5 3v5.5c0 4.6-3.1 8.3-7.5 9.5-4.4-1.2-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.2 2.2 4.4-4.6"/>',
+  check: '<path d="M4.5 12.5l4.5 4.5L19.5 6.5"/>',
+  x: '<path d="M6 6l12 12M18 6 6 18"/>',
+  alert: '<path d="M12 3.5 2.5 20h19z"/><path d="M12 10v4.5M12 17.5h.01"/>',
+  search: '<circle cx="10.5" cy="10.5" r="6.5"/><path d="m20.5 20.5-5.4-5.4"/>',
+  bolt: '<path d="M13 2.5 4.5 13.5h6.5L10 21.5l8.5-11H12z"/>',
+  scale: '<path d="M12 3.5v17M7 20.5h10M5 7.5h14M5 7.5l-3 6.5a3.2 3.2 0 0 0 6 0zM19 7.5l-3 6.5a3.2 3.2 0 0 0 6 0z"/>',
+  book: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9s1.3-6.3 3.8-9z"/>',
+  card: '<rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 9.5h19M6 15h4"/>',
+  coins: '<ellipse cx="9" cy="7" rx="6" ry="3"/><path d="M3 7v5c0 1.7 2.7 3 6 3s6-1.3 6-3V7M9 15v2.5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5c0-1.6-2.4-2.9-5.5-3"/>',
+  file: '<path d="M6 2.5h8l4.5 4.5v14.5H6z"/><path d="M14 2.5V7h4.5M9 12h6M9 15.5h6"/>',
+  ticket: '<path d="M3 7.5V5h18v2.5a2.5 2.5 0 0 0 0 5V15H3v-2.5a2.5 2.5 0 0 0 0-5z"/><path d="M9 5v10" stroke-dasharray="1.5 2.5"/>',
+  crown: '<path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/>',
+  timer: '<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 2M9.5 2.5h5"/>',
+  userCheck: '<circle cx="10" cy="8" r="4"/><path d="M2.5 21c.9-4 3.8-6.5 7.5-6.5 1.4 0 2.7.4 3.8 1M15.5 18.5l2.2 2.2 4.3-4.5"/>',
+  clipboard: '<rect x="5" y="4.5" width="14" height="17" rx="2"/><path d="M9 4.5V3h6v1.5M8.5 10h7M8.5 14h7M8.5 18h4"/>',
+  activity: '<path d="M3 12h4l3-8 4 16 3-8h4"/>',
+  link: '<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.2 1.2"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/>',
+};
+const ic = (n) => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ''}</svg>`;
+
+/* ------------------------------------------------------------------ content */
+const T = {
+  en: {
+    nav: { back: 'Back', next: 'Next', of: 'of' },
+    title: { ey: 'A teaching explainer · fictional bank, operator, people and data', ti: 'Identity attacks, explained',
+      sub: 'How sign-in works, how attackers abuse it, and the controls that stop them: authentication flows, protocols, standards, best practices, fraud and non-compliance, lateral movement, ISPM and ITDR.' },
+    ids: { ey: 'Chapter 1 · Who is asking?', ti: 'Three kinds of identity', how: 'Proves itself with',
+      cols: [
+        { cls: 'p', icon: 'users', name: 'People', text: 'Employees, customers and partners.', how: ['Passkeys and smart cards', 'Authenticator codes, push', 'Passwords (the weakest)'] },
+        { cls: 'm', icon: 'server', name: 'Machines', text: 'Servers, scripts, workloads and service accounts.', how: ['Certificates and mutual TLS', 'Signed assertions, tokens', 'API keys and secrets (risky)'] },
+        { cls: 'a', icon: 'bot', name: 'AI agents', text: 'Software that acts for a person: it calls tools, data and other agents.', how: ['Their own registered identity', 'A delegated, limited token', 'An owner who answers for them'] },
+      ] },
+    human: { ey: 'Chapter 2 · Authentication flow', ti: 'How a person signs in',
+      chips: ['OpenID Connect', 'OAuth 2.0', 'PKCE', 'FIDO2 · WebAuthn', 'CAEP · Shared Signals'],
+      lanes: [
+        { id: 'person', icon: 'phone', name: 'Customer', sub: 'Phone with a passkey' },
+        { id: 'app', icon: 'app', name: 'Banking app', sub: 'OpenID Connect client', cls: 'violet' },
+        { id: 'idp', icon: 'idp', name: 'Identity provider', sub: 'Sign-in · MFA · risk · tokens', cls: 'safe' },
+        { id: 'api', icon: 'api', name: 'Bank API', sub: 'Accounts and payments', cls: 'warn' },
+      ],
+      msgs: [
+        { s: 1, from: 'person', to: 'app', y: 134, label: 'Opens the app' },
+        { s: 1, from: 'app', to: 'idp', y: 192, label: 'Sign-in request + PKCE challenge' },
+        { s: 2, from: 'idp', to: 'person', y: 258, label: 'Passkey challenge for lumora.example' },
+        { s: 2, from: 'person', to: 'idp', y: 314, label: 'Signed with the passkey, on the device', kind: 'ok' },
+        { s: 4, from: 'app', to: 'idp', y: 470, label: 'Code, exchanged with the PKCE verifier', both: true },
+        { s: 4, from: 'idp', to: 'app', y: 526, label: 'ID token + access token', em: '5 min', kind: 'ok' },
+        { s: 5, from: 'app', to: 'api', y: 592, label: 'API call + access token' },
+        { s: 6, from: 'idp', to: 'api', y: 680, label: 'Risk changed: session and tokens revoked', em: 'CAEP', kind: 'bad dash' },
+      ],
+      boxes: [
+        { s: 3, lane: 'idp', y: 340, w: 420, html: '<b>Risk engine</b> · device ✓ place ✓ behavior ✓<small>Normal → allow · unusual → step up or deny</small>', cls: 'ok' },
+      ],
+      tok: { title: 'Inside the access token', sub: 'A signed JWT, read in plain language', foot: 'Checked on every call', stamp: 'REVOKED',
+        rows: [
+          ['iss', 'Issued by', 'id.lumora.example'],
+          ['sub', 'Who', 'Customer 48213'],
+          ['aud', 'For which system', 'accounts-api'],
+          ['scope', 'What it allows', 'accounts:read · payments:create'],
+          ['exp', 'Valid for', '5 minutes'],
+          ['acr', 'Signed in with', 'Passkey · phishing-resistant'],
+          ['cnf', 'Usable only by', "This device's key"],
+        ] } },
+    agent: { ey: 'Chapter 3 · Agent authentication and delegation', ti: 'How an AI agent should authenticate',
+      chips: ['mTLS · RFC 8705', 'Token exchange · RFC 8693', 'RAR · RFC 9396', 'DPoP · RFC 9449', 'CIBA'],
+      lanes: [
+        { id: 'person', icon: 'user', name: 'Alex Martin', sub: 'Accounts payable · owner' },
+        { id: 'agent', icon: 'bot', name: 'Payables agent', sub: 'agent-payables-01', cls: 'warn' },
+        { id: 'authz', icon: 'idp', name: 'Authorization server', sub: 'Issues and exchanges tokens', cls: 'safe' },
+        { id: 'pdp', icon: 'shieldCheck', name: 'Policy check', sub: 'Runtime controls', cls: 'violet' },
+        { id: 'api', icon: 'api', name: 'Payments API', sub: 'The tool' },
+      ],
+      msgs: [
+        { s: 1, from: 'agent', to: 'authz', y: 146, label: 'Own identity: certificate, mutual TLS' },
+        { s: 1, from: 'authz', to: 'agent', y: 198, label: 'Registered ✓ Owner: Alex ✓', kind: 'ok' },
+        { s: 2, from: 'person', to: 'agent', y: 256, label: 'Task: pay INV-4471, up to $2,000' },
+        { s: 2, from: 'agent', to: 'authz', y: 308, label: 'Token exchange: for Alex, by the agent' },
+        { s: 3, from: 'authz', to: 'agent', y: 360, label: 'Delegated token = the mandate', em: '10 min', kind: 'ok' },
+        { s: 4, from: 'agent', to: 'pdp', y: 420, label: 'Pay $1,840 to Northline Supplies' },
+        { s: 4, from: 'pdp', to: 'api', y: 474, label: 'Allowed · 201 Created', kind: 'ok' },
+        { s: 5, from: 'agent', to: 'pdp', y: 532, label: 'Pay $48,000 to a new payee', kind: 'bad' },
+        { s: 5, from: 'pdp', to: 'person', y: 584, label: 'Out of mandate: approve on your phone?', em: 'CIBA', kind: 'warn dash' },
+        { s: 5, from: 'person', to: 'pdp', y: 636, label: 'Denied → payment blocked, alert sent', kind: 'bad' },
+      ],
+      boxes: [
+        { s: 4, lane: 'pdp', y: 432, w: 430, dx: -230, html: 'Identity ✓ Delegation ✓ Policy ✓ Behavior ✓', cls: 'ok line' },
+      ],
+      hop: { s: 6, label: 'Token handed to a helper agent → 401: not issued for it', em: 'no passthrough · MCP' },
+      tok: { title: 'The mandate, inside the token', sub: 'OAuth token exchange, read in plain language',
+        foot: 'Each hop gets its own, narrower token', rows: [
+          ['sub', 'Acting for', 'Alex Martin'],
+          ['act', 'Acting agent', 'agent-payables-01'],
+          ['aud', 'Only for', 'payments-api'],
+          ['scope', 'Action', 'payments:create'],
+          ['rar', 'Limit', '1 invoice · max $2,000'],
+          ['exp', 'Valid for', '10 minutes'],
+          ['cnf', 'Usable only by', "The agent's key (DPoP)"],
+        ] } },
+    protocols: { ey: 'Chapter 4 · Protocols', ti: 'The protocols, and the weak links',
+      legend: ['Recommended', 'Use with care', 'Legacy · attackers’ favourite'],
+      fams: [
+        { s: 1, icon: 'idcard', name: 'Sign-in and federation', one: true, items: [['g', 'OpenID Connect', 'Modern sign-in on top of OAuth'], ['a', 'SAML 2.0', 'Older, XML-based enterprise SSO']] },
+        { s: 1, icon: 'lock', name: 'Authorization', one: true, items: [['g', 'OAuth 2.0 / 2.1 with PKCE', 'Delegated access, no password sharing'], ['g', 'Bound tokens · DPoP, mTLS', 'A stolen token is useless'], ['g', 'Rich Authorization Requests', 'Limits travel inside the token']] },
+        { s: 2, icon: 'key', name: 'Proving who you are', items: [['g', 'Passkeys', 'FIDO2 · WebAuthn'], ['g', 'Smart cards', 'PIV, X.509'], ['a', 'Authenticator codes', 'Phishable'], ['a', 'Push approval', 'With number matching'], ['r', 'SMS and voice codes', 'SIM swap, phishing'], ['r', 'Password alone', 'Stuffing, phishing']] },
+        { s: 3, icon: 'server', name: 'Inside the company network', items: [['a', 'Kerberos', 'Guard service accounts'], ['a', 'LDAPS', 'Directory over TLS'], ['r', 'NTLM', 'Pass-the-hash, relay'], ['r', 'LDAP simple bind', 'Cleartext passwords']] },
+        { s: 4, icon: 'bot', name: 'Machines and AI agents', items: [['g', 'Mutual TLS · X.509', 'Proves the workload'], ['g', 'Signed assertions', 'private_key_jwt'], ['g', 'Token exchange', 'RFC 8693'], ['g', 'Workload identity', 'SPIFFE'], ['r', 'Static API keys', 'Never expire, leak'], ['r', 'Secrets in code', 'Copied everywhere']] },
+        { s: 5, icon: 'signal', name: 'Lifecycle and risk signals', one: true, items: [['g', 'SCIM 2.0', 'Creates and removes accounts'], ['g', 'Shared Signals · CAEP, RISC', 'Risk events in real time'], ['g', 'CIBA', 'Approval on the owner’s own device']] },
+      ] },
+    standards: { ey: 'Chapter 5 · Standards and regulation', ti: 'The rulebook',
+      note: 'Reference points. Requirements are summarized; see each document for its full text.',
+      items: [
+        { s: 1, icon: 'idcard', name: 'NIST SP 800-63-4', sub: 'Digital identity guidelines · 2025', text: 'Assurance levels for identity proofing and sign-in. The highest level requires phishing-resistant authenticators.' },
+        { s: 2, icon: 'shield', name: 'NIST SP 800-207', sub: 'Zero Trust Architecture', text: 'No trust from network location. Every request is authenticated and authorized, per session.' },
+        { s: 3, icon: 'book', name: 'ISO/IEC 27001:2022', sub: 'Annex A 5.15–5.18 · 8.2 · 8.5', text: 'Access control, identity management, authentication information, access rights, privileged access, secure authentication.' },
+        { s: 3, icon: 'card', name: 'PCI DSS v4.0.1', sub: 'Requirement 8', text: 'A unique ID for every user. MFA for all access into the cardholder data environment. Tight rules for shared and system accounts.' },
+        { s: 4, icon: 'search', name: 'MITRE ATT&CK', sub: 'Adversary tactics and techniques', text: 'A common name for each move: Valid Accounts T1078, Lateral Movement TA0008, Kerberoasting T1558.003, Pass the Hash T1550.002.' },
+        { s: 4, icon: 'bot', name: 'OWASP Top 10 for LLM Apps', sub: '2025 edition', text: 'LLM01 Prompt injection. LLM06 Excessive agency: more permissions or autonomy than the task needs.', cls: 'ai' },
+        { s: 5, icon: 'scale', name: 'OSFI Guideline B-13', sub: 'Canada · technology and cyber risk', text: 'Expects risk-based identity and access management, including multi-factor authentication and privileged access controls.', cls: 'reg' },
+        { s: 5, icon: 'globe', name: 'Québec Law 25 · EU DORA', sub: 'Privacy · operational resilience', text: 'Law 25: protect personal information, report confidentiality incidents. DORA: ICT risk and incident rules for EU finance, since January 2025.', cls: 'reg' },
+      ] },
+    practices: { ey: 'Chapter 6 · Best practices', ti: 'Eight practices that stop most identity attacks', stops: 'Stops',
+      items: [
+        { s: 1, icon: 'key', name: 'Phishing-resistant MFA', text: 'Passkeys or smart cards. Administrators and payments first.', stops: ['Phishing', 'MFA fatigue', 'SIM swap'] },
+        { s: 1, icon: 'lock', name: 'Least privilege, just in time', text: 'No standing admin rights. Grant for the task, then take back.', stops: ['Lateral movement', 'Insider abuse'] },
+        { s: 2, icon: 'idcard', name: 'One identity per machine and agent', text: 'Each with a named owner. No shared accounts, no shared keys.', stops: ['Untraceable actions', 'Rogue agents'] },
+        { s: 2, icon: 'timer', name: 'Short-lived, bound tokens', text: 'One audience, few scopes, minutes of life, bound to the holder.', stops: ['Token theft', 'Replay'] },
+        { s: 3, icon: 'userCheck', name: 'Delegation with limits', text: 'What, for whom, how much, until when. A human approves high-risk actions.', stops: ['Agents beyond mandate', 'Payment fraud'] },
+        { s: 3, icon: 'alert', name: 'Retire legacy protocols', text: 'NTLM, basic authentication, and SMS codes for high-risk use.', stops: ['Pass-the-hash', 'Relay', 'SIM swap'] },
+        { s: 4, icon: 'signal', name: 'Continuous evaluation', text: 'Revoke sessions and tokens when risk changes. Share signals with partners.', stops: ['Account takeover', 'Session hijacking'] },
+        { s: 4, icon: 'clipboard', name: 'Log, review, rehearse', text: 'Log every decision. Review access regularly. Rehearse the kill switch.', stops: ['Drift', 'Slow response'] },
+      ] },
+    fraud: { ey: 'Chapter 7 · Fraud and non-compliance', ti: 'Who takes, and which door they use',
+      fraud: { name: 'Fraud', sub: 'Someone takes money, data or an account', items: [
+        ['Account takeover', 'A stolen password, session or one-time code'],
+        ['SIM swap', 'The phone number moves, and the codes follow'],
+        ['MFA fatigue', 'Push after push, until someone accepts'],
+        ['Help-desk deception', 'A convincing call resets the access'],
+        ['Mule and synthetic accounts', 'Money moves through recruited or invented people'],
+        ['Card testing', 'Small charges to find the cards that work'],
+        ['Agent hijacking', 'Hidden instructions turn an AI agent'],
+      ] },
+      nc: { name: 'Non-compliance', sub: 'A rule not applied: the door left open', items: [
+        ['Shared or generic accounts', 'No one is accountable', 'Untraceable'],
+        ['MFA not enforced, or bypassed', 'Opens the way to', 'Account takeover'],
+        ['Dormant accounts of people who left', 'Opens the way to', 'Quiet foothold'],
+        ['Service accounts used by people', 'Opens the way to', 'Lateral movement'],
+        ['Standing admin rights, outside PAM', 'Opens the way to', 'Privilege escalation'],
+        ['One person creates a payee and approves the payment', 'Segregation of duties broken', 'Payment fraud'],
+        ['Personal data read without a business reason', 'Privacy rules, such as Law 25', 'Privacy breach'],
+        ['Agents acting beyond their mandate', 'Excessive agency', 'Agent hijacking'],
+      ] } },
+    lateral: { ey: 'Chapter 8 · Lateral movement', ti: 'From one foothold to the crown jewels',
+      rowA: 'Classic path · network identities', rowB: 'Agentic path · AI agents', state: 'compromised',
+      nodesA: [['user', 'Phished employee'], ['app', 'Workstation'], ['server', 'File server'], ['key', 'Service account'], ['shieldCheck', 'Domain admin']],
+      edgesA: [['Stolen session', 'T1539'], ['Pass-the-hash', 'T1550.002'], ['Kerberoasting', 'T1558.003'], ['Valid account', 'T1078'], ['Remote services', 'T1021']],
+      nodesB: [['ticket', 'Poisoned ticket'], ['bot', 'Support agent'], ['bot', 'Unregistered helper'], ['bot', 'Payments agent']],
+      edgesB: [['Prompt injection', 'LLM01'], ['Handoff, no identity', 'unregistered'], ['Borrowed authority', 'LLM06'], ['Valid token, no mandate check', 'excessive agency']],
+      crown: 'Crown jewels', jewels: ['Payments', 'Card data', 'Customer records'],
+      foot: 'Every hop uses a valid identity. Nothing looks like a break-in.' },
+    ispm: { ey: 'Chapter 9 · ISPM', ti: 'Identity Security Posture Management: close the doors first',
+      discover: 'Discover', find: 'Find the open doors', fix: 'Fix and prove', opens: 'opens',
+      ctrs: [['users', 18420, 'People'], ['server', 64310, 'Machines and service accounts'], ['bot', 212, 'AI agents']],
+      sources: 'Active Directory · cloud identity provider · 340 applications · agent registry',
+      finds: [
+        ['1,240', 'Accounts without MFA', 'Account takeover'],
+        ['312', 'Dormant accounts still enabled', 'Quiet foothold'],
+        ['27', 'Shadow admins through nested groups', 'Privilege escalation'],
+        ['9', 'Kerberoastable service accounts', 'Kerberoasting'],
+        ['18%', 'Sign-ins still using NTLM', 'Pass-the-hash'],
+        ['64', 'Service accounts with interactive sign-in', 'Lateral movement'],
+        ['14', 'AI agents without an owner', 'Unaccountable actions'],
+        ['6', 'Agents with standing payment rights', 'Payment fraud'],
+      ],
+      score: 'Posture score', scoreSub: 'Ranked by the attack paths each finding opens',
+      fixes: ['Enforce passkeys on 1,240 accounts', 'Disable 312 dormant accounts', 'Remove 27 shadow admin paths',
+              'Rotate and harden 9 service accounts', 'Give every agent an owner; remove standing payment rights'],
+      note: 'Illustrative values.' },
+    itdr: { ey: 'Chapter 10 · ITDR', ti: 'Identity Threat Detection and Response: stop them in seconds',
+      head: ['Time', 'What the identity signals show', 'Detected', 'Automated response'], inc: 'Incident opened · full context',
+      rows: [
+        { s: 2, t: '09:02:11', sig: '14 push requests denied, then 1 accepted from a new device', det: 'MFA fatigue', id: 'T1621', res: 'Push blocked, passkey required, user alerted' },
+        { s: 2, t: '09:04:37', sig: 'Session token replayed from another network', det: 'Token theft', id: 'T1550.004', res: 'Session and tokens revoked (CAEP)' },
+        { s: 3, t: '09:06:02', sig: '46 Kerberos service-ticket requests in 30 seconds', det: 'Kerberoasting', id: 'T1558.003', res: 'Service account password rotated' },
+        { s: 3, t: '09:07:45', sig: 'One laptop signs in to 30 servers over NTLM', det: 'Pass-the-hash', id: 'T1550.002', res: 'Host isolated, account disabled' },
+        { s: 4, t: '09:09:20', sig: 'Support agent asks for a bulk export of customer data', det: 'Excessive agency', id: 'OWASP LLM06', res: 'Blocked, agent quarantined, owner notified' },
+        { s: 4, t: '09:10:05', sig: "Mobile operator reports a SIM swap on a customer's line", det: 'Account takeover risk', id: 'T1451 · shared signal', res: "Transfers held, approval on the customer's own device" },
+      ],
+      kpis: [['bolt', '6 attacks detected as they happened'], ['timer', 'Median response: under 10 seconds'], ['clipboard', '6 incidents opened with full context']],
+      note: 'Illustrative timeline.' },
+    layers: { ey: 'Chapter 11 · Defense in depth', ti: 'Four layers cut the attack paths',
+      layers: [
+        ['Strong authentication', 'Passkeys and bound tokens make a stolen session useless.'],
+        ['ISPM', 'Closes the doors: weak service accounts, shadow admins, ownerless agents.'],
+        ['ITDR', 'Spots pass-the-hash and token replay, and responds in seconds.'],
+        ['Runtime controls for agents', 'Check every agent action against its mandate.'],
+      ] },
+  },
+
+  fr: {
+    nav: { back: 'Retour', next: 'Suivant', of: 'sur' },
+    title: { ey: 'Un explicatif pédagogique · banque, opérateur, personnes et données fictifs', ti: 'Les attaques d’identité, expliquées',
+      sub: 'Comment fonctionne l’authentification, comment les attaquants la détournent, et les contrôles qui les arrêtent : flux, protocoles, normes, bonnes pratiques, fraude et non-conformité, mouvement latéral, ISPM et ITDR.' },
+    ids: { ey: 'Chapitre 1 · Qui fait la demande ?', ti: 'Trois types d’identité', how: 'Se prouve avec',
+      cols: [
+        { cls: 'p', icon: 'users', name: 'Personnes', text: 'Employés, clients et partenaires.', how: ['Clés d’accès et cartes à puce', 'Codes d’application, notifications', 'Mots de passe (le plus faible)'] },
+        { cls: 'm', icon: 'server', name: 'Machines', text: 'Serveurs, scripts, charges de travail et comptes de service.', how: ['Certificats et TLS mutuel', 'Assertions signées, jetons', 'Clés d’API et secrets (risqué)'] },
+        { cls: 'a', icon: 'bot', name: 'Agents IA', text: 'Des logiciels qui agissent pour une personne : ils appellent des outils, des données et d’autres agents.', how: ['Leur propre identité enregistrée', 'Un jeton délégué et limité', 'Un propriétaire qui en répond'] },
+      ] },
+    human: { ey: 'Chapitre 2 · Flux d’authentification', ti: 'Comment une personne se connecte',
+      chips: ['OpenID Connect', 'OAuth 2.0', 'PKCE', 'FIDO2 · WebAuthn', 'CAEP · Shared Signals'],
+      lanes: [
+        { id: 'person', icon: 'phone', name: 'Client', sub: 'Téléphone avec une clé d’accès' },
+        { id: 'app', icon: 'app', name: 'Application bancaire', sub: 'Client OpenID Connect', cls: 'violet' },
+        { id: 'idp', icon: 'idp', name: 'Fournisseur d’identité', sub: 'Connexion · MFA · risque · jetons', cls: 'safe' },
+        { id: 'api', icon: 'api', name: 'API de la banque', sub: 'Comptes et paiements', cls: 'warn' },
+      ],
+      msgs: [
+        { s: 1, from: 'person', to: 'app', y: 134, label: 'Ouvre l’application' },
+        { s: 1, from: 'app', to: 'idp', y: 192, label: 'Demande de connexion + défi PKCE' },
+        { s: 2, from: 'idp', to: 'person', y: 258, label: 'Défi de clé d’accès pour lumora.example' },
+        { s: 2, from: 'person', to: 'idp', y: 314, label: 'Signé avec la clé d’accès, sur l’appareil', kind: 'ok' },
+        { s: 4, from: 'app', to: 'idp', y: 470, label: 'Code, échangé avec le vérificateur PKCE', both: true },
+        { s: 4, from: 'idp', to: 'app', y: 526, label: 'Jeton d’identité + jeton d’accès', em: '5 min', kind: 'ok' },
+        { s: 5, from: 'app', to: 'api', y: 592, label: 'Appel d’API + jeton d’accès' },
+        { s: 6, from: 'idp', to: 'api', y: 680, label: 'Le risque change : session et jetons révoqués', em: 'CAEP', kind: 'bad dash' },
+      ],
+      boxes: [
+        { s: 3, lane: 'idp', y: 340, w: 470, html: '<b>Moteur de risque</b> · appareil ✓ lieu ✓ comportement ✓<small>Normal → accepter · inhabituel → preuve renforcée ou refus</small>', cls: 'ok' },
+      ],
+      tok: { title: 'Dans le jeton d’accès', sub: 'Un JWT signé, lu en langage clair', foot: 'Vérifié à chaque appel', stamp: 'RÉVOQUÉ',
+        rows: [
+          ['iss', 'Émis par', 'id.lumora.example'],
+          ['sub', 'Qui', 'Client 48213'],
+          ['aud', 'Pour quel système', 'accounts-api'],
+          ['scope', 'Ce qu’il permet', 'accounts:read · payments:create'],
+          ['exp', 'Valide pendant', '5 minutes'],
+          ['acr', 'Connexion par', 'Clé d’accès · anti-hameçonnage'],
+          ['cnf', 'Utilisable seulement par', 'La clé de cet appareil'],
+        ] } },
+    agent: { ey: 'Chapitre 3 · Authentification et délégation des agents', ti: 'Comment un agent IA doit s’authentifier',
+      chips: ['mTLS · RFC 8705', 'Échange de jetons · RFC 8693', 'RAR · RFC 9396', 'DPoP · RFC 9449', 'CIBA'],
+      lanes: [
+        { id: 'person', icon: 'user', name: 'Alex Martin', sub: 'Comptes fournisseurs · propriétaire' },
+        { id: 'agent', icon: 'bot', name: 'Agent des paiements', sub: 'agent-payables-01', cls: 'warn' },
+        { id: 'authz', icon: 'idp', name: 'Serveur d’autorisation', sub: 'Émet et échange les jetons', cls: 'safe' },
+        { id: 'pdp', icon: 'shieldCheck', name: 'Contrôle de politique', sub: 'Contrôles d’exécution', cls: 'violet' },
+        { id: 'api', icon: 'api', name: 'API des paiements', sub: 'L’outil' },
+      ],
+      msgs: [
+        { s: 1, from: 'agent', to: 'authz', y: 146, label: 'Sa propre identité : certificat, TLS mutuel' },
+        { s: 1, from: 'authz', to: 'agent', y: 198, label: 'Enregistré ✓ Propriétaire : Alex ✓', kind: 'ok' },
+        { s: 2, from: 'person', to: 'agent', y: 256, label: 'Tâche : payer INV-4471, max 2 000 $' },
+        { s: 2, from: 'agent', to: 'authz', y: 308, label: 'Échange de jetons : pour Alex, par l’agent' },
+        { s: 3, from: 'authz', to: 'agent', y: 360, label: 'Jeton délégué = le mandat', em: '10 min', kind: 'ok' },
+        { s: 4, from: 'agent', to: 'pdp', y: 420, label: 'Payer 1 840 $ à Fournitures Northline' },
+        { s: 4, from: 'pdp', to: 'api', y: 474, label: 'Autorisé · 201 Created', kind: 'ok' },
+        { s: 5, from: 'agent', to: 'pdp', y: 532, label: 'Payer 48 000 $ à un nouveau bénéficiaire', kind: 'bad' },
+        { s: 5, from: 'pdp', to: 'person', y: 584, label: 'Hors mandat : approuver sur votre téléphone ?', em: 'CIBA', kind: 'warn dash' },
+        { s: 5, from: 'person', to: 'pdp', y: 636, label: 'Refusé → paiement bloqué, alerte envoyée', kind: 'bad' },
+      ],
+      boxes: [
+        { s: 4, lane: 'pdp', y: 432, w: 500, dx: -265, html: 'Identité ✓ Délégation ✓ Politique ✓ Comportement ✓', cls: 'ok line' },
+      ],
+      hop: { s: 6, label: 'Jeton remis à un agent assistant → 401 : pas émis pour lui', em: 'pas de relais · MCP' },
+      tok: { title: 'Le mandat, dans le jeton', sub: 'Échange de jetons OAuth, en langage clair',
+        foot: 'Chaque saut obtient son propre jeton, plus restreint', rows: [
+          ['sub', 'Au nom de', 'Alex Martin'],
+          ['act', 'Agent qui agit', 'agent-payables-01'],
+          ['aud', 'Seulement pour', 'payments-api'],
+          ['scope', 'Action', 'payments:create'],
+          ['rar', 'Plafond', '1 facture · max 2 000 $'],
+          ['exp', 'Valide pendant', '10 minutes'],
+          ['cnf', 'Utilisable seulement par', 'La clé de l’agent (DPoP)'],
+        ] } },
+    protocols: { ey: 'Chapitre 4 · Protocoles', ti: 'Les protocoles, et les maillons faibles',
+      legend: ['Recommandé', 'Avec précaution', 'Hérité · favori des attaquants'],
+      fams: [
+        { s: 1, icon: 'idcard', name: 'Connexion et fédération', one: true, items: [['g', 'OpenID Connect', 'Connexion moderne, basée sur OAuth'], ['a', 'SAML 2.0', 'Authentification unique plus ancienne, en XML']] },
+        { s: 1, icon: 'lock', name: 'Autorisation', one: true, items: [['g', 'OAuth 2.0 / 2.1 avec PKCE', 'Accès délégué, sans partager de mot de passe'], ['g', 'Jetons liés · DPoP, mTLS', 'Un jeton volé ne sert à rien'], ['g', 'Rich Authorization Requests', 'Les limites voyagent dans le jeton']] },
+        { s: 2, icon: 'key', name: 'Prouver qui on est', items: [['g', 'Clés d’accès', 'FIDO2 · WebAuthn'], ['g', 'Cartes à puce', 'PIV, X.509'], ['a', 'Codes d’application', 'Hameçonnables'], ['a', 'Notification push', 'Avec un code à confirmer'], ['r', 'Codes SMS et vocaux', 'Échange de SIM, hameçonnage'], ['r', 'Mot de passe seul', 'Bourrage, hameçonnage']] },
+        { s: 3, icon: 'server', name: 'Dans le réseau de l’entreprise', items: [['a', 'Kerberos', 'Protéger les comptes de service'], ['a', 'LDAPS', 'Annuaire sur TLS'], ['r', 'NTLM', 'Pass-the-hash, relais'], ['r', 'LDAP simple bind', 'Mots de passe en clair']] },
+        { s: 4, icon: 'bot', name: 'Machines et agents IA', items: [['g', 'TLS mutuel · X.509', 'Prouve la charge de travail'], ['g', 'Assertions signées', 'private_key_jwt'], ['g', 'Échange de jetons', 'RFC 8693'], ['g', 'Identité de charge', 'SPIFFE'], ['r', 'Clés d’API statiques', 'N’expirent pas, fuient'], ['r', 'Secrets dans le code', 'Copiés partout']] },
+        { s: 5, icon: 'signal', name: 'Cycle de vie et signaux de risque', one: true, items: [['g', 'SCIM 2.0', 'Crée et retire les comptes'], ['g', 'Shared Signals · CAEP, RISC', 'Événements de risque en temps réel'], ['g', 'CIBA', 'Approbation sur l’appareil du titulaire']] },
+      ] },
+    standards: { ey: 'Chapitre 5 · Normes et réglementation', ti: 'Le référentiel',
+      note: 'Repères. Les exigences sont résumées ; consultez chaque document pour son texte complet.',
+      items: [
+        { s: 1, icon: 'idcard', name: 'NIST SP 800-63-4', sub: 'Identité numérique · 2025', text: 'Des niveaux d’assurance pour la vérification d’identité et la connexion. Le plus élevé exige des authentifiants résistants à l’hameçonnage.' },
+        { s: 2, icon: 'shield', name: 'NIST SP 800-207', sub: 'Architecture Zero Trust', text: 'Aucune confiance selon l’emplacement réseau. Chaque requête est authentifiée et autorisée, par session.' },
+        { s: 3, icon: 'book', name: 'ISO/IEC 27001:2022', sub: 'Annexe A 5.15–5.18 · 8.2 · 8.5', text: 'Contrôle d’accès, gestion des identités, informations d’authentification, droits d’accès, accès privilégiés, authentification sécurisée.' },
+        { s: 3, icon: 'card', name: 'PCI DSS v4.0.1', sub: 'Exigence 8', text: 'Un identifiant unique par utilisateur. MFA pour tout accès à l’environnement des données de cartes. Règles strictes pour les comptes partagés et système.' },
+        { s: 4, icon: 'search', name: 'MITRE ATT&CK', sub: 'Tactiques et techniques des attaquants', text: 'Un nom commun pour chaque geste : comptes valides T1078, mouvement latéral TA0008, Kerberoasting T1558.003, Pass the Hash T1550.002.' },
+        { s: 4, icon: 'bot', name: 'OWASP Top 10 pour les LLM', sub: 'Édition 2025', text: 'LLM01 Injection d’instructions. LLM06 Pouvoir d’action excessif : plus de permissions ou d’autonomie que la tâche n’en demande.', cls: 'ai' },
+        { s: 5, icon: 'scale', name: 'Ligne directrice B-13 du BSIF', sub: 'Canada · risques technologiques et cyber', text: 'Attend une gestion des identités et des accès fondée sur le risque, y compris l’authentification multifacteur et le contrôle des accès privilégiés.', cls: 'reg' },
+        { s: 5, icon: 'globe', name: 'Loi 25 (Québec) · DORA (UE)', sub: 'Vie privée · résilience opérationnelle', text: 'Loi 25 : protéger les renseignements personnels, déclarer les incidents de confidentialité. DORA : risques TIC et incidents pour la finance européenne, depuis janvier 2025.', cls: 'reg' },
+      ] },
+    practices: { ey: 'Chapitre 6 · Bonnes pratiques', ti: 'Huit pratiques qui arrêtent la plupart des attaques d’identité', stops: 'Arrête',
+      items: [
+        { s: 1, icon: 'key', name: 'MFA résistante à l’hameçonnage', text: 'Clés d’accès ou cartes à puce. Administrateurs et paiements d’abord.', stops: ['Hameçonnage', 'Fatigue MFA', 'Échange de SIM'] },
+        { s: 1, icon: 'lock', name: 'Moindre privilège, juste à temps', text: 'Aucun droit d’administration permanent. Accordé pour la tâche, puis retiré.', stops: ['Mouvement latéral', 'Abus interne'] },
+        { s: 2, icon: 'idcard', name: 'Une identité par machine et par agent', text: 'Chacune avec un propriétaire nommé. Ni comptes ni clés partagés.', stops: ['Actions non traçables', 'Agents clandestins'] },
+        { s: 2, icon: 'timer', name: 'Jetons courts et liés', text: 'Un destinataire, peu de portées, quelques minutes, liés au détenteur.', stops: ['Vol de jeton', 'Rejeu'] },
+        { s: 3, icon: 'userCheck', name: 'Délégation avec limites', text: 'Quoi, pour qui, combien, jusqu’à quand. Un humain approuve les actions à risque.', stops: ['Agents hors mandat', 'Fraude au paiement'] },
+        { s: 3, icon: 'alert', name: 'Retirer les protocoles hérités', text: 'NTLM, authentification de base, et codes SMS pour les usages à risque.', stops: ['Pass-the-hash', 'Relais', 'Échange de SIM'] },
+        { s: 4, icon: 'signal', name: 'Évaluation continue', text: 'Révoquer sessions et jetons quand le risque change. Partager les signaux.', stops: ['Prise de contrôle', 'Détournement de session'] },
+        { s: 4, icon: 'clipboard', name: 'Journaliser, revoir, répéter', text: 'Journaliser chaque décision. Revoir les accès. Répéter l’arrêt d’urgence.', stops: ['Dérive', 'Réponse lente'] },
+      ] },
+    fraud: { ey: 'Chapitre 7 · Fraude et non-conformité', ti: 'Qui prend, et par quelle porte',
+      fraud: { name: 'Fraude', sub: 'Quelqu’un prend de l’argent, des données ou un compte', items: [
+        ['Prise de contrôle de compte', 'Un mot de passe, une session ou un code volé'],
+        ['Échange de carte SIM', 'Le numéro change de puce, et les codes suivent'],
+        ['Fatigue MFA', 'Notification après notification, jusqu’à l’acceptation'],
+        ['Tromperie du centre d’assistance', 'Un appel convaincant réinitialise l’accès'],
+        ['Comptes de mules, identités synthétiques', 'L’argent passe par des personnes recrutées ou inventées'],
+        ['Test de cartes', 'De petits achats pour trouver les cartes valides'],
+        ['Détournement d’agent', 'Des instructions cachées retournent un agent IA'],
+      ] },
+      nc: { name: 'Non-conformité', sub: 'Une règle non appliquée : la porte restée ouverte', items: [
+        ['Comptes partagés ou génériques', 'Personne n’est responsable', 'Non traçable'],
+        ['MFA non imposée, ou contournée', 'Ouvre la voie à', 'Prise de contrôle'],
+        ['Comptes dormants de personnes parties', 'Ouvre la voie à', 'Brèche discrète'],
+        ['Comptes de service utilisés par des personnes', 'Ouvre la voie au', 'Mouvement latéral'],
+        ['Droits d’administration permanents, hors PAM', 'Ouvre la voie à', 'Élévation de privilèges'],
+        ['Une personne crée un bénéficiaire et approuve le paiement', 'Séparation des tâches rompue', 'Fraude au paiement'],
+        ['Données personnelles lues sans raison d’affaires', 'Règles de vie privée, dont la Loi 25', 'Atteinte à la vie privée'],
+        ['Agents qui dépassent leur mandat', 'Pouvoir d’action excessif', 'Détournement d’agent'],
+      ] } },
+    lateral: { ey: 'Chapitre 8 · Mouvement latéral', ti: 'D’une brèche aux joyaux de la couronne',
+      rowA: 'Chemin classique · identités réseau', rowB: 'Chemin agentique · agents IA', state: 'compromis',
+      nodesA: [['user', 'Employé hameçonné'], ['app', 'Poste de travail'], ['server', 'Serveur de fichiers'], ['key', 'Compte de service'], ['shieldCheck', 'Admin du domaine']],
+      edgesA: [['Session volée', 'T1539'], ['Pass-the-hash', 'T1550.002'], ['Kerberoasting', 'T1558.003'], ['Compte valide', 'T1078'], ['Services distants', 'T1021']],
+      nodesB: [['ticket', 'Billet piégé'], ['bot', 'Agent de soutien'], ['bot', 'Assistant non enregistré'], ['bot', 'Agent des paiements']],
+      edgesB: [['Injection d’instructions', 'LLM01'], ['Relais sans identité', 'non enregistré'], ['Autorité empruntée', 'LLM06'], ['Jeton valide, mandat non vérifié', 'pouvoir excessif']],
+      crown: 'Joyaux de la couronne', jewels: ['Paiements', 'Données de cartes', 'Dossiers clients'],
+      foot: 'Chaque saut utilise une identité valide. Rien ne ressemble à une effraction.' },
+    ispm: { ey: 'Chapitre 9 · ISPM', ti: 'Gestion de la posture de sécurité des identités : fermer les portes d’abord',
+      discover: 'Découvrir', find: 'Trouver les portes ouvertes', fix: 'Corriger et prouver', opens: 'ouvre',
+      ctrs: [['users', 18420, 'Personnes'], ['server', 64310, 'Machines et comptes de service'], ['bot', 212, 'Agents IA']],
+      sources: 'Active Directory · fournisseur d’identité infonuagique · 340 applications · registre d’agents',
+      finds: [
+        ['1 240', 'Comptes sans MFA', 'Prise de contrôle'],
+        ['312', 'Comptes dormants encore actifs', 'Brèche discrète'],
+        ['27', 'Administrateurs fantômes par groupes imbriqués', 'Élévation de privilèges'],
+        ['9', 'Comptes de service exposés au Kerberoasting', 'Kerberoasting'],
+        ['18 %', 'Connexions encore en NTLM', 'Pass-the-hash'],
+        ['64', 'Comptes de service avec connexion interactive', 'Mouvement latéral'],
+        ['14', 'Agents IA sans propriétaire', 'Actions sans responsable'],
+        ['6', 'Agents avec droits de paiement permanents', 'Fraude au paiement'],
+      ],
+      score: 'Score de posture', scoreSub: 'Classés selon les chemins d’attaque que chaque constat ouvre',
+      fixes: ['Imposer les clés d’accès à 1 240 comptes', 'Désactiver 312 comptes dormants', 'Supprimer 27 accès d’administration fantômes',
+              'Renouveler et durcir 9 comptes de service', 'Un propriétaire pour chaque agent ; fin des droits de paiement permanents'],
+      note: 'Valeurs illustratives.' },
+    itdr: { ey: 'Chapitre 10 · ITDR', ti: 'Détection et réponse aux menaces d’identité : les arrêter en secondes',
+      head: ['Heure', 'Ce que montrent les signaux d’identité', 'Détection', 'Réponse automatisée'], inc: 'Incident ouvert · contexte complet',
+      rows: [
+        { s: 2, t: '09:02:11', sig: '14 notifications refusées, puis 1 acceptée depuis un nouvel appareil', det: 'Fatigue MFA', id: 'T1621', res: 'Notifications bloquées, clé d’accès exigée, utilisateur alerté' },
+        { s: 2, t: '09:04:37', sig: 'Jeton de session rejoué depuis un autre réseau', det: 'Vol de jeton', id: 'T1550.004', res: 'Session et jetons révoqués (CAEP)' },
+        { s: 3, t: '09:06:02', sig: '46 demandes de tickets de service Kerberos en 30 secondes', det: 'Kerberoasting', id: 'T1558.003', res: 'Mot de passe du compte de service renouvelé' },
+        { s: 3, t: '09:07:45', sig: 'Un portable se connecte à 30 serveurs en NTLM', det: 'Pass-the-hash', id: 'T1550.002', res: 'Poste isolé, compte désactivé' },
+        { s: 4, t: '09:09:20', sig: 'L’agent de soutien demande une exportation massive de données clients', det: 'Pouvoir d’action excessif', id: 'OWASP LLM06', res: 'Bloqué, agent en quarantaine, propriétaire prévenu' },
+        { s: 4, t: '09:10:05', sig: 'L’opérateur mobile signale un échange de SIM sur la ligne d’un client', det: 'Risque de prise de contrôle', id: 'T1451 · signal partagé', res: 'Virements retenus, approbation sur l’appareil du client' },
+      ],
+      kpis: [['bolt', '6 attaques détectées en direct'], ['timer', 'Réponse médiane : moins de 10 secondes'], ['clipboard', '6 incidents ouverts avec tout le contexte']],
+      note: 'Chronologie illustrative.' },
+    layers: { ey: 'Chapitre 11 · Défense en profondeur', ti: 'Quatre couches coupent les chemins d’attaque',
+      layers: [
+        ['Authentification forte', 'Clés d’accès et jetons liés rendent une session volée inutile.'],
+        ['ISPM', 'Ferme les portes : comptes de service faibles, admins fantômes, agents sans propriétaire.'],
+        ['ITDR', 'Repère le pass-the-hash et le rejeu de jetons, et répond en secondes.'],
+        ['Contrôles d’exécution des agents', 'Vérifient chaque action d’agent par rapport à son mandat.'],
+      ] },
+  },
+};
+
+// French typography: non-breaking spaces before : ; ? ! and inside numbers and amounts.
+(function frenchSpaces(o) {
+  for (const k of Object.keys(o)) {
+    if (typeof o[k] === 'string') {
+      o[k] = o[k].replace(/ ([:;?!])/g, '\u00a0$1').replace(/(\d) (\d{3})/g, '$1\u00a0$2').replace(/(\d) ([$%])/g, '$1\u00a0$2');
+    } else if (o[k] && typeof o[k] === 'object') frenchSpaces(o[k]);
+  }
+})(T.fr);
+
+/* ------------------------------------------------------------------ scenes */
+const ORDER = ['title', 'ids', 'human', 'agent', 'protocols', 'standards', 'practices', 'fraud', 'lateral', 'ispm', 'itdr', 'layers'];
+const STEPS = { title: 0, ids: 3, human: 6, agent: 6, protocols: 6, standards: 5, practices: 4, fraud: 3, lateral: 3, ispm: 4, itdr: 5, layers: 4 };
+let LANG = /(^|[#&])fr\b/.test(location.hash) ? 'fr' : 'en';
+const nf = (n) => n.toLocaleString(LANG === 'fr' ? 'fr-CA' : 'en-US').replace(/ /g, ' ');
+
+const header = (d, right = '') => `<div class="hd"><div><p class="ey">${d.ey}</p><h2 class="ti">${d.ti}</h2></div>${right}</div>`;
+const chips = (list) => `<div class="chips">${list.map((c) => `<span class="chip">${c}</span>`).join('')}</div>`;
+
+function sceneTitle(d) {
+  return `<div style="position:absolute;left:160px;right:160px;top:330px">
+    <p class="ey" style="font-size:20px">${d.ey}</p>
+    <h1 style="font-size:84px;line-height:1.08;margin:18px 0 30px;color:var(--ink-hi);letter-spacing:-.015em">${d.ti}</h1>
+    <p style="font-size:28px;line-height:1.55;color:var(--ink-dim);max-width:1350px;margin:0">${d.sub}</p></div>`;
+}
+
+function sceneIds(d) {
+  return header(d) + `<div class="ids">${d.cols.map((c, i) => `
+    <div class="idc ${c.cls}" data-s="${i + 1}"><div class="big">${ic(c.icon)}</div><h3>${c.name}</h3><p>${c.text}</p>
+      <div class="how">${d.how}</div><ul>${c.how.map((h) => `<li>${h}</li>`).join('')}</ul></div>`).join('')}</div>`;
+}
+
+// A sequence diagram: lanes with lifelines, messages that draw themselves step by step.
+function seqDiagram(d, { left, width, tight = false }) {
+  const lw = width / d.lanes.length;
+  const X = Object.fromEntries(d.lanes.map((l, i) => [l.id, lw * i + lw / 2]));
+  let h = `<div class="seq ${tight ? 'tight' : ''}" style="left:${left}px;width:${width}px">`;
+  d.lanes.forEach((l) => {
+    h += `<div class="life" style="left:${X[l.id]}px"></div>`;
+    h += `<div class="lane ${l.cls || ''}" style="left:${X[l.id]}px;width:${lw - 18}px"><span class="li">${ic(l.icon)}</span><span><b>${l.name}</b><small>${l.sub}</small></span></div>`;
+  });
+  d.msgs.forEach((m) => {
+    const a = X[m.from], b = X[m.to];
+    const dir = b > a ? 'ltr' : 'rtl';
+    h += `<div class="msg ${dir} ${m.kind || ''} ${m.both ? 'both' : ''}" data-s="${m.s}" style="left:${Math.min(a, b)}px;width:${Math.abs(b - a)}px;top:${m.y - 34}px">
+      <div class="lab"><span>${m.label}${m.em ? `<em>${m.em}</em>` : ''}</span></div><div class="ln"></div></div>`;
+  });
+  (d.boxes || []).forEach((bx) => {
+    h += `<div class="box ${bx.cls || ''}" data-s="${bx.s}" style="left:${X[bx.lane] + (bx.dx || 0) - bx.w / 2}px;top:${bx.y}px;width:${bx.w}px">${bx.html}</div>`;
+  });
+  if (d.hop) {
+    const a = X.agent, b = X.api;
+    h += `<div class="msg ltr bad" data-s="${d.hop.s}" style="left:${a}px;width:${b - a}px;top:${692 - 34}px">
+      <div class="lab"><span>${d.hop.label}<em>${d.hop.em}</em></span></div><div class="ln"></div></div>`;
+  }
+  return h + '</div>';
+}
+
+function tokenCard(t, { left, width, revealAt, revokeAt }) {
+  return `<div class="tok" data-s="${revealAt}" data-x="5" style="left:${left}px;width:${width}px">
+    <h4>${ic('key')}${t.title}</h4><div class="ts">${t.sub}</div>
+    ${t.rows.map(([c, k, v]) => `<div class="row"><span class="cl">${c}</span><span><div class="rk">${k}</div><div class="rv">${v}</div></span><span class="ck">${ic('check')}</span></div>`).join('')}
+    <div class="ft" data-s="5">${ic('check')}${t.foot}</div>
+    ${revokeAt ? `<div class="stamp" data-s="${revokeAt}">${t.stamp}</div>` : ''}</div>`;
+}
+
+function sceneHuman(d) {
+  return header(d, chips(d.chips)) + seqDiagram(d, { left: 80, width: 1180 }) + tokenCard(d.tok, { left: 1306, width: 534, revealAt: 4, revokeAt: 6 });
+}
+function sceneAgent(d) {
+  return header(d, chips(d.chips)) + seqDiagram(d, { left: 70, width: 1270, tight: true }) + tokenCard(d.tok, { left: 1372, width: 478, revealAt: 3 });
+}
+
+function sceneProtocols(d) {
+  const legend = `<div class="legend">${['', 'a', 'r'].map((k, i) => `<span><i class="dot ${k}"></i>${d.legend[i]}</span>`).join('')}</div>`;
+  return header(d, legend) + `<div class="fams">${d.fams.map((f) => `
+    <div class="fam" data-s="${f.s}"><h3>${ic(f.icon)}${f.name}</h3><div class="pl ${f.one ? 'one' : ''}">
+      ${f.items.map(([k, n, s]) => `<div class="pr ${k === 'r' ? 'r' : ''}" ${k === 'r' ? 'data-hl="6"' : ''}><i class="dot ${k === 'g' ? '' : k}"></i><span><b>${n}</b><small>${s}</small></span></div>`).join('')}
+    </div></div>`).join('')}</div>`;
+}
+
+function sceneStandards(d) {
+  return header(d) + `<div class="stds">${d.items.map((it) => `
+    <div class="std ${it.cls || ''}" data-s="${it.s}"><div class="sk">${ic(it.icon)}</div><h3>${it.name}</h3><div class="sub">${it.sub}</div><p>${it.text}</p></div>`).join('')}</div>
+    <div class="note">${d.note}</div>`;
+}
+
+function scenePractices(d) {
+  return header(d) + `<div class="pracs">${d.items.map((it, i) => `
+    <div class="prac" data-s="${it.s}"><div class="pn">${ic(it.icon)}<i>${i + 1}</i></div><h3>${it.name}</h3><p>${it.text}</p>
+      <div class="st"><em>${d.stops}</em>${it.stops.map((s) => `<span>${s}</span>`).join('')}</div></div>`).join('')}</div>`;
+}
+
+function sceneFraud(d) {
+  return header(d) + `<div class="fc">
+    <div class="col fr" data-s="1"><div class="ch"><span class="ci">${ic('alert')}</span><span><h3>${d.fraud.name}</h3><small>${d.fraud.sub}</small></span></div>
+      ${d.fraud.items.map(([n, s]) => `<div class="it" data-s="2"><b>${n}</b><small>${s}</small></div>`).join('')}</div>
+    <div class="col nc" data-s="1"><div class="ch"><span class="ci">${ic('lock')}</span><span><h3>${d.nc.name}</h3><small>${d.nc.sub}</small></span></div>
+      ${d.nc.items.map(([n, s, o]) => `<div class="it" data-s="3"><b>${n}</b><small>${s}</small><span class="op">${o}</span></div>`).join('')}</div>
+  </div>`;
+}
+
+// The attack graph, shared by the lateral movement and defense-in-depth scenes.
+function attackGraph(d, { yA, yB, hitA, hitB, cuts }) {
+  const L = 80, CROWN_X = 1636, NW = 186;
+  let h = `<div class="gl" style="left:${L}px;top:${yA - 40}px">${d.rowA}</div><div class="gl" style="left:${L}px;top:${yB - 40}px">${d.rowB}</div>`;
+  const row = (nodes, edges, y, key, hitStep) => {
+    const n = nodes.length;
+    const gap = (CROWN_X - L - n * NW) / n; // the last edge runs into the crown jewels
+    let r = '';
+    nodes.forEach(([icon, name], i) => {
+      const x = L + i * (NW + gap);
+      const delay = (i * 0.9).toFixed(1);
+      r += `<div class="nd" ${hitStep ? `data-x="${hitStep}" data-xc="hit"` : ''} style="left:${x}px;top:${y}px;transition-delay:${delay}s">
+        <span class="ni">${ic(icon)}</span><b>${name}</b><span class="ns" style="transition-delay:${delay}s">${d.state}</span></div>`;
+      const ex = x + NW, ew = gap;
+      const ed = (i * 0.9 + 0.45).toFixed(1);
+      const [label, id] = edges[i];
+      r += `<div class="eg" ${hitStep ? `data-x="${hitStep}" data-xc="hit"` : ''} style="left:${ex + 10}px;top:${y + 52}px;width:${ew - 22}px" data-delay="${ed}"></div>`;
+      r += `<div class="el" ${hitStep ? `data-x="${hitStep}" data-xc="hit"` : ''} style="left:${ex + ew / 2}px;top:${y + 118}px;transition-delay:${ed}s">${label}<em>${id}</em></div>`;
+      if (cuts && cuts[`${key}${i}`]) {
+        r += `<div class="cut" data-s="${cuts[`${key}${i}`]}" style="left:${ex + ew / 2}px;top:${y + 53}px">${cuts[`${key}${i}`]}</div>`;
+      }
+    });
+    return r;
+  };
+  const crownTop = yA - 10, crownH = yB + 106 - crownTop + 20;
+  h += `<div class="crown" ${hitA ? `data-x="${hitA}" data-xc="hit"` : ''} style="left:${CROWN_X}px;top:${crownTop}px;width:214px;height:${crownH}px;transition-delay:4.1s">
+    <h4>${ic('crown')}${d.crown}</h4>${d.jewels.map((j) => `<div>${j}</div>`).join('')}</div>`;
+  h += row(d.nodesA, d.edgesA, yA, 'a', hitA);
+  h += row(d.nodesB, d.edgesB, yB, 'b', hitB);
+  return h;
+}
+
+function sceneLateral(d) {
+  return header(d) + attackGraph(d, { yA: 262, yB: 560, hitA: 2, hitB: 3 })
+    + `<div class="foot" data-s="3" style="top:836px">${d.foot}</div>`;
+}
+
+function sceneLayers(d) {
+  const g = T[LANG].lateral;
+  const cuts = { a0: 1, a2: 2, a3: 2, b1: 2, a1: 3, b2: 4, b3: 4 };
+  return header(d) + `<div class="lyr">${d.layers.map(([n, s], i) => `
+    <div class="ly" data-s="${i + 1}"><span class="lc">${i + 1}</span><h4>${n}</h4><p>${s}</p></div>`).join('')}</div>`
+    + attackGraph(g, { yA: 400, yB: 640, hitA: 0, hitB: 0, cuts }).replace(/class="(eg|el)"/g, 'class="$1 hit"');
+}
+
+function sceneIspm(d) {
+  return header(d) + `<div class="ispm">
+    <div class="pane" data-s="1"><h3>${ic('search')}${d.discover}</h3>
+      ${d.ctrs.map(([icon, n, label], i) => `<div class="ctr ${['', 'm', 'a'][i]}"><span class="ci">${ic(icon)}</span><span><div class="cv" data-count="${n}">0</div><div class="cn">${label}</div></span></div>`).join('')}
+      <div class="src">${d.sources}</div></div>
+    <div class="pane" data-s="2"><h3>${ic('alert')}${d.find}</h3>
+      ${d.finds.map(([v, n, o]) => `<div class="fd" data-x="3" data-x2="4"><span class="fv">${v}</span><b>${n}</b><span class="op">${d.opens} · ${o}</span></div>`).join('')}</div>
+    <div class="pane" data-s="3"><h3>${ic('shieldCheck')}${d.fix}</h3>
+      <div class="score"><span class="sv" data-x="4" data-xc="good">58</span><span class="so">/ 100 · ${d.score}</span></div>
+      <div class="bar"><i data-x="4" data-xc="good"></i></div><div class="sl">${d.scoreSub}</div>
+      ${d.fixes.map((f) => `<div class="fix">${ic('check')}<span>${f}</span></div>`).join('')}</div>
+  </div><div class="note">${d.note}</div>`;
+}
+
+function sceneItdr(d) {
+  return header(d) + `<div class="tl" data-x="5">
+    <div class="tr th" data-s="1">${d.head.map((x) => `<span>${x}</span>`).join('')}</div>
+    ${d.rows.map((r) => `<div class="tr ev" data-s="${r.s}"><span class="tm">${r.t}</span><span class="sg">${r.sig}</span>
+      <span class="dt">${r.det}<em>${r.id}</em></span><span class="rs">${ic('shieldCheck')}<span>${r.res}<span class="inc">${d.inc}</span></span></span></div>`).join('')}
+    <div class="kpis" data-s="5">${d.kpis.map(([icon, k]) => `<div class="kpi">${ic(icon)}${k}</div>`).join('')}</div>
+  </div><div class="note">${d.note}</div>`;
+}
+
+const BUILD = { title: sceneTitle, ids: sceneIds, human: sceneHuman, agent: sceneAgent, protocols: sceneProtocols, standards: sceneStandards,
+  practices: scenePractices, fraud: sceneFraud, lateral: sceneLateral, ispm: sceneIspm, itdr: sceneItdr, layers: sceneLayers };
+
+/* ------------------------------------------------------------------ state */
+const wrap = document.getElementById('wrap');
+let cur = { scene: 'title', step: 0 };
+
+function build() {
+  document.documentElement.lang = LANG;
+  wrap.innerHTML = ORDER.map((id) => `<section class="scene" id="sc-${id}">${BUILD[id](T[LANG][id])}</section>`).join('');
+  document.querySelectorAll('.nav [data-lang]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === LANG)));
+  document.getElementById('prev').textContent = '‹ ' + T[LANG].nav.back;
+  document.getElementById('next').textContent = T[LANG].nav.next + ' ›';
+}
+
+function countUp(el) {
+  if (el.dataset.done) return;
+  el.dataset.done = '1';
+  const to = Number(el.dataset.count), t0 = performance.now(), ms = 1600;
+  const tick = (now) => {
+    const k = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - k, 3);
+    el.textContent = nf(Math.round(to * e));
+    if (k < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+function countTo(el, from, to, ms) {
+  const t0 = performance.now();
+  const tick = (now) => {
+    const k = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - k, 3);
+    el.textContent = String(Math.round(from + (to - from) * e));
+    if (k < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+function apply(sceneEl, n) {
+  sceneEl.querySelectorAll('[data-s]').forEach((el) => el.classList.toggle('on', Number(el.dataset.s) <= n));
+  sceneEl.querySelectorAll('[data-hl]').forEach((el) => el.classList.toggle('hl', el.dataset.hl.split(',').map(Number).includes(n)));
+  sceneEl.querySelectorAll('[data-x]').forEach((el) => {
+    const on = Number(el.dataset.x) > 0 && Number(el.dataset.x) <= n;
+    el.classList.toggle(el.dataset.xc || 'x' + el.dataset.x, on);
+    if (el.classList.contains('eg')) el.style.setProperty('--d', on ? (el.dataset.delay || 0) + 's' : '0s');
+  });
+  sceneEl.querySelectorAll('[data-x2]').forEach((el) => el.classList.toggle('x' + el.dataset.x2, Number(el.dataset.x2) <= n));
+  sceneEl.querySelectorAll('[data-count]').forEach((el) => {
+    const shown = el.closest('[data-s]');
+    if (!shown || shown.classList.contains('on')) countUp(el);
+  });
+  const sv = sceneEl.querySelector('.score .sv');
+  if (sv) {
+    const good = sv.classList.contains('good');
+    if (good && sv.dataset.at !== '86') { sv.dataset.at = '86'; countTo(sv, 58, 86, 1600); }
+    if (!good && sv.dataset.at === '86') { sv.dataset.at = '58'; sv.textContent = '58'; }
+  }
+}
+
+function go(scene, step = 0, instant = false) {
+  const el = document.getElementById('sc-' + scene);
+  if (instant) wrap.classList.add('instant');
+  wrap.querySelectorAll('.scene').forEach((s) => s.classList.toggle('active', s === el));
+  apply(el, step);
+  cur = { scene, step };
+  if (instant) { void wrap.offsetWidth; wrap.classList.remove('instant'); }
+  updateNav();
+}
+function step(n) { cur.step = n; apply(document.getElementById('sc-' + cur.scene), n); updateNav(); }
+function next() {
+  if (cur.step < STEPS[cur.scene]) return step(cur.step + 1);
+  const i = ORDER.indexOf(cur.scene);
+  if (i < ORDER.length - 1) go(ORDER[i + 1], 0);
+}
+function prev() {
+  if (cur.step > 0) return step(cur.step - 1);
+  const i = ORDER.indexOf(cur.scene);
+  if (i > 0) go(ORDER[i - 1], STEPS[ORDER[i - 1]]);
+}
+function updateNav() {
+  const i = ORDER.indexOf(cur.scene);
+  document.getElementById('pos').textContent = `${i + 1} ${T[LANG].nav.of} ${ORDER.length} · ${cur.step}/${STEPS[cur.scene]}`;
+}
+function setLang(l) {
+  LANG = l;
+  history.replaceState(null, '', l === 'fr' ? '#fr' : '#');
+  const keep = { ...cur };
+  build();
+  go(keep.scene, keep.step, true);
+}
+
+// Fits the 1920x1080 canvas into the window.
+function fit() {
+  const k = Math.min(innerWidth / 1920, innerHeight / 1080);
+  const f = document.getElementById('fit');
+  f.style.transform = `translate(${(innerWidth - 1920 * k) / 2}px, ${(innerHeight - 1080 * k) / 2}px) scale(${k})`;
+}
+
+build();
+go('title', 0, true);
+fit();
+addEventListener('resize', fit);
+document.getElementById('next').addEventListener('click', next);
+document.getElementById('prev').addEventListener('click', prev);
+document.querySelectorAll('.nav [data-lang]').forEach((b) => b.addEventListener('click', () => setLang(b.dataset.lang)));
+addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); next(); }
+  if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+});
+
+// The film's handle on the page.
+window.explain = {
+  film() { document.body.classList.add('film'); },
+  go, step,
+};
+</script>
+</body>
+</html>
