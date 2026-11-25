@@ -1,0 +1,447 @@
+[
+ {
+  "start": 0.8,
+  "end": 2.49,
+  "text": "Nine twenty, Monday morning."
+ },
+ {
+  "start": 3.4,
+  "end": 7.0,
+  "text": "AI accelerates operations. It also accelerates change."
+ },
+ {
+  "start": 8.0,
+  "end": 10.25,
+  "text": "And change now happens at machine speed."
+ },
+ {
+  "start": 13.0,
+  "end": 19.82,
+  "text": "Banks, telecom operators, railways, energy utilities, governments and AI platforms all run on the network."
+ },
+ {
+  "start": 20.4,
+  "end": 25.61,
+  "text": "On premises and in the cloud, across WAN, SD-WAN and data centers."
+ },
+ {
+  "start": 26.0,
+  "end": 33.44,
+  "text": "AI agents now help engineers troubleshoot, generate configurations and execute changes across that infrastructure."
+ },
+ {
+  "start": 33.8,
+  "end": 37.49,
+  "text": "That creates enormous opportunity, and a new operational risk."
+ },
+ {
+  "start": 41.0,
+  "end": 47.77,
+  "text": "Here is the network. Data centers in Montreal, Toronto and Vancouver, joined by an MPLS core."
+ },
+ {
+  "start": 48.6,
+  "end": 56.41,
+  "text": "Path A, ten gigabits, carries payments and replication between Toronto and Montreal. Path B, one gigabit, is the backup."
+ },
+ {
+  "start": 56.8,
+  "end": 63.84,
+  "text": "New York, Chicago, Atlanta and San Francisco connect over SD-WAN, with BGP to the cloud."
+ },
+ {
+  "start": 64.2,
+  "end": 65.56,
+  "text": "SevOne sees all of it."
+ },
+ {
+  "start": 69.0,
+  "end": 70.89,
+  "text": "Consider a routine optimization."
+ },
+ {
+  "start": 71.2,
+  "end": 79.08,
+  "text": "An engineer asks an AI agent to improve connectivity between Montreal and Toronto, without hurting application performance."
+ },
+ {
+  "start": 79.6,
+  "end": 86.03,
+  "text": "The agent analyzes telemetry, and proposes a BGP preference change on forty-eight edge routers."
+ },
+ {
+  "start": 86.4,
+  "end": 91.98,
+  "text": "Following change policy, the change is approved, and executed through the automation platform."
+ },
+ {
+  "start": 93.2,
+  "end": 98.46,
+  "text": "Human and policy, then agent, then approved automation. Exactly as it should be."
+ },
+ {
+  "start": 101.0,
+  "end": 103.43,
+  "text": "The agent writes the configuration itself."
+ },
+ {
+  "start": 103.8,
+  "end": 107.5,
+  "text": "A BGP route-map that raises local preference on path B."
+ },
+ {
+  "start": 108.2,
+  "end": 112.68,
+  "text": "And an SD-WAN policy, with an SLA class for payment traffic."
+ },
+ {
+  "start": 113.0,
+  "end": 118.18,
+  "text": "The syntax validates. The BGP peers stay up. The change passes approval."
+ },
+ {
+  "start": 119.0,
+  "end": 123.41,
+  "text": "It is pushed to forty-eight routers, and to the SD-WAN manager."
+ },
+ {
+  "start": 124.4,
+  "end": 127.0,
+  "text": "Every check the agent knows how to run, passes."
+ },
+ {
+  "start": 135.0,
+  "end": 136.86,
+  "text": "Forty-eight devices are updated."
+ },
+ {
+  "start": 138.0,
+  "end": 143.78,
+  "text": "No configuration errors. No devices down. BGP sessions remain established."
+ },
+ {
+  "start": 144.2,
+  "end": 146.47,
+  "text": "The automation platform reports success."
+ },
+ {
+  "start": 157.8,
+  "end": 159.57,
+  "text": "But did the business outcome succeed?"
+ },
+ {
+  "start": 163.4,
+  "end": 166.49,
+  "text": "Independent network telemetry tells a different story."
+ },
+ {
+  "start": 167.0,
+  "end": 169.57,
+  "text": "Traffic has shifted onto a more constrained path."
+ },
+ {
+  "start": 172.6,
+  "end": 182.2,
+  "text": "WAN utilization climbs from forty-seven to eighty-two percent. Latency, from eighteen to sixty-three milliseconds. Packet loss reaches two percent."
+ },
+ {
+  "start": 182.6,
+  "end": 186.46,
+  "text": "Yet BGP is still established, and every device is still up."
+ },
+ {
+  "start": 187.4,
+  "end": 193.55,
+  "text": "SevOne compares live behavior with each path's learned baseline, and flags the deviation within minutes."
+ },
+ {
+  "start": 195.4,
+  "end": 200.65,
+  "text": "This is the critical distinction. Technical success does not guarantee business success."
+ },
+ {
+  "start": 208.0,
+  "end": 210.93,
+  "text": "This is where observability changes the risk equation."
+ },
+ {
+  "start": 212.0,
+  "end": 217.89,
+  "text": "Baselines, flow records and streaming telemetry show the degradation while services are still up."
+ },
+ {
+  "start": 219.6,
+  "end": 226.16,
+  "text": "SevOne raises the condition at nine twenty-four, before packet loss spreads, and before any customer calls."
+ },
+ {
+  "start": 227.6,
+  "end": 231.74,
+  "text": "Don't wait for down. Detect degradation while services are still up."
+ },
+ {
+  "start": 238.0,
+  "end": 244.09,
+  "text": "For a bank, the same deviation becomes transaction latency, and operational-resilience exposure."
+ },
+ {
+  "start": 247.6,
+  "end": 253.07,
+  "text": "For a telecom operator, it means SLA penalties, and avoidable NOC escalations."
+ },
+ {
+  "start": 257.2,
+  "end": 263.53,
+  "text": "For rail, communications visibility keeps degradation from cascading into operational disruption."
+ },
+ {
+  "start": 266.8,
+  "end": 273.37,
+  "text": "For energy, visibility across operational communications stays separate from safety and control systems."
+ },
+ {
+  "start": 276.4,
+  "end": 281.48,
+  "text": "For government and critical services, it is evidence for availability and accountability."
+ },
+ {
+  "start": 286.0,
+  "end": 294.05,
+  "text": "And for AI platforms, congested data paths leave expensive GPUs waiting. AI infrastructure is network infrastructure."
+ },
+ {
+  "start": 298.0,
+  "end": 300.68,
+  "text": "Next question: what exactly happened, and where?"
+ },
+ {
+  "start": 301.8,
+  "end": 307.86,
+  "text": "SevOne moves from the symptom, to the scope, to the path, to the flows, and back to the change that caused it."
+ },
+ {
+  "start": 309.8,
+  "end": 318.54,
+  "text": "Latency on the payments path. Three WAN circuits at the Toronto edge. The BGP best path moved to a one-gigabit circuit."
+ },
+ {
+  "start": 319.0,
+  "end": 324.63,
+  "text": "Replication and payment flows now share it. The trigger: the nine twenty-one policy change."
+ },
+ {
+  "start": 326.4,
+  "end": 332.73,
+  "text": "What changed, where, what is abnormal, what could be affected, and how urgent. Answered with evidence, not opinion."
+ },
+ {
+  "start": 343.0,
+  "end": 346.32,
+  "text": "So what went wrong? Three issues, each one valid on its own."
+ },
+ {
+  "start": 348.4,
+  "end": 356.02,
+  "text": "One: the route-map matches every prefix, not just bulk traffic. Payments and replication all move to the one-gigabit path."
+ },
+ {
+  "start": 357.6,
+  "end": 368.23,
+  "text": "Two: the SD-WAN SLA class allows a hundred and fifty milliseconds and five percent loss. The degraded path still looks compliant, so nothing is steered away."
+ },
+ {
+  "start": 368.6,
+  "end": 373.09,
+  "text": "Three: each change was checked for syntax. None was checked against the outcome."
+ },
+ {
+  "start": 374.6,
+  "end": 383.93,
+  "text": "SevOne exposed all three: the flows on path B, SD-WAN tunnel latency and loss, and the baseline deviation minutes after the change."
+ },
+ {
+  "start": 387.0,
+  "end": 392.36,
+  "text": "Detection alone doesn't reduce risk. The insight has to enter your existing processes."
+ },
+ {
+  "start": 393.6,
+  "end": 402.15,
+  "text": "SevOne raises the event. A ServiceNow incident opens automatically, with the configuration item, the priority and the evidence."
+ },
+ {
+  "start": 402.4,
+  "end": 407.48,
+  "text": "NetOps is paged. DevSecOps is informed of the AI-initiated change."
+ },
+ {
+  "start": 407.8,
+  "end": 412.69,
+  "text": "Levels one and two are automated: triage, correlation, and a rollback proposal."
+ },
+ {
+  "start": 413.8,
+  "end": 417.15,
+  "text": "Level three is human. An engineer approves the rollback."
+ },
+ {
+  "start": 418.2,
+  "end": 423.26,
+  "text": "The automation platform executes it. SevOne remains the independent observer."
+ },
+ {
+  "start": 432.0,
+  "end": 437.71,
+  "text": "And remediation isn't complete because a job reports success. The network is measured again."
+ },
+ {
+  "start": 439.4,
+  "end": 446.27,
+  "text": "Utilization returns to forty-nine percent. Latency to nineteen milliseconds. Packet loss disappears."
+ },
+ {
+  "start": 446.8,
+  "end": 451.94,
+  "text": "Only then does the ticket close. Observe, detect, understand, act, and verify."
+ },
+ {
+  "start": 462.0,
+  "end": 465.56,
+  "text": "This is how network evidence supports enterprise risk controls."
+ },
+ {
+  "start": 465.8,
+  "end": 471.39,
+  "text": "Preventive controls govern what can change. Detective controls surface abnormal behavior."
+ },
+ {
+  "start": 472.0,
+  "end": 478.27,
+  "text": "Diagnostic evidence explains it. Corrective workflows respond. Verification confirms recovery."
+ },
+ {
+  "start": 478.6,
+  "end": 482.87,
+  "text": "And the history becomes evidence for audit, regulators, and due diligence."
+ },
+ {
+  "start": 484.4,
+  "end": 491.03,
+  "text": "SevOne is an important source of that evidence, alongside change, ITSM and security records."
+ },
+ {
+  "start": 491.6,
+  "end": 494.74,
+  "text": "It doesn't replace those controls. It makes them measurable."
+ },
+ {
+  "start": 502.0,
+  "end": 505.3,
+  "text": "Executives get one view of network operational risk."
+ },
+ {
+  "start": 505.6,
+  "end": 512.53,
+  "text": "KPIs are set per service class: availability, performance, capacity, stability, change and coverage."
+ },
+ {
+  "start": 513.2,
+  "end": 517.66,
+  "text": "And one new metric for the agentic era: the change outcome assurance rate."
+ },
+ {
+  "start": 518.6,
+  "end": 522.56,
+  "text": "The share of changes whose network outcome was actually verified."
+ },
+ {
+  "start": 532.0,
+  "end": 534.79,
+  "text": "The business case goes beyond avoided outages."
+ },
+ {
+  "start": 535.6,
+  "end": 543.52,
+  "text": "Consolidated tools, automated baselines, automatic tickets and CMDB sync reduce the effort behind every incident."
+ },
+ {
+  "start": 543.8,
+  "end": 546.6,
+  "text": "But don't estimate savings from marketing assumptions."
+ },
+ {
+  "start": 547.6,
+  "end": 552.81,
+  "text": "Baseline today's tooling, administration, incident, reporting and onboarding costs."
+ },
+ {
+  "start": 554.6,
+  "end": 558.99,
+  "text": "Run a proof of value, measure the delta, and build the business case from evidence."
+ },
+ {
+  "start": 561.6,
+  "end": 564.57,
+  "text": "That is how you prove lower TCO and OPEX."
+ },
+ {
+  "start": 577.0,
+  "end": 579.62,
+  "text": "The AI agent tells you the task was completed."
+ },
+ {
+  "start": 580.8,
+  "end": 583.82,
+  "text": "The automation platform tells you the change was applied."
+ },
+ {
+  "start": 584.8,
+  "end": 587.02,
+  "text": "SevOne tells you what happened to the network."
+ },
+ {
+  "start": 588.6,
+  "end": 593.75,
+  "text": "The business needs all three. Only independent observability verifies the outcome."
+ },
+ {
+  "start": 599.4,
+  "end": 608.26,
+  "text": "If an AI agent changed five hundred network devices tonight, how quickly could you determine whether every change produced the intended business outcome?"
+ },
+ {
+  "start": 619.4,
+  "end": 623.44,
+  "text": "Start with an Agentic Network Readiness and Observability Assessment."
+ },
+ {
+  "start": 624.6,
+  "end": 632.09,
+  "text": "Visibility, AI use cases, critical dependencies, telemetry coverage, and BGP and WAN visibility."
+ },
+ {
+  "start": 633.4,
+  "end": 639.77,
+  "text": "Baselines, change-impact validation, incident workflows, observability gaps, and closed-loop assurance."
+ },
+ {
+  "start": 647.0,
+  "end": 651.35,
+  "text": "In the age of agentic AI, autonomy without observability is risk."
+ },
+ {
+  "start": 651.8,
+  "end": 654.3,
+  "text": "The future isn't just autonomous networking."
+ },
+ {
+  "start": 654.8,
+  "end": 657.86,
+  "text": "It's autonomous networking, with continuous assurance."
+ },
+ {
+  "start": 659.8,
+  "end": 660.99,
+  "text": "IBM SevOne."
+ }
+]
