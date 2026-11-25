@@ -197,13 +197,13 @@ doc = f'''<!doctype html><html><head><meta charset="utf-8"><title>SevOne Assuran
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono&display=swap" rel="stylesheet">
 <style>
 @page {{ size: A4 landscape; margin: 12mm; }}
-body {{ font-family: 'IBM Plex Sans', Arial, sans-serif; color: #161616; font-size: 11.5px; line-height: 1.45; margin: 0; }}
+body {{ font-family: 'IBM Plex Sans', Arial, sans-serif; color: #161616; font-size: 10.5px; line-height: 1.4; margin: 0; }}
 h1 {{ font-size: 28px; margin: 0 0 6px; color: #0f62fe; }} h2 {{ font-size: 20px; color: #0f62fe; margin: 18px 0 8px; break-before: page; }}
 h3 {{ font-size: 15px; margin: 0; }} h4 {{ font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #0f62fe; margin: 8px 0 3px; }}
 .cover p {{ font-size: 13px; max-width: 980px; }} .tag {{ color: #6f6f6f; }}
-.scene {{ break-inside: avoid; border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px 12px; margin: 0 0 10px; }}
+.scene {{ break-inside: avoid; border: 1px solid #e0e0e0; border-radius: 8px; padding: 8px 12px; margin: 0 0 8px; }}
 .hd {{ display: flex; gap: 12px; align-items: baseline; }} .tm {{ font-family: 'IBM Plex Mono', monospace; color: #0f62fe; font-weight: 600; }} .pp {{ color: #6f6f6f; margin-left: auto; }}
-.grid {{ display: grid; grid-template-columns: 420px 1fr; gap: 14px; margin-top: 6px; }} .grid img {{ width: 420px; border-radius: 6px; }}
+.grid {{ display: grid; grid-template-columns: 330px 1fr; gap: 14px; margin-top: 6px; }} .grid img {{ width: 330px; border-radius: 6px; }}
 .grid2 {{ display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; }} .vo {{ margin: 2px 0; font-style: italic; }} .cues {{ font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #525252; }}
 ul {{ margin: 0; padding-left: 16px; }} table {{ border-collapse: collapse; width: 100%; margin: 6px 0; }} th, td {{ border: 1px solid #e0e0e0; padding: 4px 8px; text-align: left; vertical-align: top; }}
 th {{ background: #edf5ff; width: 120px; }} .ind {{ break-inside: avoid; margin-bottom: 12px; }}
