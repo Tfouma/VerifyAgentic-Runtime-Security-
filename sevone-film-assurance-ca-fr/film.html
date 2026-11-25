@@ -1,0 +1,1072 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SevOne Agentic Assurance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* The film is dark by design (cinematic). Tokens are defined for both themes so the
+   chrome around the stage follows the viewer's preference. */
+:root {
+  --page: #000; --chrome-ink: #c6cede;
+  --bg: #04060d; --panel: rgba(14, 20, 36, .78); --panel-2: rgba(20, 28, 48, .9);
+  --line: rgba(120, 145, 200, .18); --line-2: rgba(120, 145, 200, .32);
+  --ink: #eef2fa; --dim: #98a3bd; --faint: #5d6984;
+  --blue: #4589ff; --cyan: #33b1ff; --purple: #a56eff; --teal: #3ddbd9;
+  --red: #fa4d56; --green: #42be65; --yellow: #f1c21b; --orange: #ff832b;
+  --sans: "IBM Plex Sans", Inter, system-ui, sans-serif;
+  --mono: "IBM Plex Mono", "DejaVu Sans Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --page: #e9ecf2; --chrome-ink: #1d2433; } }
+:root[data-theme="light"] { --page: #e9ecf2; --chrome-ink: #1d2433; }
+:root[data-theme="dark"] { --page: #000; --chrome-ink: #c6cede; }
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--page); overflow: hidden; }
+body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+
+#viewport { position: fixed; inset: 0; display: grid; place-items: center; }
+#stage {
+  position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px;
+  transform-origin: 0 0; background: var(--bg); overflow: hidden;
+}
+#bgc { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+#camera { position: absolute; inset: 0; transform-origin: 50% 50%; }
+.scene { position: absolute; inset: 0; opacity: 0; visibility: hidden; }
+.scene.on { visibility: visible; }
+
+#flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; mix-blend-mode: screen; }
+#vignette { position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(1300px 820px at 50% 50%, transparent 62%, rgba(0,0,0,.6) 100%); }
+#scan { position: absolute; inset: 0; pointer-events: none; opacity: .06;
+  background: repeating-linear-gradient(0deg, #fff 0 1px, transparent 1px 3px); }
+#fadeblack { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; }
+
+/* HUD */
+#hud { position: absolute; inset: 0; pointer-events: none; font-family: var(--mono); font-size: 15px; color: var(--dim); }
+#hud .tl { position: absolute; left: 56px; top: 40px; display: flex; gap: 14px; align-items: center; letter-spacing: .18em; }
+#hud .rec { width: 10px; height: 10px; border-radius: 50%; background: var(--red); box-shadow: 0 0 12px var(--red); }
+#hud .tr { position: absolute; right: 56px; top: 40px; letter-spacing: .12em; }
+#steps { position: absolute; left: 50%; bottom: 40px; transform: translateX(-50%); display: flex; gap: 10px; }
+#steps span { font-size: 13px; letter-spacing: .2em; padding: 7px 14px; border: 1px solid var(--line); border-radius: 999px; color: var(--faint); background: rgba(8,12,22,.6); }
+#steps span.act { color: #fff; border-color: var(--blue); background: rgba(69,137,255,.22); box-shadow: 0 0 24px rgba(69,137,255,.35); }
+#steps span.done { color: var(--dim); border-color: var(--line-2); }
+
+/* Typography */
+.mono { font-family: var(--mono); }
+.eyebrow { font-family: var(--mono); font-size: 18px; letter-spacing: .32em; text-transform: uppercase; color: var(--cyan); }
+.huge { font-size: 116px; font-weight: 600; letter-spacing: -0.035em; line-height: 1.02; }
+.big { font-size: 74px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.06; }
+.h2 { font-size: 50px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.12; }
+.lead { font-size: 30px; color: var(--dim); font-weight: 300; line-height: 1.4; }
+.center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.red { color: var(--red); } .green { color: var(--green); } .blue { color: var(--blue); } .cyan { color: var(--cyan); } .yellow { color: var(--yellow); }
+.grad { background: linear-gradient(90deg, #78a9ff, #33b1ff 40%, #3ddbd9 70%, #a56eff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; backdrop-filter: blur(6px); }
+.panel h4 { margin: 0; font-family: var(--mono); font-weight: 500; font-size: 15px; letter-spacing: .2em; text-transform: uppercase; color: var(--dim); }
+
+.stephead { position: absolute; left: 96px; top: 104px; right: 96px; }
+.stephead .num { font-family: var(--mono); font-size: 20px; letter-spacing: .3em; color: var(--cyan); }
+.stephead .uc { font-size: 15px; letter-spacing: .16em; text-transform: uppercase; color: #dfe6f5; margin-left: 22px; padding: 6px 14px; border-radius: 999px; border: 1px solid rgba(51,177,255,.45); background: rgba(51,177,255,.12); vertical-align: 3px; }
+.stephead .t { font-size: 50px; font-weight: 600; letter-spacing: -0.02em; margin-top: 10px; max-width: 1500px; }
+.caption { position: absolute; left: 0; right: 0; bottom: 104px; text-align: center; font-size: 27px; color: #dfe6f5; font-weight: 400; }
+.caption b { color: #fff; font-weight: 600; }
+
+.chip { display: inline-flex; align-items: center; gap: 10px; padding: 10px 18px; border-radius: 999px; border: 1px solid var(--line-2); background: rgba(16,24,44,.85); font-size: 20px; color: #dbe3f3; white-space: nowrap; }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+
+/* S0 */
+#s0 .clock { font-family: var(--mono); font-size: 28px; letter-spacing: .4em; color: var(--dim); }
+#s0 .l1 { font-size: 64px; font-weight: 300; margin-top: 40px; min-height: 80px; }
+#s0 .l2 { font-size: 76px; font-weight: 600; letter-spacing: -0.02em; margin-top: 18px; }
+#s0 .logs { position: absolute; inset: 0; font-family: var(--mono); font-size: 17px; color: rgba(120,160,230,.16); line-height: 1.75; padding: 40px 70px; white-space: pre; overflow: hidden; }
+.caret { display: inline-block; width: .5em; height: 1em; background: var(--cyan); vertical-align: -0.12em; margin-left: 4px; }
+
+/* S1 */
+#s1 .left { position: absolute; left: 96px; top: 230px; width: 640px; }
+#s1 .tasks { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 40px; }
+#s1 .tasks .chip { font-size: 19px; padding: 8px 16px; }
+#orbit { position: absolute; left: 820px; top: 110px; width: 1000px; height: 860px; }
+#orbit .core { position: absolute; left: 500px; top: 430px; width: 250px; height: 250px; margin: -125px; border-radius: 50%;
+  display: grid; place-items: center; text-align: center; font-family: var(--mono); font-size: 17px; letter-spacing: .2em; color: #fff;
+  background: radial-gradient(circle, rgba(69,137,255,.35), rgba(69,137,255,.05) 70%); border: 1px solid rgba(69,137,255,.5); }
+#orbit .agent { position: absolute; transform: translate(-50%, -50%); }
+#orbit .agent .chip { font-size: 18px; box-shadow: 0 8px 30px rgba(0,0,0,.4); }
+#orbit svg { position: absolute; inset: 0; }
+#s1 .counter { position: absolute; left: 96px; bottom: 150px; display: flex; gap: 70px; }
+.stat .v { font-family: var(--mono); font-size: 64px; font-weight: 500; letter-spacing: -0.02em; }
+.stat .k { font-family: var(--mono); font-size: 15px; letter-spacing: .2em; text-transform: uppercase; color: var(--dim); margin-top: 6px; }
+
+/* S2 / S3 */
+#s2 .q { font-size: 128px; font-weight: 600; letter-spacing: -0.04em; }
+#s3 .brand { font-size: 176px; font-weight: 600; letter-spacing: -0.05em; line-height: 1; }
+#s3 .brand .ibm { font-weight: 300; color: #c9d3e8; margin-right: .18em; }
+#s3 .pills { display: flex; gap: 18px; margin-top: 64px; }
+#s3 .pills .chip { font-family: var(--mono); font-size: 22px; letter-spacing: .14em; text-transform: uppercase; padding: 14px 26px; }
+.sweep { position: absolute; top: 0; bottom: 0; width: 280px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent); transform: skewX(-18deg); mix-blend-mode: overlay; }
+
+/* S4 observe */
+#s4 .kpis { position: absolute; left: 96px; right: 96px; top: 250px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }
+.kpi { padding: 20px 24px; }
+.kpi .v { font-family: var(--mono); font-size: 42px; font-weight: 500; color: #fff; }
+.kpi .k { font-family: var(--mono); font-size: 13px; letter-spacing: .18em; text-transform: uppercase; color: var(--dim); margin-top: 4px; }
+#topo { position: absolute; left: 96px; top: 400px; width: 1020px; height: 470px; padding: 18px 22px; }
+#topo svg { position: absolute; left: 0; top: 0; }
+#feed { position: absolute; left: 1140px; top: 400px; width: 684px; height: 470px; padding: 18px 22px; overflow: hidden; }
+.frow { display: grid; grid-template-columns: 92px 1fr; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 17px; }
+.frow .tm { font-family: var(--mono); color: var(--faint); font-size: 15px; padding-top: 2px; }
+.frow .who { font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.frow .what { color: var(--dim); font-size: 15.5px; margin-top: 3px; font-family: var(--mono); }
+.tag { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; padding: 3px 8px; border-radius: 6px; margin-left: auto; }
+.tag.ok { color: var(--green); background: rgba(66,190,101,.13); }
+.tag.watch { color: var(--yellow); background: rgba(241,194,27,.13); }
+.tag.risk { color: var(--red); background: rgba(250,77,86,.15); }
+#s4 .sources { position: absolute; left: 96px; right: 96px; top: 890px; display: flex; gap: 12px; justify-content: center; }
+#s4 .sources .chip { font-family: var(--mono); font-size: 16px; padding: 7px 14px; }
+
+/* S5 anticipate */
+#chart5 { position: absolute; left: 96px; top: 260px; width: 1160px; height: 600px; padding: 22px 26px; }
+#cards5 { position: absolute; left: 1290px; top: 260px; width: 534px; display: flex; flex-direction: column; gap: 16px; }
+.icard { padding: 20px 24px; }
+.icard .k { font-family: var(--mono); font-size: 13px; letter-spacing: .2em; text-transform: uppercase; color: var(--dim); }
+.icard .v { font-size: 26px; font-weight: 600; margin-top: 8px; line-height: 1.25; }
+.icard .s { font-size: 18px; color: var(--dim); margin-top: 6px; line-height: 1.4; }
+.icard.alert { border-color: rgba(250,77,86,.55); background: rgba(60,14,22,.7); }
+.icard.reco { border-color: rgba(66,190,101,.45); }
+
+/* S6 prevent */
+#plan6 { position: absolute; left: 96px; top: 280px; width: 560px; padding: 28px 30px; }
+#plan6 .agentname { display: flex; gap: 12px; align-items: center; font-size: 24px; font-weight: 600; }
+#plan6 .cmd { font-family: var(--mono); font-size: 17px; color: #cfe0ff; background: rgba(0,0,0,.35); border-radius: 10px; padding: 16px 18px; margin-top: 18px; line-height: 1.65; }
+#plan6 .ttl { color: var(--dim); font-size: 19px; margin-top: 16px; }
+#arrow6 { position: absolute; left: 660px; top: 380px; width: 260px; height: 120px; }
+#checks6 { position: absolute; left: 930px; top: 280px; width: 894px; padding: 26px 30px; }
+.chk { display: grid; grid-template-columns: 44px 1fr; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--line); align-items: start; }
+.chk .ic { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 20px; }
+.chk .ic.ok { background: rgba(66,190,101,.18); color: var(--green); }
+.chk .ic.no { background: rgba(250,77,86,.2); color: var(--red); }
+.chk .a { font-size: 22px; font-weight: 600; }
+.chk .b { font-size: 17px; color: var(--dim); font-family: var(--mono); margin-top: 4px; }
+#verdict6 { position: absolute; left: 96px; top: 700px; width: 560px; padding: 24px 30px; border-color: rgba(250,77,86,.7); background: rgba(70,12,20,.82); box-shadow: 0 0 60px rgba(250,77,86,.25); }
+#verdict6 .v { font-size: 38px; font-weight: 700; color: var(--red); letter-spacing: .02em; }
+#verdict6 .s { font-size: 19px; color: #f2c7cb; margin-top: 8px; font-family: var(--mono); }
+#replan6 { position: absolute; left: 930px; top: 790px; width: 894px; padding: 20px 30px; border-color: rgba(66,190,101,.6); background: rgba(10,44,26,.78); }
+#replan6 .v { font-size: 23px; font-weight: 600; color: #b9f0c9; }
+
+/* S7 react */
+#chart7 { position: absolute; left: 96px; top: 250px; width: 1260px; height: 430px; padding: 20px 24px; }
+#clocks7 { position: absolute; left: 1384px; top: 250px; width: 440px; display: flex; flex-direction: column; gap: 16px; }
+#clocks7 .panel { padding: 22px 26px; }
+#clocks7 .v { font-family: var(--mono); font-size: 62px; font-weight: 500; }
+#clocks7 .k { font-family: var(--mono); font-size: 14px; letter-spacing: .2em; color: var(--dim); text-transform: uppercase; }
+#clocks7 .s { font-size: 17px; color: var(--dim); margin-top: 4px; }
+#chain7 { position: absolute; left: 96px; right: 96px; top: 712px; height: 200px; }
+.ccard { position: absolute; top: 0; width: 386px; height: 160px; padding: 18px 22px; }
+.ccard .k { font-family: var(--mono); font-size: 13px; letter-spacing: .2em; text-transform: uppercase; }
+.ccard .v { font-size: 22px; font-weight: 600; margin-top: 10px; line-height: 1.28; }
+.ccard .s { font-size: 16px; color: var(--dim); margin-top: 8px; font-family: var(--mono); line-height: 1.45; }
+
+/* S8 control */
+#s8 .grid { position: absolute; left: 96px; right: 96px; top: 270px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+#s8 .grid .panel { padding: 26px 28px; }
+#s8 .grid .v { font-family: var(--mono); font-size: 64px; font-weight: 500; letter-spacing: -0.02em; }
+#s8 .grid .k { font-size: 20px; color: var(--dim); margin-top: 6px; line-height: 1.35; }
+#trust { position: absolute; left: 96px; right: 96px; top: 520px; padding: 20px 28px; }
+.trow { display: grid; grid-template-columns: 340px 200px 200px 200px 1fr 170px; gap: 16px; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 20px; }
+.trow.h { font-family: var(--mono); font-size: 13px; letter-spacing: .18em; text-transform: uppercase; color: var(--faint); }
+.trow .n { font-weight: 600; display: flex; align-items: center; gap: 10px; }
+.trow .m { font-family: var(--mono); color: #cdd6ea; }
+.bar { height: 10px; background: rgba(255,255,255,.07); border-radius: 6px; overflow: hidden; }
+.bar i { display: block; height: 100%; border-radius: 6px; }
+.status { font-family: var(--mono); font-size: 14px; letter-spacing: .12em; padding: 5px 10px; border-radius: 6px; text-align: center; }
+.foot { position: absolute; right: 96px; bottom: 70px; font-family: var(--mono); font-size: 14px; color: var(--faint); letter-spacing: .08em; }
+
+/* S9 */
+#s9 .a { font-size: 82px; font-weight: 300; letter-spacing: -0.03em; }
+#s9 .b { font-size: 82px; font-weight: 600; letter-spacing: -0.03em; margin-top: 10px; }
+#s9 .end .brand { font-size: 150px; font-weight: 600; letter-spacing: -0.05em; }
+#s9 .end .brand .ibm { font-weight: 300; color: #c9d3e8; margin-right: .18em; }
+#s9 .end .tag2 { font-family: var(--mono); font-size: 26px; letter-spacing: .32em; text-transform: uppercase; color: var(--dim); margin-top: 34px; }
+#s9 .end .tag3 { font-size: 34px; margin-top: 26px; color: #dfe6f5; font-weight: 300; }
+#s9 .disc { position: absolute; left: 0; right: 0; bottom: 60px; text-align: center; font-family: var(--mono); font-size: 14px; color: var(--faint); letter-spacing: .06em; }
+
+
+/* ---------- Part 2 additions ---------- */
+#pipe { position: absolute; left: 96px; right: 96px; top: 470px; height: 260px; }
+#pipe svg { position: absolute; left: 0; top: 0; }
+.stage { position: absolute; top: 40px; width: 216px; height: 190px; padding: 18px 18px; box-sizing: border-box; }
+.stage .n { font-family: var(--mono); font-size: 14px; letter-spacing: .2em; color: var(--dim); }
+.stage .h { font-size: 26px; font-weight: 600; margin-top: 8px; }
+.stage .s { font-size: 16px; color: var(--dim); margin-top: 6px; line-height: 1.35; }
+.stage .tag { position: absolute; left: 18px; bottom: 16px; margin: 0; font-size: 12px; }
+.stage.auto { border-color: rgba(66,190,101,.55); }
+.stage.human { border-color: rgba(241,194,27,.7); background: rgba(60,48,10,.55); }
+#s1 .counter2 { position: absolute; left: 96px; bottom: 130px; display: flex; gap: 90px; }
+
+.alert-row { display: grid; grid-template-columns: 110px 1fr 90px; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--line); font-family: var(--mono); font-size: 15px; color: #d6deee; }
+.alert-row .sev { font-size: 12px; letter-spacing: .12em; padding: 2px 8px; border-radius: 6px; text-align: center; align-self: center; }
+.sev.crit { color: var(--red); background: rgba(250,77,86,.15); } .sev.maj { color: var(--yellow); background: rgba(241,194,27,.14); }
+#inc4 { position: absolute; left: 22px; right: 22px; top: 150px; padding: 24px 26px; border-color: rgba(250,77,86,.6); background: rgba(70,12,20,.85); }
+#inc4 .k { font-family: var(--mono); font-size: 14px; letter-spacing: .2em; color: #ff8389; }
+#inc4 .v { font-size: 34px; font-weight: 700; margin-top: 10px; }
+#inc4 .d { font-family: var(--mono); font-size: 17px; color: #f2c7cb; margin-top: 12px; line-height: 1.6; }
+#inc4 .big { font-family: var(--mono); font-size: 64px; font-weight: 500; color: #fff; margin-top: 16px; }
+.kv { display: grid; grid-template-columns: 250px 1fr; gap: 16px; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 19px; }
+.kv .k { font-family: var(--mono); font-size: 14px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); padding-top: 4px; }
+.kv .v { color: #eef2fa; }
+.kv .v b { color: var(--cyan); font-weight: 600; }
+
+#snow { position: absolute; left: 96px; top: 250px; width: 1110px; height: 640px; overflow: hidden; }
+#snow .bar { display: flex; align-items: center; gap: 18px; padding: 16px 26px; background: rgba(41,61,101,.85); border-bottom: 1px solid var(--line-2); }
+#snow .bar .t { font-weight: 600; font-size: 20px; } #snow .bar .num { font-family: var(--mono); font-size: 20px; color: var(--cyan); }
+#snow .bar .state { margin-left: auto; font-family: var(--mono); font-size: 14px; letter-spacing: .12em; padding: 5px 12px; border-radius: 6px; color: #b9f0c9; background: rgba(66,190,101,.16); }
+#snow .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0 36px; padding: 10px 26px; }
+#snow .f { padding: 12px 0; border-bottom: 1px solid var(--line); }
+#snow .f .k { font-family: var(--mono); font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); }
+#snow .f .v { font-size: 19px; margin-top: 5px; }
+#snow .f .v .hl { color: var(--yellow); font-weight: 600; }
+#snow .notes { margin: 6px 26px 0; padding: 14px 18px; border-radius: 12px; background: rgba(0,0,0,.3); font-size: 17px; color: #cfe0ff; line-height: 1.5; }
+#snow .chips { display: flex; gap: 10px; margin: 12px 26px 0; }
+#snow .chips .chip { font-family: var(--mono); font-size: 14px; padding: 6px 12px; }
+#side5 { position: absolute; left: 1236px; top: 250px; width: 588px; display: flex; flex-direction: column; gap: 16px; }
+#side5 .panel { padding: 20px 24px; }
+#side5 .k { font-family: var(--mono); font-size: 14px; letter-spacing: .2em; color: var(--dim); text-transform: uppercase; }
+#side5 .v { font-family: var(--mono); font-size: 60px; font-weight: 500; color: var(--green); }
+#side5 ul { margin: 10px 0 0; padding-left: 22px; font-size: 19px; line-height: 1.55; color: #dfe6f5; }
+
+#rules6 { position: absolute; left: 96px; top: 250px; width: 860px; height: 410px; padding: 20px 24px; }
+.rule { display: grid; grid-template-columns: 1fr 220px 120px; gap: 14px; align-items: center; padding: 13px 0; border-bottom: 1px solid var(--line); font-size: 18px; }
+.rule .to { font-family: var(--mono); font-size: 15px; color: var(--cyan); }
+.rule .m { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-align: center; padding: 4px 8px; border-radius: 6px; color: var(--faint); border: 1px solid var(--line); }
+.rule.hit .m { color: #b9f0c9; background: rgba(66,190,101,.18); border-color: rgba(66,190,101,.5); }
+.rule.hit { background: linear-gradient(90deg, rgba(66,190,101,.08), transparent); }
+#msgs6 { position: absolute; left: 990px; top: 250px; width: 834px; height: 410px; padding: 20px 24px; }
+.msg { display: grid; grid-template-columns: 48px 1fr; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.msg .av { width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center; font-family: var(--mono); font-weight: 600; font-size: 15px; color: #0b1020; }
+.msg .ch { font-family: var(--mono); font-size: 14px; color: var(--dim); }
+.msg .tx { font-size: 18px; margin-top: 3px; color: #eef2fa; line-height: 1.4; }
+#tiers6 { position: absolute; left: 96px; right: 96px; top: 690px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.tier { padding: 20px 24px; }
+.tier .k { font-family: var(--mono); font-size: 15px; letter-spacing: .2em; text-transform: uppercase; }
+.tier .v { font-size: 24px; font-weight: 600; margin-top: 8px; }
+.tier .s { font-size: 17px; color: var(--dim); margin-top: 6px; }
+.tier.auto { border-color: rgba(66,190,101,.55); } .tier.auto .k { color: var(--green); }
+.tier.human { border-color: rgba(241,194,27,.75); background: rgba(60,48,10,.6); } .tier.human .k { color: var(--yellow); }
+
+#appr8 { position: absolute; left: 96px; top: 250px; width: 900px; padding: 0 0 22px; overflow: hidden; }
+#appr8 .bar { padding: 16px 26px; background: rgba(41,61,101,.85); border-bottom: 1px solid var(--line-2); font-weight: 600; font-size: 19px; display: flex; gap: 14px; align-items: center; }
+#appr8 .bar .mono { font-weight: 400; color: var(--dim); font-size: 14px; margin-left: auto; }
+#appr8 .ttl { font-size: 28px; font-weight: 600; padding: 18px 26px 6px; }
+#appr8 .f { display: grid; grid-template-columns: 170px 1fr; gap: 14px; padding: 9px 26px; font-size: 18px; }
+#appr8 .f .k { font-family: var(--mono); font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); padding-top: 4px; }
+#appr8 .btns { display: flex; gap: 16px; padding: 18px 26px 0; }
+#appr8 .btn { font-size: 20px; font-weight: 600; padding: 12px 34px; border-radius: 10px; border: 1px solid var(--line-2); color: #dfe6f5; }
+#appr8 .btn.ok { background: rgba(66,190,101,.2); border-color: rgba(66,190,101,.7); color: #b9f0c9; }
+#appr8 .btn.ok.pressed { background: #42be65; color: #06210f; box-shadow: 0 0 40px rgba(66,190,101,.55); }
+#stamp8 { position: absolute; left: 140px; top: 650px; padding: 14px 22px; border: 3px solid var(--green); border-radius: 12px; color: var(--green); font-family: var(--mono); font-size: 22px; font-weight: 600; letter-spacing: .08em; transform: rotate(-6deg); background: rgba(6,33,15,.85); }
+#time8 { position: absolute; left: 1030px; top: 250px; width: 794px; padding: 20px 26px; }
+.tl { display: grid; grid-template-columns: 96px 20px 1fr; gap: 12px; align-items: start; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.tl .tm { font-family: var(--mono); font-size: 15px; color: var(--dim); padding-top: 3px; }
+.tl .dt { width: 14px; height: 14px; border-radius: 50%; margin-top: 5px; }
+.tl .tx { font-size: 18px; color: #eef2fa; line-height: 1.35; }
+.tl .tx span { color: var(--dim); font-size: 15px; font-family: var(--mono); }
+
+
+
+/* ---------- Canada-US architecture edition ---------- */
+#arch17 { position: absolute; left: 96px; top: 250px; width: 1180px; height: 640px; padding: 18px 20px; box-sizing: border-box; }
+#arch17 svg { position: absolute; left: 0; top: 40px; }
+#facts17 { position: absolute; left: 1300px; top: 250px; width: 524px; padding: 18px 22px; box-sizing: border-box; }
+#facts17 .kv { grid-template-columns: 150px 1fr; font-size: 17px; padding: 9px 0; }
+#facts17 .kv .k { font-size: 12px; }
+.code { position: absolute; top: 250px; width: 846px; height: 470px; padding: 18px 24px; box-sizing: border-box; background: rgba(6,10,20,.92); }
+.code h4 { margin-bottom: 12px; }
+.code .ln { font-family: var(--mono); font-size: 19px; line-height: 1.62; color: #cfe0ff; white-space: pre; }
+.code .ln .c { color: #6f7f9f; } .code .ln .kw { color: #78a9ff; } .code .ln .v { color: #f1c21b; }
+.vchips { position: absolute; left: 96px; right: 96px; top: 752px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.vchips .chip { font-family: var(--mono); font-size: 16px; border-color: rgba(66,190,101,.6); color: #b9f0c9; background: rgba(8,40,22,.7); }
+.iss { position: absolute; top: 250px; width: 560px; height: 470px; padding: 20px 22px; box-sizing: border-box; border-color: rgba(250,77,86,.45); }
+.iss .k { font-family: var(--mono); font-size: 14px; letter-spacing: .18em; color: #ff8389; }
+.iss .h { font-size: 24px; font-weight: 600; margin-top: 8px; line-height: 1.25; }
+.iss .cl { font-family: var(--mono); font-size: 15px; color: #ffd7d9; background: rgba(218,30,40,.18); border-left: 3px solid var(--red); padding: 8px 12px; margin-top: 12px; border-radius: 4px; white-space: pre-wrap; }
+.iss .lb { font-family: var(--mono); font-size: 12px; letter-spacing: .18em; color: var(--dim); text-transform: uppercase; margin-top: 14px; }
+.iss .tx { font-size: 17px; color: #dfe6f5; margin-top: 4px; line-height: 1.4; }
+.iss .tx.ev { color: #cfe0ff; } .iss .tx.fx { color: #b9f0c9; }
+.iss .lb.sv { color: var(--cyan); } .iss .lb.fxl { color: var(--green); }
+
+/* ---------- Assurance film ---------- */
+.ind-grid { position: absolute; left: 96px; right: 96px; top: 270px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+.ind { padding: 22px 24px; height: 250px; box-sizing: border-box; transition: none; }
+.ind .k { font-family: var(--mono); font-size: 15px; letter-spacing: .22em; color: var(--cyan); }
+.ind .v { font-size: 26px; font-weight: 600; margin-top: 10px; line-height: 1.2; }
+.ind .s { font-size: 17px; color: var(--dim); margin-top: 10px; line-height: 1.4; }
+.ind.dim { opacity: .38; }
+.ind.act { border-color: var(--cyan); box-shadow: 0 0 40px rgba(51,177,255,.25); background: rgba(20,36,66,.92); }
+.ind .path { font-family: var(--mono); font-size: 14px; color: #9fb4da; margin-top: 10px; line-height: 1.45; }
+.ind .kpis { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.ind .kpis span { font-family: var(--mono); font-size: 13px; padding: 3px 8px; border-radius: 6px; border: 1px solid var(--line-2); color: #cfe0ff; }
+.ind .note { font-family: var(--mono); font-size: 13px; color: var(--yellow); margin-top: 8px; }
+.ind-full { position: absolute; left: 96px; right: 96px; top: 270px; height: 600px; display: grid; grid-template-columns: 1.15fr 1fr; gap: 26px; }
+.ind-full .panel { padding: 28px 32px; }
+.ind-full .big { font-size: 56px; }
+.envchips { position: absolute; left: 96px; right: 96px; bottom: 150px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.envchips .chip { font-family: var(--mono); font-size: 16px; padding: 7px 14px; }
+
+.chain { position: absolute; left: 96px; right: 96px; display: flex; align-items: stretch; gap: 0; }
+.chain .node { flex: 1; padding: 20px 20px; box-sizing: border-box; }
+.chain .node .k { font-family: var(--mono); font-size: 13px; letter-spacing: .2em; color: var(--dim); }
+.chain .node .v { font-size: 24px; font-weight: 600; margin-top: 8px; line-height: 1.2; }
+.chain .node .s { font-size: 16px; color: var(--dim); margin-top: 6px; line-height: 1.35; }
+.chain .arr { width: 44px; display: grid; place-items: center; color: var(--blue); font-size: 30px; }
+.chain .node.hot { border-color: var(--cyan); box-shadow: 0 0 34px rgba(51,177,255,.3); }
+.prompt { position: absolute; left: 96px; top: 250px; width: 1728px; padding: 26px 30px; box-sizing: border-box; }
+.prompt .k { font-family: var(--mono); font-size: 14px; letter-spacing: .2em; color: var(--dim); }
+.prompt .pq { font-size: 30px; margin-top: 10px; line-height: 1.35; }
+.prompt .a { font-family: var(--mono); font-size: 19px; color: #cfe0ff; margin-top: 16px; line-height: 1.55; }
+
+.console { position: absolute; left: 96px; top: 250px; width: 1080px; height: 560px; padding: 26px 32px; box-sizing: border-box; background: rgba(6,10,20,.92); font-family: var(--mono); font-size: 22px; line-height: 1.7; color: #cfe0ff; }
+.console .ok { color: var(--green); } .console .dimc { color: var(--faint); }
+#succ3 { position: absolute; left: 1210px; top: 250px; width: 614px; height: 560px; box-sizing: border-box; padding: 40px 36px; border-color: rgba(66,190,101,.7); background: rgba(8,40,22,.82); display: flex; flex-direction: column; justify-content: center; }
+#succ3 .v { font-size: 52px; font-weight: 700; color: var(--green); line-height: 1.1; }
+#succ3 .s { font-family: var(--mono); font-size: 19px; color: #b9f0c9; margin-top: 22px; line-height: 1.7; }
+#q3 { position: absolute; left: 0; right: 0; bottom: 120px; text-align: center; font-size: 60px; font-weight: 600; letter-spacing: -0.02em; }
+
+.mtiles { position: absolute; left: 96px; right: 96px; top: 250px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.mt { padding: 18px 24px; }
+.mt .k { font-family: var(--mono); font-size: 13px; letter-spacing: .2em; color: var(--dim); text-transform: uppercase; }
+.mt .row { display: flex; align-items: baseline; gap: 14px; margin-top: 6px; font-family: var(--mono); }
+.mt .mb { font-size: 24px; color: var(--dim); white-space: nowrap; } .mt .ar { font-size: 22px; color: var(--faint); }
+.mt .ma { font-size: 40px; font-weight: 500; white-space: nowrap; }
+#chart4, #chart9 { position: absolute; left: 96px; top: 430px; width: 1060px; height: 450px; padding: 18px 22px; box-sizing: border-box; }
+#split4 { position: absolute; left: 1186px; top: 430px; width: 638px; height: 450px; padding: 18px 24px; box-sizing: border-box; }
+.sp { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--line); font-size: 19px; }
+.sp .l { color: #b9f0c9; } .sp .r { color: #ffb3b8; }
+.sp.h { font-family: var(--mono); font-size: 13px; letter-spacing: .18em; color: var(--dim); text-transform: uppercase; }
+#dev4 { position: absolute; left: 600px; top: 70px; padding: 10px 16px; border-radius: 10px; font-family: var(--mono); font-size: 16px; color: #fff; background: rgba(218,30,40,.85); box-shadow: 0 0 30px rgba(250,77,86,.5); }
+
+#tl5 { position: absolute; left: 96px; right: 96px; top: 300px; height: 330px; }
+.tnode { position: absolute; top: 120px; width: 250px; margin-left: -125px; text-align: center; }
+.tnode .dot { width: 26px; height: 26px; border-radius: 50%; margin: 0 auto; background: var(--line-2); border: 3px solid #04060d; }
+.tnode .tm { font-family: var(--mono); font-size: 20px; margin-top: 16px; color: #eef2fa; }
+.tnode .tx { font-size: 19px; color: var(--dim); margin-top: 6px; line-height: 1.3; }
+.tnode.on .dot { background: var(--yellow); } .tnode.hit .dot { background: var(--red); box-shadow: 0 0 0 10px rgba(250,77,86,.2); }
+.tnode.gone { opacity: .35; } .tnode.gone .tx { text-decoration: line-through; }
+#det5 { position: absolute; top: 20px; padding: 10px 18px; border-radius: 10px; font-family: var(--mono); font-size: 18px; color: #06210f; background: var(--green); transform: translateX(-50%); white-space: nowrap; }
+.evid { position: absolute; left: 96px; right: 96px; top: 690px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.evid .panel { padding: 16px 20px; } .evid .k { font-family: var(--mono); font-size: 13px; letter-spacing: .18em; color: var(--cyan); }
+.evid .v { font-size: 19px; margin-top: 6px; line-height: 1.35; }
+
+#rca7 { position: absolute; left: 96px; top: 250px; width: 980px; }
+.rca { display: grid; grid-template-columns: 150px 1fr; gap: 18px; padding: 15px 22px; margin-bottom: 12px; align-items: center; }
+.rca .k { font-family: var(--mono); font-size: 15px; letter-spacing: .2em; color: var(--cyan); }
+.rca .v { font-size: 21px; line-height: 1.35; }
+#br7 { position: absolute; left: 1120px; top: 250px; width: 704px; padding: 18px 24px; box-sizing: border-box; }
+.brn { padding: 12px 18px; border-radius: 12px; border: 1px solid var(--line-2); font-size: 20px; margin-top: 10px; display: flex; justify-content: space-between; }
+.brn .m { font-family: var(--mono); font-size: 14px; color: var(--dim); }
+.brn.hot { border-color: rgba(250,77,86,.8); background: rgba(70,12,20,.7); } .brn.hot .m { color: #ffb3b8; }
+.brd { text-align: center; color: var(--faint); font-size: 18px; line-height: 1; margin-top: 8px; }
+#qs7 { position: absolute; left: 1120px; top: 760px; width: 704px; display: flex; flex-wrap: wrap; gap: 10px; }
+#qs7 .chip { font-size: 16px; padding: 6px 12px; } #qs7 .chip.done { border-color: var(--green); color: #b9f0c9; }
+
+#tick8 { position: absolute; left: 96px; top: 520px; width: 860px; padding: 0 0 16px; overflow: hidden; box-sizing: border-box; }
+#tick8 .tbar { padding: 12px 22px; background: rgba(41,61,101,.85); display: flex; gap: 14px; font-size: 18px; font-weight: 600; }
+#tick8 .tbar .n { font-family: var(--mono); color: var(--cyan); font-weight: 400; }
+#tick8 .tbar .st { margin-left: auto; font-family: var(--mono); font-size: 13px; letter-spacing: .12em; color: #b9f0c9; background: rgba(66,190,101,.16); padding: 3px 10px; border-radius: 6px; font-weight: 400; }
+#tick8 .f { display: grid; grid-template-columns: 210px 1fr; gap: 12px; padding: 8px 22px; font-size: 18px; }
+#tick8 .f .k { font-family: var(--mono); font-size: 13px; letter-spacing: .14em; color: var(--dim); text-transform: uppercase; padding-top: 3px; }
+#lv8 { position: absolute; left: 990px; top: 520px; width: 834px; display: flex; flex-direction: column; gap: 14px; }
+#lv8 .tier { padding: 14px 22px; } #lv8 .tier .v { font-size: 21px; } #lv8 .tier .s { font-size: 16px; }
+
+.loop { position: absolute; left: 1186px; top: 430px; width: 638px; height: 450px; padding: 24px 28px; box-sizing: border-box; }
+.loop .st { display: flex; align-items: center; gap: 14px; padding: 12px 0; font-family: var(--mono); font-size: 22px; letter-spacing: .14em; color: var(--faint); border-bottom: 1px solid var(--line); }
+.loop .st .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--line-2); }
+.loop .st.on { color: #eef2fa; } .loop .st.on .dot { background: var(--green); box-shadow: 0 0 14px rgba(66,190,101,.7); }
+.loop .res { margin-top: 18px; font-size: 22px; color: #b9f0c9; }
+
+.rctab { position: absolute; left: 96px; right: 96px; top: 250px; }
+.rcr { display: grid; grid-template-columns: 190px 360px 1fr 470px; gap: 18px; padding: 14px 20px; border-bottom: 1px solid var(--line); font-size: 18px; align-items: start; }
+.rcr.h { font-family: var(--mono); font-size: 13px; letter-spacing: .18em; color: var(--dim); text-transform: uppercase; }
+.rcr .L { font-family: var(--mono); font-size: 16px; letter-spacing: .12em; color: var(--cyan); text-transform: uppercase; padding-top: 2px; }
+.rcr .q { color: #eef2fa; } .rcr .sv { color: #cfe0ff; } .rcr .adj { color: var(--dim); }
+.rcfoot { position: absolute; left: 96px; right: 96px; top: 800px; padding: 14px 20px; font-size: 18px; color: #dfe6f5; border-left: 4px solid var(--yellow); background: rgba(60,48,10,.45); border-radius: 8px; }
+
+.kgrid { position: absolute; left: 96px; top: 250px; width: 1100px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.kt { padding: 14px 22px; display: flex; justify-content: space-between; align-items: baseline; }
+.kt .k { font-size: 18px; color: #dfe6f5; } .kt .v { font-family: var(--mono); font-size: 30px; }
+#coar { position: absolute; left: 1230px; top: 250px; width: 594px; padding: 24px 28px; box-sizing: border-box; border-color: rgba(51,177,255,.6); }
+#coar .k { font-family: var(--mono); font-size: 14px; letter-spacing: .2em; color: var(--cyan); }
+#coar .f { font-size: 19px; margin-top: 14px; line-height: 1.5; color: #dfe6f5; }
+#coar .f .ln { border-top: 2px solid #8b97b3; margin: 6px 0; }
+#coar .v { font-family: var(--mono); font-size: 72px; color: var(--green); margin-top: 14px; }
+#fw11 { position: absolute; left: 1230px; top: 640px; width: 594px; padding: 18px 24px; box-sizing: border-box; }
+#fw11 .k { font-family: var(--mono); font-size: 13px; letter-spacing: .2em; color: var(--dim); }
+#fw11 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; } #fw11 .chip { font-size: 15px; padding: 5px 12px; }
+
+.tco { position: absolute; top: 250px; width: 846px; height: 380px; padding: 22px 28px; box-sizing: border-box; }
+.tco .k { font-family: var(--mono); font-size: 15px; letter-spacing: .2em; }
+.tco ul { margin: 12px 0 0; padding-left: 24px; font-size: 21px; line-height: 1.6; color: #dfe6f5; }
+.tco .tot { position: absolute; left: 28px; right: 28px; bottom: 18px; border-top: 1px solid var(--line-2); padding-top: 10px; font-family: var(--mono); font-size: 18px; letter-spacing: .12em; }
+.pools { position: absolute; left: 96px; right: 96px; top: 660px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; }
+.pools .panel { padding: 14px 16px; } .pools .k { font-family: var(--mono); font-size: 13px; letter-spacing: .16em; color: var(--cyan); }
+.pools .v { font-size: 16px; margin-top: 6px; line-height: 1.35; color: #dfe6f5; }
+.flow12 { position: absolute; left: 96px; right: 96px; top: 820px; display: flex; justify-content: center; gap: 18px; align-items: center; font-family: var(--mono); font-size: 20px; letter-spacing: .08em; }
+.flow12 span.b { padding: 10px 18px; border-radius: 10px; border: 1px solid var(--line-2); background: rgba(16,24,44,.85); }
+.flow12 span.g { border-color: var(--green); color: #b9f0c9; }
+
+.truth { position: absolute; left: 200px; right: 200px; display: grid; grid-template-columns: 360px 1fr; gap: 30px; align-items: baseline; }
+.truth .who { font-family: var(--mono); font-size: 20px; letter-spacing: .2em; text-transform: uppercase; color: var(--dim); text-align: right; }
+.truth .say { font-size: 48px; font-weight: 400; }
+#s14 .qq { font-size: 64px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.22; max-width: 1560px; }
+.assess { position: absolute; left: 96px; right: 96px; top: 330px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px 30px; }
+.as { display: grid; grid-template-columns: 54px 1fr; gap: 16px; align-items: center; padding: 12px 20px; }
+.as .n { width: 44px; height: 44px; border-radius: 50%; background: var(--blue); display: grid; place-items: center; font-family: var(--mono); font-size: 18px; font-weight: 600; color: #fff; }
+.as .t { font-size: 23px; }
+.asout { position: absolute; left: 96px; right: 96px; top: 800px; text-align: center; font-size: 22px; color: #dfe6f5; }
+#steps span { white-space: nowrap; font-size: 12px; padding: 7px 11px; letter-spacing: .14em; }
+#s16 .a, #s16 .b, #s16 .c { font-size: 62px; letter-spacing: -0.02em; line-height: 1.2; }
+#s16 .a { font-weight: 600; } #s16 .b { font-weight: 300; margin-top: 30px; } #s16 .c { font-weight: 600; margin-top: 6px; }
+#s16 .end .brand { font-size: 150px; font-weight: 600; letter-spacing: -0.05em; }
+#s16 .end .brand .ibm { font-weight: 300; color: #c9d3e8; margin-right: .18em; }
+#s16 .end .tag2 { font-family: var(--mono); font-size: 24px; letter-spacing: .28em; text-transform: uppercase; color: var(--dim); margin-top: 34px; }
+#s16 .disc { position: absolute; left: 0; right: 0; bottom: 60px; text-align: center; font-family: var(--mono); font-size: 14px; color: var(--faint); letter-spacing: .06em; }
+
+/* Subtitles (CC) */
+#subs { position: absolute; left: 160px; right: 160px; bottom: 92px; text-align: center; pointer-events: none; display: none; z-index: 3; }
+#subs span { display: inline-block; font-size: 32px; line-height: 1.35; font-weight: 500; color: #fff; background: rgba(0,0,0,.74); padding: 8px 20px; border-radius: 10px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+body.cc #subs { display: block; }
+body.cc .caption { display: none; }
+/* Use-case explainer (page only) */
+#ucpanel { position: fixed; inset: 0; z-index: 12; background: rgba(3,6,14,.94); overflow-y: auto; display: none; color: #e8edf7; font-family: var(--sans); }
+#ucpanel.open { display: block; }
+#ucpanel .in { max-width: 1100px; margin: 0 auto; padding: 32px 16px 64px; }
+#ucpanel h2 { font-size: 30px; margin: 4px 0 6px; font-weight: 600; letter-spacing: -0.01em; }
+#ucpanel .sub { color: #98a3bd; font-size: 15px; margin: 0 0 22px; line-height: 1.5; }
+#ucpanel .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+#ucpanel .card { background: rgba(20,28,48,.9); border: 1px solid rgba(120,145,200,.25); border-radius: 14px; padding: 18px 18px 16px; }
+#ucpanel .card .n { font-family: var(--mono); font-size: 12px; letter-spacing: .2em; color: #33b1ff; }
+#ucpanel .card h3 { font-size: 19px; margin: 6px 0 10px; font-weight: 600; }
+#ucpanel dl { margin: 0; font-size: 14.5px; line-height: 1.5; }
+#ucpanel dt { font-family: var(--mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #8b97b3; margin-top: 10px; }
+#ucpanel dd { margin: 2px 0 0; color: #d4dbea; }
+#ucpanel .row { display: flex; gap: 10px; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+#ucpanel button { font: 500 14px var(--sans); background: #4589ff; color: #fff; border: 0; border-radius: 8px; padding: 9px 14px; cursor: pointer; }
+#ucpanel button.ghost { background: rgba(255,255,255,.1); }
+#ucpanel .note { margin-top: 22px; font-size: 13px; color: #8b97b3; line-height: 1.5; }
+body.render #ucpanel { display: none !important; }
+#player button[aria-pressed="true"] { background: #4589ff; border-color: #4589ff; }
+/* Player chrome (hidden in render mode) */
+#player { position: fixed; left: 0; right: 0; bottom: 0; padding: 12px 16px; display: flex; gap: 12px; align-items: center;
+  background: linear-gradient(transparent, rgba(0,0,0,.85)); color: #dfe6f5; font-family: var(--mono); font-size: 13px; z-index: 10; transition: opacity .3s; }
+#player button { font: inherit; background: rgba(255,255,255,.12); color: #fff; border: 1px solid rgba(255,255,255,.2); border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+#player input[type=range] { flex: 1; min-width: 80px; accent-color: #4589ff; }
+#player .chap { display: flex; gap: 6px; flex-wrap: wrap; }
+#player .chap button { padding: 6px 10px; font-size: 12px; }
+body.idle #player { opacity: 0; }
+#bigplay { position: fixed; inset: 0; display: grid; place-items: center; z-index: 11; background: rgba(0,0,0,.55); cursor: pointer; }
+#bigplay div { font-family: var(--sans); color: #fff; font-size: 22px; text-align: center; }
+#bigplay .btn { width: 110px; height: 110px; border-radius: 50%; background: #4589ff; display: grid; place-items: center; margin: 0 auto 18px; box-shadow: 0 0 60px rgba(69,137,255,.6); }
+#bigplay .btn::after { content: ""; border-left: 34px solid #fff; border-top: 21px solid transparent; border-bottom: 21px solid transparent; margin-left: 10px; }
+body.render #player, body.render #bigplay { display: none; }
+@media (max-width: 640px) { #player .chap { display: none; } }
+</style>
+</head>
+<body>
+<div id="viewport">
+<div id="stage">
+  <canvas id="bgc" width="1920" height="1080"></canvas>
+  <div id="camera">
+
+  <!-- S0 · Cold open -->
+  <section class="scene" id="s0" data-start="0" data-end="12">
+    <div class="logs" data-in="1.6" data-dur="2" data-fx="fade" id="logs0"></div>
+    <div class="center">
+      <div class="clock" data-in="0.5" data-dur="0.8">LUNDI · 09 h 20</div>
+      <div class="l1" data-type="L’IA accélère les opérations." data-in="1.8" data-dur="1.4"></div>
+      <div class="l2" data-in="4.4" data-dur="0.9">Elle accélère aussi le <span class="red">changement</span>.</div>
+    </div>
+  </section>
+
+  <!-- S1 · Critical infrastructure -->
+  <section class="scene" id="s1" data-start="12" data-end="40">
+    <div class="stephead" style="top:110px"><div class="eyebrow" data-in="0.3">Les infrastructures critiques reposent sur le réseau</div>
+      <div class="h2" style="margin-top:16px;max-width:1700px" data-in="0.7" data-dur="0.8">Chaque service critique dépend du réseau, <span class="grad">et des agents qui le modifient désormais</span>.</div></div>
+    <div class="ind-grid" style="top:330px"><div data-in="1.40" data-fx="up"><div class="panel ind" style="height:200px"><div class="k">BANQUE</div><div class="v">Paiements et canaux numériques</div><div class="s">Latence transactionnelle, disponibilité des canaux, résilience opérationnelle</div></div></div><div data-in="1.75" data-fx="up"><div class="panel ind" style="height:200px"><div class="k">TÉLÉCOM</div><div class="v">Services clients et SLA</div><div class="s">Pénalités de SLA, dégradation de service, escalades évitables</div></div></div><div data-in="2.10" data-fx="up"><div class="panel ind" style="height:200px"><div class="k">FERROVIAIRE</div><div class="v">Communications d’exploitation</div><div class="s">Dégradation des communications devenant perturbation opérationnelle</div></div></div><div data-in="2.45" data-fx="up"><div class="panel ind" style="height:200px"><div class="k">ÉNERGIE</div><div class="v">Communications du réseau et des sites</div><div class="s">Perte de visibilité sur les communications d’exploitation</div></div></div><div data-in="2.80" data-fx="up"><div class="panel ind" style="height:200px"><div class="k">GOUVERNEMENT</div><div class="v">Services aux citoyens et essentiels</div><div class="s">Pannes de services, retards des services d’urgence, reddition de comptes</div></div></div><div data-in="3.15" data-fx="up"><div class="panel ind" style="height:200px"><div class="k">IA ET DONNÉES</div><div class="v">Grappes GPU et pipelines de données</div><div class="s">Des GPU coûteux inactifs quand les chemins saturent</div></div></div></div>
+    <div class="envchips" style="bottom:130px"><span class="chip" data-in="9.0" data-fx="up">Centres de données sur site</span><span class="chip" data-in="9.3" data-fx="up">Nuage privé</span><span class="chip" data-in="9.6" data-fx="up">AWS · Azure</span><span class="chip" data-in="9.9" data-fx="up">WAN · MPLS</span><span class="chip" data-in="10.2" data-fx="up">SD-WAN</span><span class="chip" data-in="10.5" data-fx="up">Bordure BGP</span><span class="chip" data-in="10.8" data-fx="up">Fabrics de CD</span><span class="chip" data-in="11.1" data-fx="up">Wi-Fi</span><span class="chip" data-in="11.4" data-fx="up">Frontière OT</span></div>
+  </section>
+
+  <!-- S17 · Network architecture -->
+  <section class="scene" id="s17" data-start="40" data-end="68">
+    <div class="stephead"><div class="num" data-in="0.2">LE RÉSEAU<span class="uc">Centres de données canadiens · sites américains · BGP · SD-WAN</span></div><div class="t" data-in="0.5" data-dur="0.8">Canada et États-Unis : <span class="cyan">un seul WAN hybride</span>.</div></div>
+    <div class="panel" id="arch17" data-in="1"><h4>Topologie · cœur MPLS · superposition SD-WAN · bordure BGP</h4><svg id="arch17svg" width="1180" height="600"></svg></div>
+    <div class="panel" id="facts17" data-in="1.6"><h4>Architecture</h4><div class="kv" data-in="3.0" data-fx="left"><div class="k">Centres de données</div><div class="v">Montréal · Toronto · Vancouver</div></div><div class="kv" data-in="4.1" data-fx="left"><div class="k">Sites américains</div><div class="v">New York · Chicago · Atlanta · San Francisco</div></div><div class="kv" data-in="5.2" data-fx="left"><div class="k">Cœur</div><div class="v">MPLS · chemin A 10 Gb/s · chemin B 1 Gb/s</div></div><div class="kv" data-in="6.3" data-fx="left"><div class="k">Routage</div><div class="v">BGP AS 65010 · iBGP entre CD · eBGP vers 2 FAI</div></div><div class="kv" data-in="7.4" data-fx="left"><div class="k">Superposition</div><div class="v">SD-WAN · transports MPLS + Internet</div></div><div class="kv" data-in="8.5" data-fx="left"><div class="k">Flux critiques</div><div class="v">paiements · réplication · VoIP · SAP</div></div><div class="kv" data-in="9.6" data-fx="left"><div class="k">Observé par</div><div class="v">SevOne · SNMP · flux · gNMI · tunnels SD-WAN</div></div></div>
+  </section>
+
+  <!-- S2 · Agentic operations -->
+  <section class="scene" id="s2" data-start="68" data-end="100">
+    <div class="stephead"><div class="num" data-in="0.2">OPÉRATIONS AGENTIQUES<span class="uc">Humain et politique → agent → automatisation approuvée → réseau</span></div><div class="t" data-in="0.5" data-dur="0.8">Une optimisation de routine, <span class="cyan">faite dans les règles</span>.</div></div>
+    <div class="panel prompt" data-in="1">
+      <div class="k">INGÉNIEUR → AGENT D’IA DES OPÉRATIONS</div>
+      <div class="pq">« Optimise la connectivité entre Montréal et Toronto sans dégrader la performance des applications. »</div>
+      <div class="a" data-in="10" data-fx="fade">agent ▸ 30 jours de télémétrie analysés · propose de modifier la local-preference BGP sur 48 routeurs pour privilégier le chemin B</div>
+    </div>
+    <div class="chain" style="top:560px">
+      <div class="panel node" id="c2n0" data-in="18"><div class="k">01</div><div class="v">Humain et politique</div><div class="s">objectif, garde-fous</div></div><div class="arr" data-in="18.4">→</div>
+      <div class="panel node" id="c2n1" data-in="19"><div class="k">02</div><div class="v">Agent d’IA</div><div class="s">analyse, proposition</div></div><div class="arr" data-in="19.4">→</div>
+      <div class="panel node" id="c2n2" data-in="20"><div class="k">03</div><div class="v">Approbation</div><div class="s">politique · CAB · billet</div></div><div class="arr" data-in="20.4">→</div>
+      <div class="panel node" id="c2n3" data-in="21"><div class="k">04</div><div class="v">Automatisation</div><div class="s">Ansible · Terraform · contrôleur</div></div><div class="arr" data-in="21.4">→</div>
+      <div class="panel node" id="c2n4" data-in="22"><div class="k">05</div><div class="v">Réseau</div><div class="s">48 routeurs de bordure</div></div>
+    </div>
+    <div class="caption" data-in="25" style="bottom:130px">Pas de magie. <b>Un changement approuvé et encadré</b>, exécuté par l’automatisation.</div>
+  </section>
+
+  <!-- S18 · AI-built configuration -->
+  <section class="scene" id="s18" data-start="100" data-end="134">
+    <div class="stephead"><div class="num" data-in="0.2">01 — LE CHANGEMENT<span class="uc">Configuration générée par l’IA · BGP + SD-WAN</span></div><div class="t" data-in="0.5" data-dur="0.8">L’agent rédige la configuration, <span class="cyan">et la pousse</span>.</div></div>
+    <div class="panel code" style="left:96px" data-in="1"><h4>BGP · IOS-XE · 48 routeurs de bordure</h4><div class="ln" data-in="2.0" data-fx="fade" data-dur="0.25"><span class="c">! generated by ai-ops-agent · CHG0052418</span></div><div class="ln" data-in="2.5" data-fx="fade" data-dur="0.25"><span class="kw">ip prefix-list</span> ANY seq 5 permit <span class="v">0.0.0.0/0 le 32</span></div><div class="ln" data-in="2.9" data-fx="fade" data-dur="0.25">!</div><div class="ln" data-in="3.4" data-fx="fade" data-dur="0.25"><span class="kw">route-map</span> PREFER-PATH-B permit 10</div><div class="ln" data-in="3.8" data-fx="fade" data-dur="0.25"> match ip address prefix-list <span class="v">ANY</span></div><div class="ln" data-in="4.2" data-fx="fade" data-dur="0.25"> set local-preference <span class="v">200</span></div><div class="ln" data-in="4.7" data-fx="fade" data-dur="0.25">!</div><div class="ln" data-in="5.2" data-fx="fade" data-dur="0.25"><span class="kw">router bgp</span> 65010</div><div class="ln" data-in="5.6" data-fx="fade" data-dur="0.25"> neighbor 10.20.0.2 description TOR-MTL-PATH-B</div><div class="ln" data-in="6.0" data-fx="fade" data-dur="0.25"> neighbor 10.20.0.2 route-map PREFER-PATH-B in</div></div>
+    <div class="panel code" style="left:978px" data-in="6.6"><h4>SD-WAN · politique centralisée · SD-WAN Manager</h4><div class="ln" data-in="7.6" data-fx="fade" data-dur="0.25"><span class="c">! SD-WAN Manager · centralized policy</span></div><div class="ln" data-in="8.0" data-fx="fade" data-dur="0.25"><span class="kw">policy</span></div><div class="ln" data-in="8.4" data-fx="fade" data-dur="0.25"> <span class="kw">sla-class</span> PAYMENTS-SLA</div><div class="ln" data-in="8.9" data-fx="fade" data-dur="0.25">  latency <span class="v">150</span></div><div class="ln" data-in="9.3" data-fx="fade" data-dur="0.25">  loss <span class="v">5</span></div><div class="ln" data-in="9.7" data-fx="fade" data-dur="0.25">  jitter 100</div><div class="ln" data-in="10.1" data-fx="fade" data-dur="0.25"> !</div><div class="ln" data-in="10.5" data-fx="fade" data-dur="0.25"> <span class="kw">app-route-policy</span> TOR-MTL-APPS</div><div class="ln" data-in="11.0" data-fx="fade" data-dur="0.25">  sequence 10</div><div class="ln" data-in="11.4" data-fx="fade" data-dur="0.25">   match app-list PAYMENTS</div><div class="ln" data-in="11.8" data-fx="fade" data-dur="0.25">   action sla-class PAYMENTS-SLA preferred-color mpls</div></div>
+    <div class="vchips"><span class="chip" data-in="13.0" data-fx="up">✓ Syntaxe valide</span><span class="chip" data-in="14.3" data-fx="up">✓ Lint réussi</span><span class="chip" data-in="15.6" data-fx="up">✓ Simulation : pairs BGP actifs</span><span class="chip" data-in="16.9" data-fx="up">✓ Approuvé · CHG0052418</span><span class="chip" data-in="18.2" data-fx="up">✓ Poussé : 48 routeurs + SD-WAN Manager</span></div>
+    <div class="caption" data-in="24" style="bottom:130px">Toutes les vérifications que l’agent sait faire <b>réussissent</b>.</div>
+  </section>
+
+  <!-- S3 · The change -->
+  <section class="scene" id="s3" data-start="134" data-end="162">
+    <div class="stephead"><div class="num" data-in="0.2">01 — LE CHANGEMENT<span class="uc">Exécution technique</span></div><div class="t" data-in="0.5" data-dur="0.8">La plateforme d’automatisation annonce un <span class="green">succès</span>.</div></div>
+    <div class="panel console" data-in="0.8">
+      <div data-in="1.4" data-fx="fade"><span class="dimc">$</span> run playbook bgp-path-optimize.yml --limit edge-mtl-tor</div>
+      <div data-in="3.0" data-fx="fade">BGP + SD-WAN POLICY UPDATE</div>
+      <div data-in="4.0" data-fx="fade">Devices targeted ........ 48</div>
+      <div data-in="5.0" data-fx="fade">Configuration applied ... 48</div>
+      <div data-in="6.0" data-fx="fade">Errors .................. <span class="ok">0</span></div>
+      <div data-in="7.0" data-fx="fade">BGP sessions ............ <span class="ok">ESTABLISHED 96/96</span></div>
+      <div data-in="8.0" data-fx="fade">Devices reachable ....... <span class="ok">48/48</span></div>
+      <div data-in="9.2" data-fx="fade" style="margin-top:12px">STATUS: <span class="ok">SUCCESS</span></div>
+    </div>
+    <div class="panel" id="succ3" data-in="10.4" data-dur="0.3" data-fx="scale"><div class="v">✓ CHANGEMENT<br>RÉUSSI</div><div class="s">aucune erreur de configuration<br>aucun équipement en panne<br>BGP établi</div></div>
+    <div id="q3" data-in="23.6" data-dur="0.4" data-fx="scale">Mais le <span class="red">résultat d’affaires</span> est-il au rendez-vous ?</div>
+  </section>
+
+  <!-- S4 · SevOne sees something different -->
+  <section class="scene" id="s4" data-start="162" data-end="207">
+    <div class="stephead"><div class="num" data-in="0.2">02 — DÉTECTER<span class="uc">Écart à la ligne de base · télémétrie indépendante</span></div><div class="t" data-in="0.5" data-dur="0.8">Le changement a réussi. <span class="red">Pas le résultat.</span></div></div>
+    <div class="mtiles">
+      <div class="panel mt" data-in="6"><div class="k">Utilisation WAN · MTL ↔ TOR</div><div class="row"><span class="mb">47 %</span><span class="ar">→</span><span class="ma red" data-count="82" data-suf="%" data-cin="9" data-cdur="3">0</span></div></div>
+      <div class="panel mt" data-in="6.3"><div class="k">Latence · chemin des paiements</div><div class="row"><span class="mb">18 ms</span><span class="ar">→</span><span class="ma red" data-count="63" data-suf=" ms" data-cin="10" data-cdur="3">0</span></div></div>
+      <div class="panel mt" data-in="6.6"><div class="k">Perte de paquets</div><div class="row"><span class="mb">0,1 %</span><span class="ar">→</span><span class="ma red" data-count="2.1" data-dec="1" data-suf="%" data-cin="11" data-cdur="3">0</span></div></div>
+      <div class="panel mt" data-in="6.9"><div class="k">Sessions BGP</div><div class="row"><span class="ma green" style="font-size:34px">ÉTABLIES</span></div></div>
+    </div>
+    <div class="panel" id="chart4" data-in="1"><h4>Utilisation WAN · bordure de Toronto · % · bande de la ligne de base</h4><svg id="c4" width="1060" height="400" style="position:absolute;left:0;top:40px"></svg>
+      <div id="dev4" data-in="10.2" data-dur="0.3" data-fx="scale">ÉCART À LA LIGNE DE BASE · 09 h 23</div></div>
+    <div class="panel" id="split4" data-in="14">
+      <div class="sp h"><div>L’automatisation dit</div><div>L’assurance réseau dit</div></div>
+      <div class="sp" data-in="15" data-fx="left"><div class="l">✓ changement appliqué</div><div class="r">⚠ comportement anormal</div></div>
+      <div class="sp" data-in="16.2" data-fx="left"><div class="l">✓ BGP établi</div><div class="r">⚠ trafic déplacé</div></div>
+      <div class="sp" data-in="17.4" data-fx="left"><div class="l">✓ équipements en service</div><div class="r">⚠ latence en hausse</div></div>
+      <div class="sp" data-in="18.6" data-fx="left" style="border:0"><div class="l">✓ zéro erreur</div><div class="r">⚠ risque de service émergent</div></div>
+    </div>
+    <div class="foot" data-in="4" style="bottom:110px">Valeurs de scénario de démonstration · télémétrie SNMP, flux et gNMI (gNMI en préversion publique)</div>
+  </section>
+
+  <!-- S5 · Before it becomes an incident -->
+  <section class="scene" id="s5" data-start="207" data-end="237">
+    <div class="stephead"><div class="num" data-in="0.2">02 — DÉTECTER<span class="uc">Dégradation, pas panne</span></div><div class="t" data-in="0.5" data-dur="0.8">N’attendez pas la panne. <span class="cyan">Détectez pendant que tout fonctionne.</span></div></div>
+    <div id="tl5"><svg id="tl5svg" width="1728" height="330" style="position:absolute;left:0;top:0"></svg><div id="tl5nodes"></div><div id="det5">SEVONE DÉTECTE · 09 h 24</div></div>
+    <div class="evid">
+      <div class="panel" data-in="16"><div class="k">LIGNES DE BASE</div><div class="v">apprises par chemin, par heure</div></div>
+      <div class="panel" data-in="16.4"><div class="k">FLUX</div><div class="v">NetFlow · IPFIX : qui est allé où</div></div>
+      <div class="panel" data-in="16.8"><div class="k">TÉLÉMÉTRIE</div><div class="v">SNMP · gNMI en continu (préversion publique)</div></div>
+      <div class="panel" data-in="17.2"><div class="k">TESTS SYNTHÉTIQUES</div><div class="v">chemins de service vus par l’utilisateur</div></div>
+    </div>
+  </section>
+
+  <!-- S6 · Six industries -->
+  <section class="scene" id="s6" data-start="237" data-end="297">
+    <div class="stephead"><div class="num" data-in="0.2">03 — IMPACT<span class="uc">Même signal · risques d’affaires différents</span></div><div class="t" data-in="0.5" data-dur="0.8">Un écart. <span class="cyan">Six conséquences d’affaires.</span></div></div>
+    <div class="ind-grid"><div data-in="0.60" data-fx="up"><div class="panel ind dim" id="ind0"><div class="k">BANQUE</div><div class="v">Paiements et canaux numériques</div><div class="path">Succursale · GAB · mobile → SD-WAN / MPLS → pare-feu · répartiteurs → CD et nuage → paiements</div><div class="s"><b style="color:#ffb3b8;font-weight:600">Risque ·</b> Latence transactionnelle, disponibilité des canaux, résilience opérationnelle</div><div class="kpis"><span>latence</span><span>perte</span><span>util. WAN</span><span>erreurs d’interface</span><span>disponibilité</span></div></div></div><div data-in="0.85" data-fx="up"><div class="panel ind dim" id="ind1"><div class="k">TÉLÉCOM</div><div class="v">Services clients et SLA</div><div class="path">Accès → cœur IP/MPLS → dorsale → peering et transit</div><div class="s"><b style="color:#ffb3b8;font-weight:600">Risque ·</b> Pénalités de SLA, dégradation de service, escalades évitables</div><div class="kpis"><span>perte</span><span>gigue</span><span>utilisation</span><span>état des pairs BGP</span><span>SLA</span></div></div></div><div data-in="1.10" data-fx="up"><div class="panel ind dim" id="ind2"><div class="k">FERROVIAIRE</div><div class="v">Communications d’exploitation</div><div class="path">Gares · dépôts → WAN → systèmes de contrôle d’exploitation → CD</div><div class="s"><b style="color:#ffb3b8;font-weight:600">Risque ·</b> Dégradation des communications devenant perturbation opérationnelle</div><div class="kpis"><span>disponibilité</span><span>latence</span><span>erreurs de lien</span><span>redondance</span></div><div class="note">Assurance des communications, pas un système de sécurité ferroviaire</div></div></div><div data-in="1.35" data-fx="up"><div class="panel ind dim" id="ind3"><div class="k">ÉNERGIE</div><div class="v">Communications du réseau et des sites</div><div class="path">Postes · sites → WAN → centre de contrôle → CD et nuage</div><div class="s"><b style="color:#ffb3b8;font-weight:600">Risque ·</b> Perte de visibilité sur les communications d’exploitation</div><div class="kpis"><span>disponibilité</span><span>latence</span><span>utilisation</span><span>redondance</span></div><div class="note">La surveillance reste distincte de la sécurité et du contrôle OT</div></div></div><div data-in="1.60" data-fx="up"><div class="panel ind dim" id="ind4"><div class="k">GOUVERNEMENT</div><div class="v">Services aux citoyens et essentiels</div><div class="path">Portail citoyen → CD gouvernemental → nuage → réseaux des organismes</div><div class="s"><b style="color:#ffb3b8;font-weight:600">Risque ·</b> Pannes de services, retards des services d’urgence, reddition de comptes</div><div class="kpis"><span>disponibilité</span><span>temps de réponse</span><span>SLA</span><span>capacité</span></div></div></div><div data-in="1.85" data-fx="up"><div class="panel ind dim" id="ind5"><div class="k">IA ET DONNÉES</div><div class="v">Grappes GPU et pipelines de données</div><div class="path">Sources de données → fabric → grappe GPU ↔ stockage → nuage</div><div class="s"><b style="color:#ffb3b8;font-weight:600">Risque ·</b> Des GPU coûteux inactifs quand les chemins saturent</div><div class="kpis"><span>débit est-ouest</span><span>pertes</span><span>latence</span><span>utilisation</span></div><div class="note">L’infrastructure d’IA est aussi une infrastructure réseau</div></div></div></div>
+  </section>
+
+  <!-- S7 · Root cause -->
+  <section class="scene" id="s7" data-start="297" data-end="342">
+    <div class="stephead"><div class="num" data-in="0.2">04 — DIAGNOSTIQUER<span class="uc">Analyse de cause racine · rayon d’impact</span></div><div class="t" data-in="0.5" data-dur="0.8">Du symptôme à la cause, <span class="cyan">preuves à l’appui</span>.</div></div>
+    <div id="rca7">
+      <div class="panel rca" data-in="3" data-fx="left"><div class="k">SYMPTÔME</div><div class="v">Latence de 63 ms sur le chemin des paiements (ligne de base 18 ms)</div></div>
+      <div class="panel rca" data-in="6" data-fx="left"><div class="k">PORTÉE</div><div class="v">Bordure de Toronto · 3 circuits WAN · 2 services critiques</div></div>
+      <div class="panel rca" data-in="9" data-fx="left"><div class="k">CHEMIN</div><div class="v">Meilleur chemin BGP : du chemin A (10 Gb/s) au chemin B (1 Gb/s)</div></div>
+      <div class="panel rca" data-in="12" data-fx="left"><div class="k">FLUX</div><div class="v">Principaux flux sur le chemin B : réplication 38 % · paiements 22 %</div></div>
+      <div class="panel rca" data-in="15" data-fx="left" style="border-color:rgba(241,194,27,.7)"><div class="k" style="color:var(--yellow)">CHANGEMENT</div><div class="v">09 h 21 politique BGP · CHG0052418 · proposé par l’IA, approuvé</div></div>
+    </div>
+    <div class="panel" id="br7" data-in="1.4"><h4>Rayon d’impact</h4>
+      <div class="brn" id="b0"><span>Chemin BGP · chemin B</span><span class="m">route</span></div><div class="brd">↓</div>
+      <div class="brn" id="b1"><span>Circuit WAN · 1 Gb/s</span><span class="m">util. 82 %</span></div><div class="brd">↓</div>
+      <div class="brn" id="b2"><span>Bordure de Toronto</span><span class="m">rejets en file</span></div><div class="brd">↓</div>
+      <div class="brn" id="b3"><span>Connectivité infonuagique</span><span class="m">63 ms</span></div><div class="brd">↓</div>
+      <div class="brn" id="b4"><span>Service bancaire critique</span><span class="m">à risque</span></div>
+    </div>
+    <div id="qs7"><span class="chip" id="q70" data-in="28.0" data-fx="up">Qu’est-ce qui a changé ?</span><span class="chip" id="q71" data-in="28.6" data-fx="up">Où ?</span><span class="chip" id="q72" data-in="29.2" data-fx="up">Quelle anomalie ?</span><span class="chip" id="q73" data-in="29.8" data-fx="up">Quel impact ?</span><span class="chip" id="q74" data-in="30.4" data-fx="up">Quelle urgence ?</span></div>
+  </section>
+
+  <!-- S19 · What went wrong -->
+  <section class="scene" id="s19" data-start="342" data-end="386">
+    <div class="stephead"><div class="num" data-in="0.2">04 — DIAGNOSTIQUER<span class="uc">Configuration valide · mauvais résultat</span></div><div class="t" data-in="0.5" data-dur="0.8">Configuration valide. <span class="red">Mauvais résultat.</span> Trois problèmes expliqués.</div></div>
+    <div class="panel iss" style="left:96px" data-in="6" data-fx="up"><div class="k">PROBLÈME 1 · PORTÉE DE LA ROUTE-MAP BGP</div><div class="h">La route-map s’applique à tous les préfixes</div><div class="cl">match ip address prefix-list ANY
+(0.0.0.0/0 le 32) → local-pref 200</div>
+<div class="lb">Effet</div><div class="tx">Paiements et réplication passent sur le chemin B à 1 Gb/s, avec le trafic de masse visé.</div><div class="lb sv" data-in="9.0" data-fx="fade">Ce que SevOne a vu</div><div class="tx ev" data-in="9.0" data-fx="fade">Principaux flux sur le chemin B : réplication 38 %, paiements 22 %. Meilleur chemin BGP modifié sur 96 sessions (données BGP gNMI, préversion publique).</div>
+<div class="lb fxl" data-in="11.0" data-fx="fade">Correctif</div><div class="tx fx" data-in="11.0" data-fx="fade">Cibler uniquement la prefix-list du trafic de masse ; garder les paiements sur le chemin A.</div></div><div class="panel iss" style="left:680px" data-in="15.4" data-fx="up"><div class="k">PROBLÈME 2 · SEUILS DE SLA SD-WAN</div><div class="h">La classe de SLA est bien trop permissive</div><div class="cl">sla-class PAYMENTS-SLA
+latency 150 · loss 5</div>
+<div class="lb">Effet</div><div class="tx">Les paiements tournent normalement à 18 ms et 0,1 % de perte. À 63 ms et 2,1 %, le chemin reste « conforme » : le SD-WAN ne redirige rien.</div><div class="lb sv" data-in="18.4" data-fx="fade">Ce que SevOne a vu</div><div class="tx ev" data-in="18.4" data-fx="fade">Surveillance des tunnels SD-WAN TOR–MTL : latence 63 ms, perte 2,1 %, gigue en hausse, alors que la politique déclare le SLA respecté.</div>
+<div class="lb fxl" data-in="20.4" data-fx="fade">Correctif</div><div class="tx fx" data-in="20.4" data-fx="fade">Dériver les seuils des lignes de base SevOne, p. ex. 40 ms et 0,5 % de perte.</div></div><div class="panel iss" style="left:1264px" data-in="26.4" data-fx="up"><div class="k">PROBLÈME 3 · AUCUNE VÉRIFICATION DU RÉSULTAT</div><div class="h">Le succès = « configuration appliquée »</div><div class="cl">critères de succès :
+syntaxe ✓ · lint ✓ · pairs actifs ✓</div>
+<div class="lb">Effet</div><div class="tx">Personne n’a vérifié l’utilisation, la latence, la perte ou les flux du nouveau chemin, ni l’effet combiné des changements BGP et SD-WAN.</div><div class="lb sv" data-in="29.4" data-fx="fade">Ce que SevOne a vu</div><div class="tx ev" data-in="29.4" data-fx="fade">Écart à la ligne de base à 09 h 23, deux minutes après CHG0052418, corrélé au changement et à son auteur.</div>
+<div class="lb fxl" data-in="31.4" data-fx="fade">Correctif</div><div class="tx fx" data-in="31.4" data-fx="fade">Ajouter une validation du résultat : interroger SevOne avant de déclarer un changement réussi.</div></div>
+    <div class="caption" data-in="33" style="bottom:120px">SevOne ne lit pas l’intention. <b>Il mesure le résultat</b>, et le résultat a révélé les trois.</div>
+  </section>
+
+  <!-- S8 · Incident automation -->
+  <section class="scene" id="s8" data-start="386" data-end="431">
+    <div class="stephead"><div class="num" data-in="0.2">05 — RÉPONDRE<span class="uc">Billet automatique · acheminement · N1/N2 automatisés · N3 humain</span></div><div class="t" data-in="0.5" data-dur="0.8">De la preuve à l’action, <span class="cyan">dans vos processus</span>.</div></div>
+    <div id="pipe" style="top:240px;height:250px"><svg id="pipesvg" width="1728" height="260"></svg>
+      <div class="panel stage" style="left:0" data-in="1.4"><div class="n">01</div><div class="h">SevOne</div><div class="s">condition levée</div></div>
+      <div class="panel stage" style="left:252px" data-in="2.4"><div class="n">02</div><div class="h">Événement</div><div class="s">AIOps · corrélation</div></div>
+      <div class="panel stage" style="left:504px" data-in="3.4"><div class="n">03</div><div class="h">Billet</div><div class="s">ServiceNow, auto</div></div>
+      <div class="panel stage" style="left:756px" data-in="4.4"><div class="n">04</div><div class="h">Acheminer</div><div class="s">NetOps · DevSecOps</div></div>
+      <div class="panel stage auto" style="left:1008px" data-in="5.4"><div class="n">N1</div><div class="h">Triage</div><div class="s">dossier de preuves</div><span class="tag ok">AUTOMATISÉ</span></div>
+      <div class="panel stage auto" style="left:1260px" data-in="6.4"><div class="n">N2</div><div class="h">Proposer</div><div class="s">plan de retour</div><span class="tag ok">AUTOMATISÉ</span></div>
+      <div class="panel stage human" style="left:1512px" data-in="7.4"><div class="n">N3</div><div class="h">Approuver</div><div class="s">l’ingénieur décide</div><span class="tag watch">HUMAIN</span></div>
+    </div>
+    <div class="panel" id="tick8" data-in="9">
+      <div class="tbar">ServiceNow · Incident <span class="n">INC0051207</span><span class="st">CRÉÉ AUTOMATIQUEMENT · 7 s</span></div>
+      <div class="f" data-in="10" data-fx="fade"><div class="k">Élément de config.</div><div>edge-tor-07 · synchronisé depuis la CMDB</div></div>
+      <div class="f" data-in="10.6" data-fx="fade"><div class="k">Service d’affaires</div><div>Paiements numériques · niveau 1</div></div>
+      <div class="f" data-in="11.2" data-fx="fade"><div class="k">Priorité</div><div><span class="yellow">P2</span> · impact 2 · urgence 1</div></div>
+      <div class="f" data-in="11.8" data-fx="fade"><div class="k">Changement lié</div><div>CHG0052418 · mise à jour BGP proposée par l’IA</div></div>
+      <div class="f" data-in="12.4" data-fx="fade"><div class="k">Preuves</div><div>graphique de base · écart de chemin · principaux flux</div></div>
+    </div>
+    <div id="lv8">
+      <div class="panel tier auto" data-in="20"><div class="k">N1 · automatisé</div><div class="v">Triage : dossier de preuves joint, NetOps alerté</div></div>
+      <div class="panel tier auto" data-in="22"><div class="k">N2 · automatisé</div><div class="v">Diagnostic confirmé · retour au chemin A proposé</div></div>
+      <div class="panel tier human" data-in="27"><div class="k">N3 · humain dans la boucle</div><div class="v">✓ L’ingénieur approuve le retour arrière</div><div class="s">l’automatisation exécute · SevOne observe</div></div>
+    </div>
+  </section>
+
+  <!-- S9 · Verify -->
+  <section class="scene" id="s9" data-start="431" data-end="461">
+    <div class="stephead"><div class="num" data-in="0.2">06 — VÉRIFIER<span class="uc">Boucler par la mesure</span></div><div class="t" data-in="0.5" data-dur="0.8">Une tâche dit « terminé ». <span class="green">Le réseau le prouve.</span></div></div>
+    <div class="mtiles">
+      <div class="panel mt" data-in="1"><div class="k">Utilisation WAN</div><div class="row"><span class="mb">82 %</span><span class="ar">→</span><span class="ma green" data-count="49" data-suf="%" data-cin="6" data-cdur="3">82%</span></div></div>
+      <div class="panel mt" data-in="1.3"><div class="k">Latence</div><div class="row"><span class="mb">63 ms</span><span class="ar">→</span><span class="ma green" data-count="19" data-suf=" ms" data-cin="7" data-cdur="3">63 ms</span></div></div>
+      <div class="panel mt" data-in="1.6"><div class="k">Perte de paquets</div><div class="row"><span class="mb">2,1 %</span><span class="ar">→</span><span class="ma green" data-count="0.1" data-dec="1" data-suf="%" data-cin="8" data-cdur="3">2.1%</span></div></div>
+      <div class="panel mt" data-in="1.9"><div class="k">État du service</div><div class="row"><span class="ma green" style="font-size:34px" data-in="11">NORMAL</span></div></div>
+    </div>
+    <div class="panel" id="chart9" data-in="0.6"><h4>Utilisation WAN · retour arrière à 09 h 31 · de retour dans la ligne de base</h4><svg id="c9" width="1060" height="400" style="position:absolute;left:0;top:40px"></svg></div>
+    <div class="panel loop" data-in="1"><h4>Boucle d’assurance</h4>
+      <div class="st" id="lp0"><span class="dot"></span>OBSERVER</div><div class="st" id="lp1"><span class="dot"></span>DÉTECTER</div><div class="st" id="lp2"><span class="dot"></span>COMPRENDRE</div><div class="st" id="lp3"><span class="dot"></span>AGIR</div><div class="st" id="lp4"><span class="dot"></span>VÉRIFIER</div>
+      <div class="res" data-in="16">✓ INC0051207 fermé seulement après confirmation de SevOne</div>
+    </div>
+  </section>
+
+  <!-- S10 · Risk controls -->
+  <section class="scene" id="s10" data-start="461" data-end="501">
+    <div class="stephead"><div class="num" data-in="0.2">07 — CONTRÔLER<span class="uc">Contrôles du risque opérationnel · diligence raisonnable</span></div><div class="t" data-in="0.5" data-dur="0.8">La preuve réseau à <span class="cyan">chaque niveau de contrôle</span>.</div></div>
+    <div class="rctab"><div class="rcr h" data-in="1"><div>Contrôle</div><div>Question d’affaires</div><div>Apport SevOne / NPM</div><div>Contrôles d’entreprise associés</div></div><div class="rcr" data-in="1.6" data-fx="left"><div class="L">Préventif</div><div class="q">Ce changement doit-il avoir lieu ?</div><div class="sv">Lignes de base et capacité éclairent la décision</div><div class="adj">IAM · PAM · politique de changement · CAB · garde-fous</div></div><div class="rcr" data-in="4.8" data-fx="left"><div class="L">Détection</div><div class="q">Quelque chose se dégrade-t-il ?</div><div class="sv">Métriques, flux, télémétrie, lignes de base, anomalies, tests synthétiques</div><div class="adj">SIEM · ITDR · surveillance applicative et OT</div></div><div class="rcr" data-in="8.0" data-fx="left"><div class="L">Diagnostic</div><div class="q">Que s’est-il passé, et où ?</div><div class="sv">Contexte interface, équipement, chemin et flux</div><div class="adj">AIOps · topologie · traçage · journaux</div></div><div class="rcr" data-in="11.2" data-fx="left"><div class="L">Correctif</div><div class="q">Que faire maintenant ?</div><div class="sv">Événements et alertes alimentent la réponse</div><div class="adj">ITSM · SOAR · Ansible · Terraform · procédures</div></div><div class="rcr" data-in="14.4" data-fx="left"><div class="L">Vérification</div><div class="q">La remédiation a-t-elle fonctionné ?</div><div class="sv">Nouvelle mesure face à la ligne de base et aux KPI</div><div class="adj">Contrôles de fermeture ITSM · budgets d’erreur SRE</div></div><div class="rcr" data-in="17.6" data-fx="left"><div class="L">Preuve</div><div class="q">Peut-on démontrer le résultat ?</div><div class="sv">Historique de performance, de SLA et de capacité</div><div class="adj">CMDB · dossiers de changement · journaux d’audit · GRC</div></div></div>
+    <div class="rcfoot" data-in="22">Diligence raisonnable : couverture de télémétrie, lignes de base, validation des changements et conservation des preuves revues pour chaque service critique. SevOne est une source de preuves importante, pas une garantie de conformité.</div>
+  </section>
+
+  <!-- S11 · Executive dashboard -->
+  <section class="scene" id="s11" data-start="501" data-end="531">
+    <div class="stephead"><div class="num" data-in="0.2">08 — VALEUR<span class="uc">Indicateurs · cadre NPM · vue de direction</span></div><div class="t" data-in="0.5" data-dur="0.8">Le risque opérationnel réseau, <span class="cyan">sur une seule page</span>.</div></div>
+    <div class="kgrid"><div class="panel kt" data-in="1.20" data-fx="up"><div class="k">Services critiques dans le SLA</div><div class="v green">98,7 %</div></div><div class="panel kt" data-in="1.55" data-fx="up"><div class="k">Chemins critiques dans la ligne de base</div><div class="v ">94,2 %</div></div><div class="panel kt" data-in="1.90" data-fx="up"><div class="k">Couverture d’observabilité des actifs critiques</div><div class="v ">97,8 %</div></div><div class="panel kt" data-in="2.25" data-fx="up"><div class="k">Anomalies réseau actives</div><div class="v ">17</div></div><div class="panel kt" data-in="2.60" data-fx="up"><div class="k">Anomalies à fort impact</div><div class="v red">2</div></div><div class="panel kt" data-in="2.95" data-fx="up"><div class="k">Circuits à capacité à risque</div><div class="v yellow">4</div></div><div class="panel kt" data-in="3.30" data-fx="up"><div class="k">Changements automatisés aujourd’hui</div><div class="v ">126</div></div><div class="panel kt" data-in="3.65" data-fx="up"><div class="k">Changements suivis d’anomalies</div><div class="v yellow">3</div></div><div class="panel kt" data-in="4.00" data-fx="up"><div class="k">Remédiations vérifiées</div><div class="v green">11 / 12</div></div><div class="panel kt" data-in="4.35" data-fx="up"><div class="k">MTTR lié au réseau</div><div class="v cyan">21 min</div></div></div>
+    <div class="panel" id="coar" data-in="10"><div class="k">TAUX D’ASSURANCE DES RÉSULTATS DE CHANGEMENT</div>
+      <div class="f">changements dont l’état réseau post-changement est validé<div class="ln"></div>changements exigeant une validation réseau</div>
+      <div class="v" data-count="98.4" data-dec="1" data-suf="%" data-cin="12" data-cdur="2.5">0</div></div>
+    <div class="panel" id="fw11" data-in="4"><div class="k">INDICATEURS DÉFINIS AUTOMATIQUEMENT PAR CLASSE DE SERVICE</div><div class="chips"><span class="chip">Disponibilité</span><span class="chip">Performance</span><span class="chip">Capacité</span><span class="chip">Stabilité</span><span class="chip">Changement</span><span class="chip">Couverture</span></div></div>
+    <div class="foot" data-in="3" style="bottom:110px">Valeurs de démonstration illustratives</div>
+  </section>
+
+  <!-- S12 · TCO / OPEX -->
+  <section class="scene" id="s12" data-start="531" data-end="576">
+    <div class="stephead"><div class="num" data-in="0.2">08 — VALEUR<span class="uc">Coût total · dépenses d’exploitation · preuve de valeur</span></div><div class="t" data-in="0.5" data-dur="0.8">Prouvez les économies. <span class="green">Ne les supposez pas.</span></div></div>
+    <div class="panel tco" style="left:96px" data-in="1"><div class="k red">AVANT</div><ul><li>Plusieurs outils de surveillance, tableaux en double</li><li>Seuils et indicateurs configurés à la main</li><li>Billets manuels et rapprochement CMDB</li><li>Cellules de crise, rapports manuels</li></ul><div class="tot red">EFFORT D’EXPLOITATION ÉLEVÉ</div></div>
+    <div class="panel tco" style="left:978px" data-in="5"><div class="k green">APRÈS</div><ul><li>NPM, flux et télémétrie multifournisseurs centralisés</li><li>Lignes de base et indicateurs automatisés</li><li>Billets automatiques, synchro CMDB, acheminement</li><li>Preuves pour l’analyse de cause, la capacité et les SLA</li></ul><div class="tot green">DÉPENSES D’EXPLOITATION ADRESSABLES RÉDUITES</div></div>
+    <div class="pools"><div class="panel" data-in="14.0" data-fx="up"><div class="k">OUTILS</div><div class="v">licences + infra + soutien</div></div><div class="panel" data-in="14.6" data-fx="up"><div class="k">ADMINISTRATION</div><div class="v">heures d’ingénieur × coût</div></div><div class="panel" data-in="15.2" data-fx="up"><div class="k">INCIDENTS</div><div class="v">incidents × personnes × heures</div></div><div class="panel" data-in="15.8" data-fx="up"><div class="k">RAPPORTS</div><div class="v">rapports de SLA manuels</div></div><div class="panel" data-in="16.4" data-fx="up"><div class="k">INTÉGRATION</div><div class="v">changements CMDB et équipements</div></div><div class="panel" data-in="17.0" data-fx="up"><div class="k">PANNES</div><div class="v">seulement si les données le permettent</div></div></div>
+    <div class="flow12" data-in="24"><span class="b">Coût actuel mesuré</span>→<span class="b">Preuve de valeur</span>→<span class="b">Écart mesuré</span>→<span class="b g">Dossier d’affaires</span></div>
+  </section>
+
+  <!-- S13 · Three truths -->
+  <section class="scene" id="s13" data-start="576" data-end="598">
+    <div class="truth" style="top:260px" data-in="0.8"><div class="who">Agent d’IA</div><div class="say">« J’ai terminé la tâche. »</div></div>
+    <div class="truth" style="top:380px" data-in="4.6"><div class="who">Automatisation</div><div class="say">« La configuration est déployée. »</div></div>
+    <div class="truth" style="top:500px" data-in="8.6"><div class="who" style="color:var(--cyan)">IBM SevOne</div><div class="say" style="font-weight:600">« Voici ce qui est arrivé <span class="grad">au réseau</span>. »</div></div>
+    <div class="caption" data-in="12.4" style="bottom:200px;font-size:34px">L’entreprise a besoin des trois. <b>Seule l’observabilité indépendante vérifie le résultat.</b></div>
+  </section>
+
+  <!-- S14 · The question -->
+  <section class="scene" id="s14" data-start="598" data-end="618">
+    <div class="center"><div class="qq" data-in="0.2" data-dur="0.6" data-fx="scale">Si un agent d’IA modifiait <span class="red">500 équipements réseau</span> cette nuit, combien de temps vous faudrait-il pour savoir si <span class="grad">chaque changement</span> a produit le résultat attendu ?</div></div>
+  </section>
+
+  <!-- S15 · Assessment -->
+  <section class="scene" id="s15" data-start="618" data-end="646">
+    <div class="stephead"><div class="eyebrow" data-in="0.2">Prochaine étape concrète</div><div class="t" data-in="0.5" data-dur="0.8">Évaluation de la préparation et de <span class="cyan">l’observabilité du réseau agentique</span></div></div>
+    <div class="assess"><div class="panel as" data-in="1.5" data-fx="up"><div class="n">1</div><div class="t">Visibilité actuelle du réseau</div></div><div class="panel as" data-in="3.1" data-fx="up"><div class="n">2</div><div class="t">Cas d’usage IA et automatisation</div></div><div class="panel as" data-in="4.7" data-fx="up"><div class="n">3</div><div class="t">Dépendances réseau critiques</div></div><div class="panel as" data-in="6.3" data-fx="up"><div class="n">4</div><div class="t">Couverture de télémétrie existante</div></div><div class="panel as" data-in="7.9" data-fx="up"><div class="n">5</div><div class="t">Visibilité BGP, WAN et SD-WAN</div></div><div class="panel as" data-in="9.5" data-fx="up"><div class="n">6</div><div class="t">Maturité des lignes de base et de la détection</div></div><div class="panel as" data-in="11.1" data-fx="up"><div class="n">7</div><div class="t">Validation de l’impact des changements</div></div><div class="panel as" data-in="12.7" data-fx="up"><div class="n">8</div><div class="t">Processus d’incident et de remédiation</div></div><div class="panel as" data-in="14.3" data-fx="up"><div class="n">9</div><div class="t">Angles morts d’observabilité</div></div><div class="panel as" data-in="15.9" data-fx="up"><div class="n">10</div><div class="t">Occasions d’assurance en boucle fermée</div></div></div>
+    <div class="asout" data-in="19">Résultat : une cartographie des écarts, des cas d’usage priorisés et un plan de preuve de valeur avec indicateurs mesurés.</div>
+  </section>
+
+  <!-- S16 · Closing -->
+  <section class="scene" id="s16" data-start="646" data-end="666">
+    <div class="center" id="close1">
+      <div class="a" data-in="0.5" data-dur="0.9">À l’ère de l’IA agentique, l’autonomie sans observabilité, c’est un <span class="red">risque</span>.</div>
+      <div class="b" data-in="5.4" data-dur="0.9">L’avenir n’est pas seulement le réseau autonome.</div>
+      <div class="c" data-in="8.4" data-dur="0.9">C’est le réseau autonome avec une <span class="grad">assurance continue</span>.</div>
+    </div>
+    <div class="center end" id="close2">
+      <div class="brand" data-in="11" data-dur="0.45" data-fx="scale"><span class="ibm">IBM</span><span class="grad">SevOne</span></div>
+      <div class="tag2" data-in="12.2">Observer · Référencer · Détecter · Diagnostiquer · Répondre · Vérifier</div>
+    </div>
+    <div class="disc" data-in="12.8">Scénario de démonstration. Équipements, agents, billets, indicateurs et chiffres sont simulés à titre illustratif. Narration : voix de synthèse.</div>
+  </section>
+
+  </div>
+  <div id="hud">
+    <div class="tl"><span class="rec"></span><span>SEVONE · LIVE</span></div>
+    <div class="tr" id="tc">00:00:00</div>
+    <div id="steps"><span>01 CHANGEMENT</span><span>02 DÉTECTER</span><span>03 IMPACT</span><span>04 DIAGNOSTIC</span><span>05 RÉPONDRE</span><span>06 VÉRIFIER</span><span>07 CONTRÔLER</span><span>08 VALEUR</span></div>
+  </div>
+  <div id="subs"><span></span></div><div id="vignette"></div><div id="scan"></div><div id="flash"></div><div id="fadeblack"></div>
+</div>
+</div>
+
+<div id="bigplay"><div><div class="btn"></div>Lecture avec narration · 11 min 06 s<br><span style="font-size:15px;color:#98a3bd">Assurance réseau agentique · sous-titres activés</span></div></div>
+<div id="player">
+  <button id="pp">Lecture</button>
+  <span id="tcur">0:00</span>
+  <input type="range" id="scrub" min="0" max="666" step="0.05" value="0" aria-label="Position">
+  <span>11:06</span>
+  <button id="ccb" aria-pressed="true" title="Sous-titres">ST</button>
+  <button id="ucb">Chapitres</button>
+  <div class="chap">
+    <button data-t="0">Intro</button><button data-t="40">Architecture</button><button data-t="100">Config</button><button data-t="134">Changement</button><button data-t="162">Détection</button><button data-t="237">Secteurs</button><button data-t="297">Cause racine</button><button data-t="342">Problèmes</button><button data-t="386">Réponse</button><button data-t="431">Vérification</button><button data-t="461">Contrôles</button><button data-t="501">Indicateurs</button><button data-t="531">Coûts</button><button data-t="598">Question</button><button data-t="618">Évaluation</button>
+  </div>
+</div>
+<div id="ucpanel" role="dialog" aria-label="Chapitres"><div class="in">
+  <div class="row"><div><div class="mono" style="font-size:12px;letter-spacing:.24em;color:#33b1ff">SEVONE · ASSURANCE AGENTIQUE</div><h2>Chapitres du film</h2></div><button class="ghost" id="ucclose">Fermer</button></div>
+  <p class="sub">Chaque carte est un chapitre. Choisissez <b>Voir</b> pour y aller. Tout le scénario est simulé. Les valeurs sont des valeurs de démonstration, pas des résultats clients.</p>
+  <div class="grid" id="ucgrid"></div>
+  <p class="note">Product capabilities: multi-source collection, topology, baselines and anomaly detection, capacity forecasting, alerting, webhooks and REST APIs. Integration patterns built on those APIs: agent attribution (joining change and audit logs), the pre-flight hold (enforced by the agent or orchestrator), and webhook-driven rollback. Confirm current capabilities with the IBM SevOne team.</p>
+</div></div>
+<audio id="audio" src="soundtrack.mp3" preload="auto"></audio>
+
+<script>
+(() => {
+const TIMELINE = {"title": "Quand l'IA modifie le réseau, qui vérifie le résultat ? (version Canada–États-Unis)", "duration": 666, "scenes": [{"id": "s0", "start": 0, "end": 12, "name": "Ouverture", "purpose": "Hook: AI accelerates operations and change"}, {"id": "s1", "start": 12, "end": 40, "name": "Infrastructures critiques", "purpose": "Six industries, on-prem and cloud, all run on the network"}, {"id": "s17", "start": 40, "end": 68, "name": "Architecture réseau", "purpose": "DCs in Montréal, Toronto, Vancouver; U.S. sites over SD-WAN; BGP and MPLS core"}, {"id": "s2", "start": 68, "end": 100, "name": "Opérations agentiques encadrées", "purpose": "Human and policy → agent → approved automation → network"}, {"id": "s18", "start": 100, "end": 134, "name": "Configuration BGP et SD-WAN par l’IA", "purpose": "The agent writes, validates and pushes the configuration"}, {"id": "s3", "start": 134, "end": 162, "name": "Le changement", "purpose": "48 devices, 0 errors: technical success"}, {"id": "s4", "start": 162, "end": 207, "name": "SevOne voit autre chose", "purpose": "Baseline deviation while BGP stays established"}, {"id": "s5", "start": 207, "end": 237, "name": "Avant l’incident", "purpose": "Detect degradation while services are still up"}, {"id": "s6", "start": 237, "end": 297, "name": "Six secteurs, six conséquences", "purpose": "Same signal, different business risk"}, {"id": "s7", "start": 297, "end": 342, "name": "Cause racine et rayon d’impact", "purpose": "Symptom → scope → path → flow → change"}, {"id": "s19", "start": 342, "end": 386, "name": "Ce qui a mal tourné", "purpose": "Three issues: route-map scope, SD-WAN SLA thresholds, no outcome check"}, {"id": "s8", "start": 386, "end": 431, "name": "Automatisation des incidents", "purpose": "Event → ServiceNow → routing → L1/L2 auto → L3 human"}, {"id": "s9", "start": 431, "end": 461, "name": "Vérifier le résultat", "purpose": "Re-measure against baseline before closing"}, {"id": "s10", "start": 461, "end": 501, "name": "Contrôles de risque", "purpose": "Preventive → detective → diagnostic → corrective → verification → evidence"}, {"id": "s11", "start": 501, "end": 531, "name": "Tableau de bord de la direction", "purpose": "KPI framework and change outcome assurance rate"}, {"id": "s12", "start": 531, "end": 576, "name": "Coût total et dépenses d’exploitation", "purpose": "Measure, don't assume: baseline → PoV → delta → business case"}, {"id": "s13", "start": 576, "end": 598, "name": "Trois vérités", "purpose": "Agent, automation and SevOne each report a different truth"}, {"id": "s14", "start": 598, "end": 618, "name": "La question", "purpose": "The 500-device question"}, {"id": "s15", "start": 618, "end": 646, "name": "Prochaine étape", "purpose": "Agentic Network Readiness & Observability Assessment"}, {"id": "s16", "start": 646, "end": 666, "name": "Conclusion", "purpose": "Autonomy without observability is risk"}], "steps": [["01 CHANGEMENT", 100], ["02 DÉTECTER", 162], ["03 IMPACT", 237], ["04 DIAGNOSTIC", 297], ["05 RÉPONDRE", 386], ["06 VÉRIFIER", 431], ["07 CONTRÔLER", 461], ["08 VALEUR", 501]], "steps_visible": [100, 576], "chapters": [["Intro", 0], ["Architecture", 40], ["Config", 100], ["Changement", 134], ["Détection", 162], ["Secteurs", 237], ["Cause racine", 297], ["Problèmes", 342], ["Réponse", 386], ["Vérification", 431], ["Contrôles", 461], ["Indicateurs", 501], ["Coûts", 531], ["Question", 598], ["Évaluation", 618]], "impacts": [[0.5, 1], [12, 0.45], [68, 0.45], [100, 0.45], [134, 0.45], [158, 1.1], [162, 0.5], [172, 1], [207, 0.45], [237, 0.8], [297, 0.45], [342, 0.7], [386, 0.45], [431, 0.6], [461, 0.45], [501, 0.45], [531, 0.45], [576, 0.6], [598, 1.2], [618, 0.6], [646, 0.8], [657, 1.2]], "tint": [[0, 30, 60, 140], [12, 40, 90, 200], [40, 40, 100, 230], [68, 40, 100, 230], [158, 25, 35, 70], [162, 40, 100, 230], [172, 180, 30, 45], [207, 150, 110, 20], [237, 40, 100, 230], [342, 150, 110, 20], [386, 40, 100, 230], [431, 30, 140, 90], [461, 40, 100, 230], [531, 30, 140, 90], [576, 40, 100, 230], [598, 160, 30, 50], [618, 40, 100, 230]], "audio": {"pad": [[0, 0.25], [12, 0.35], [68, 0.32], [157.5, 0.32], [158, 0.05], [162, 0.3], [172, 0.4], [207, 0.32], [237, 0.42], [297, 0.32], [431, 0.4], [576, 0.3], [597.5, 0.3], [598, 0.08], [618, 0.3], [646, 0.45], [660, 0.45], [666, 0]], "drone": [[0, 0], [3, 1], [157.5, 1], [158, 0.2], [162, 1], [597.5, 1], [598, 0.25], [606, 1], [662, 1], [666, 0]], "bass": [[12, 0.35], [68, 0.45], [134, 0.5], [157.5, 0.6], [158, 0], [162, 0], [163, 0.55], [172, 0.75], [207, 0.55], [237, 0.6], [297, 0.5], [386, 0.6], [431, 0.55], [461, 0.45], [576, 0.4], [597.5, 0.3], [598, 0], [618, 0], [620, 0.45], [645.5, 0.45], [646, 0]], "kick": [[40, 157.5], [163, 207], [237, 297], [386, 431], [461, 576]], "kick_heavy": [172, 207], "hats": [[68, 157.5], [163, 576], [620, 646]], "typewriter": [1.8, 3.4], "blips": [[136, 7, 1.0], [462.5, 6, 3.2], [619.5, 10, 1.6], [238, 6, 9.6], [101.5, 9, 1.0], [42, 7, 1.2], [345, 3, 10]], "alarms": [172.2], "chimes": [[407.5, 0.12], [439.0, 0.16]], "risers": [[155, 3], [169.5, 2.5], [234, 3], [595, 3], [643, 3], [654, 3], [339, 3]]}};
+const DURATION = TIMELINE.duration;
+// Narration cues [start, end, text], injected by narration.py — keep the markers.
+const NARRATION = /*NARRATION*/[[0.8, 2.03, "Lundi, neuf heures vingt."], [3.4, 7.75, "L'IA accélère les opérations. Elle accélère aussi le changement."], [8.0, 10.81, "Et le changement va désormais à la vitesse machine."], [13.0, 18.72, "Banques, télécoms, chemins de fer, énergie, gouvernements et plateformes d'IA : tout repose sur le réseau."], [20.4, 25.7, "Sur site et en infonuagique, sur le WAN, le SD-WAN et les centres de données."], [26.0, 32.78, "Des agents d'IA aident maintenant les ingénieurs à diagnostiquer, à générer des configurations et à appliquer des changements."], [33.8, 36.8, "Une immense occasion, et un nouveau risque opérationnel."], [41.0, 47.35, "Voici le réseau. Trois centres de données, à Montréal, Toronto et Vancouver, reliés par un cœur MPLS."], [48.6, 56.48, "Le chemin A, à dix gigabits, transporte paiements et réplication entre Toronto et Montréal. Le chemin B, à un gigabit, sert de relève."], [56.8, 63.95, "New York, Chicago, Atlanta et San Francisco se connectent en SD-WAN, avec BGP vers le nuage."], [64.2, 65.58, "SevOne voit tout."], [69.0, 70.9, "Prenons une optimisation de routine."], [71.2, 78.21, "Un ingénieur demande à un agent d'IA d'améliorer la connectivité entre Montréal et Toronto, sans nuire aux applications."], [79.6, 85.62, "L'agent analyse la télémétrie et propose de modifier la préférence BGP sur quarante-huit routeurs."], [86.4, 92.93, "Selon la politique de changement, la modification est approuvée, puis exécutée par la plateforme d'automatisation."], [93.2, 98.49, "L'humain et la politique, puis l'agent, puis l'automatisation approuvée. Exactement comme il se doit."], [101.0, 103.42, "L'agent rédige lui-même la configuration."], [103.8, 107.96, "Une route-map BGP qui augmente la préférence locale sur le chemin B."], [108.2, 112.48, "Et une politique SD-WAN, avec une classe de SLA pour les paiements."], [113.0, 118.07, "La syntaxe est valide. Les sessions BGP restent actives. Le changement est approuvé."], [119.0, 123.2, "Il est poussé sur quarante-huit routeurs et dans le gestionnaire SD-WAN."], [124.4, 127.19, "Toutes les vérifications que l'agent sait faire réussissent."], [135.0, 136.95, "Quarante-huit équipements sont mis à jour."], [138.0, 143.5, "Aucune erreur de configuration. Aucun équipement en panne. Les sessions BGP restent établies."], [144.2, 147.08, "La plateforme d'automatisation annonce un succès."], [157.8, 160.09, "Mais le résultat d'affaires est-il au rendez-vous ?"], [163.4, 166.72, "La télémétrie réseau indépendante raconte une autre histoire."], [167.0, 169.75, "Le trafic a basculé vers un chemin plus contraint."], [172.6, 182.35, "L'utilisation du WAN passe de quarante-sept à quatre-vingt-deux pour cent. La latence, de dix-huit à soixante-trois millisecondes. La perte de paquets atteint deux pour cent."], [182.6, 186.57, "Pourtant, BGP reste établi, et tous les équipements sont en service."], [187.4, 194.04, "SevOne compare le comportement réel à la ligne de base de chaque chemin, et signale l'écart en quelques minutes."], [195.4, 200.38, "Voilà la distinction essentielle : un succès technique ne garantit pas le succès d'affaires."], [208.0, 211.08, "C'est là que l'observabilité change l'équation du risque."], [212.0, 217.9, "Lignes de base, flux et télémétrie en continu révèlent la dégradation pendant que les services fonctionnent."], [219.6, 226.05, "SevOne lève l'alerte à neuf heures vingt-quatre, avant que la perte ne s'étende et avant le premier appel client."], [227.6, 232.14, "N'attendez pas la panne. Détectez la dégradation pendant que tout fonctionne encore."], [238.0, 244.26, "Pour une banque, ce même écart devient de la latence transactionnelle et un enjeu de résilience opérationnelle."], [247.6, 252.88, "Pour un opérateur télécom, ce sont des pénalités de SLA et des escalades évitables."], [257.2, 263.12, "Pour le ferroviaire, la visibilité des communications empêche une dégradation de devenir une perturbation."], [266.8, 271.92, "Pour l'énergie, cette visibilité reste distincte des systèmes de sécurité et de contrôle."], [276.4, 282.31, "Pour les gouvernements et les services essentiels, c'est une preuve de disponibilité et de reddition de comptes."], [286.0, 294.4, "Et pour les plateformes d'IA, des chemins congestionnés laissent des GPU coûteux en attente. L'infrastructure d'IA est aussi une infrastructure réseau."], [298.0, 300.2, "Question suivante : que s'est-il passé, et où ?"], [301.8, 307.81, "SevOne remonte du symptôme à la portée, au chemin, aux flux, puis au changement qui en est la cause."], [309.8, 318.28, "Latence sur le chemin des paiements. Trois circuits WAN en bordure de Toronto. Le meilleur chemin BGP a basculé vers un circuit d'un gigabit."], [319.0, 324.71, "La réplication et les paiements le partagent. Le déclencheur : le changement de neuf heures vingt et une."], [326.4, 332.12, "Quoi, où, quelle anomalie, quel impact, quelle urgence : des réponses fondées sur des preuves, pas sur des opinions."], [343.0, 346.49, "Alors, qu'est-ce qui a mal tourné ? Trois problèmes, chacun valide en soi."], [348.4, 355.8, "Un : la route-map s'applique à tous les préfixes, pas seulement au trafic de masse. Paiements et réplication passent sur le chemin d'un gigabit."], [357.6, 366.33, "Deux : la classe de SLA tolère cent cinquante millisecondes et cinq pour cent de perte. Le chemin dégradé semble conforme, donc rien n'est redirigé."], [368.6, 372.77, "Trois : chaque changement a été validé pour la syntaxe. Aucun pour le résultat."], [374.6, 383.07, "SevOne a révélé les trois : les flux sur le chemin B, la latence et la perte des tunnels SD-WAN, et l'écart à la ligne de base."], [387.0, 392.07, "Détecter ne suffit pas à réduire le risque. L'information doit entrer dans vos processus."], [393.6, 402.16, "SevOne lève l'événement. Un incident ServiceNow s'ouvre automatiquement, avec l'élément de configuration, la priorité et les preuves."], [402.4, 407.01, "NetOps est alerté. DevSecOps est informé du changement initié par l'IA."], [407.8, 413.26, "Les niveaux un et deux sont automatisés : triage, corrélation et proposition de retour arrière."], [413.8, 417.49, "Le niveau trois est humain. Un ingénieur approuve le retour arrière."], [418.2, 423.95, "La plateforme d'automatisation l'exécute. SevOne reste l'observateur indépendant."], [432.0, 437.04, "Et une remédiation n'est pas terminée parce qu'une tâche réussit. Le réseau est mesuré de nouveau."], [439.4, 445.38, "L'utilisation revient à quarante-neuf pour cent. La latence à dix-neuf millisecondes. La perte disparaît."], [446.8, 451.76, "Alors seulement, le billet se ferme. Observer, détecter, comprendre, agir et vérifier."], [462.0, 465.13, "Voilà comment la preuve réseau soutient les contrôles de risque."], [465.8, 471.7, "Les contrôles préventifs encadrent ce qui peut changer. Les contrôles de détection révèlent les anomalies."], [472.0, 478.16, "Le diagnostic les explique. Les flux correctifs répondent. La vérification confirme le rétablissement."], [478.6, 483.5, "Et l'historique devient une preuve pour l'audit, les régulateurs et la diligence raisonnable."], [484.4, 491.35, "SevOne est une source importante de cette preuve, aux côtés des dossiers de changement, d'ITSM et de sécurité."], [491.6, 494.62, "Il ne remplace pas ces contrôles. Il les rend mesurables."], [502.0, 505.35, "La direction obtient une vue unique du risque opérationnel réseau."], [505.6, 512.96, "Les indicateurs sont définis par classe de service : disponibilité, performance, capacité, stabilité, changement et couverture."], [513.2, 518.08, "Et un nouvel indicateur pour l'ère agentique : le taux d'assurance des résultats de changement."], [518.6, 522.36, "La part des changements dont le résultat réseau a vraiment été vérifié."], [532.0, 534.54, "Le dossier d'affaires va au-delà des pannes évitées."], [535.6, 543.33, "Outils consolidés, lignes de base automatisées, billets automatiques et synchronisation CMDB réduisent l'effort de chaque incident."], [543.8, 547.36, "Mais n'estimez pas les économies à partir d'hypothèses marketing."], [547.6, 552.43, "Mesurez les coûts actuels : outils, administration, incidents, rapports et intégration."], [554.6, 558.81, "Faites une preuve de valeur, mesurez l'écart, et bâtissez le dossier sur des faits."], [561.6, 565.77, "C'est ainsi qu'on prouve un coût total et des dépenses d'exploitation plus bas."], [577.0, 579.28, "L'agent d'IA vous dit que la tâche est terminée."], [580.8, 584.55, "La plateforme d'automatisation vous dit que le changement est appliqué."], [584.8, 587.67, "SevOne vous dit ce qui est arrivé au réseau."], [588.6, 593.67, "L'entreprise a besoin des trois. Seule l'observabilité indépendante vérifie le résultat."], [599.4, 608.36, "Si un agent d'IA modifiait cinq cents équipements réseau cette nuit, combien de temps vous faudrait-il pour savoir si chaque changement a produit le résultat attendu ?"], [619.4, 624.36, "Commencez par une évaluation de la préparation et de l'observabilité de votre réseau agentique."], [624.6, 631.99, "Visibilité, cas d'usage de l'IA, dépendances critiques, couverture de télémétrie, et visibilité BGP et WAN."], [633.4, 639.45, "Lignes de base, validation des changements, processus d'incident, angles morts, et assurance en boucle fermée."], [647.0, 651.22, "À l'ère de l'IA agentique, l'autonomie sans observabilité, c'est un risque."], [651.8, 653.94, "L'avenir n'est pas seulement le réseau autonome."], [654.8, 657.69, "C'est le réseau autonome, avec une assurance continue."], [659.8, 661.41, "IBM SevOne."]]/*END_NARRATION*/;
+const USE_CASES = [["01", "Architecture r\u00e9seau", "DCs in Montr\u00e9al, Toronto, Vancouver; U.S. sites over SD-WAN; BGP and MPLS core", 40, "Who is involved and where?", "DCs in Montr\u00e9al, Toronto, Vancouver; U.S. sites over SD-WAN; MPLS path A 10 Gb/s and path B 1 Gb/s; BGP to ISPs and cloud.", "One observed hybrid WAN."], ["02", "Configuration BGP et SD-WAN par l\u2019IA", "The agent writes, validates and pushes the configuration", 100, "The agent writes BGP and SD-WAN config.", "Route-map raising local-pref on path B; SD-WAN SLA class for payments; syntax, lint, dry run and approval all pass.", "Pushed to 48 routers and the SD-WAN Manager."], ["03", "Le changement", "48 devices, 0 errors: technical success", 134, "An AI-proposed, approved BGP change runs on 48 routers.", "The automation platform reports 48/48 applied, 0 errors, BGP established.", "Technical success, but the business outcome is still unknown."], ["04", "SevOne voit autre chose", "Baseline deviation while BGP stays established", 162, "Traffic moves onto a constrained path; nothing is down.", "SevOne compares live utilization, latency and loss with each path\u2019s learned baseline.", "Deviation flagged while BGP is still established."], ["05", "Avant l\u2019incident", "Detect degradation while services are still up", 207, "Degradation builds minute by minute.", "Baselines, flow, streaming telemetry and synthetics surface it at 09:24.", "Detected before packet loss spreads and before users call."], ["06", "Six secteurs, six cons\u00e9quences", "Same signal, different business risk", 237, "The same deviation means different risks per industry.", "Industry KPIs per critical path: banking, telecom, rail, energy, government, AI and data.", "Network signals translated into business risk."], ["07", "Cause racine et rayon d\u2019impact", "Symptom \u2192 scope \u2192 path \u2192 flow \u2192 change", 297, "Teams need the cause, not just an alert.", "Symptom \u2192 scope \u2192 path \u2192 flow \u2192 change, with the blast radius.", "The 09:21 change identified with evidence."], ["08", "Ce qui a mal tourn\u00e9", "Three issues: route-map scope, SD-WAN SLA thresholds, no outcome check", 342, "Valid configuration, wrong outcome.", "Route-map scope too broad; SD-WAN SLA thresholds too loose; no post-change outcome check.", "All three exposed by SevOne flows, SD-WAN tunnel metrics and baseline deviation."], ["09", "Automatisation des incidents", "Event \u2192 ServiceNow \u2192 routing \u2192 L1/L2 auto \u2192 L3 human", 386, "Insight must enter existing processes.", "SevOne event \u2192 automatic ServiceNow incident with CI and evidence \u2192 routing \u2192 L1/L2 automated \u2192 L3 approval.", "Controlled rollback; SevOne stays the independent observer."], ["10", "V\u00e9rifier le r\u00e9sultat", "Re-measure against baseline before closing", 431, "A job reporting success is not proof.", "SevOne re-measures utilization, latency and loss against the baseline.", "Ticket closes only after verified recovery."], ["11", "Contr\u00f4les de risque", "Preventive \u2192 detective \u2192 diagnostic \u2192 corrective \u2192 verification \u2192 evidence", 461, "Risk and audit teams need evidence.", "Network evidence for preventive, detective, diagnostic, corrective, verification and evidence controls.", "Measurable controls and due diligence."], ["12", "Tableau de bord de la direction", "KPI framework and change outcome assurance rate", 501, "Executives need one risk view.", "KPIs set per service class plus the change outcome assurance rate.", "Network operational risk on one page."], ["13", "Co\u00fbt total et d\u00e9penses d\u2019exploitation", "Measure, don't assume: baseline \u2192 PoV \u2192 delta \u2192 business case", 531, "Savings claims need proof.", "Baseline six cost pools, run a proof of value, measure the delta.", "A TCO and OPEX case built on evidence."], ["14", "Prochaine \u00e9tape", "Agentic Network Readiness & Observability Assessment", 618, "Where do you stand today?", "Ten-point Agentic Network Readiness & Observability Assessment.", "Gap map, prioritized use cases, proof-of-value plan."]];
+// Impact times — must match soundtrack.py
+const IMPACTS = TIMELINE.impacts;
+
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const easeOut = x => 1 - Math.pow(1 - x, 3);
+const easeInOut = x => x < .5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3) / 2;
+const lerp = (a, b, t) => a + (b - a) * t;
+const NS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+function rand(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+const fmt2 = n => String(Math.floor(n)).padStart(2, '0');
+
+/* ---------- Build dynamic content ---------- */
+const LOGS = [
+ 'agent> analyze telemetry window=30d scope=edge-mtl-tor',
+ 'agent> propose: set local-preference 200 on path B (48 routers)',
+ 'change> CHG0052418 approved by policy (risk: medium)',
+ 'automation> ansible-playbook bgp-path-optimize.yml --limit edge-mtl-tor',
+ 'edge-tor-07> route-map PREFER-B permit 10 · set local-preference 200',
+ 'edge-mtl-03> commit complete · BGP neighbor 10.20.0.1 Established',
+ 'automation> 48/48 hosts changed · 0 failed',
+];
+let logtxt = ''; for (let i = 0; i < 34; i++) logtxt += `[09:${fmt2(19 + (i >> 4))}:${fmt2((i * 7) % 60)}] ` + LOGS[i % LOGS.length] + '\n';
+$('#logs0').textContent = logtxt;
+
+// Utilization model shared by the detect and verify charts (minutes after 09:00)
+const r4 = rand(5); const NOISE = Array.from({ length: 420 }, () => r4() - .5);
+function util(m, recover) {
+  const n = NOISE[Math.floor(m * 10) % 420] * 5 + Math.sin(m * 1.7) * 1.5;
+  let v = 46 + Math.sin(m / 6) * 3 + n;
+  if (m > 21) v += 36 * easeInOut(clamp((m - 21) / 3));
+  if (recover && m > 31) v -= 33 * easeInOut(clamp((m - 31) / 2));
+  return v;
+}
+function makeChart(svgId, recover) {
+  const svg = $(svgId); const X0 = 70, X1 = 1030, Y0 = 340, Y1 = 20;
+  const xm = m => X0 + (m / 40) * (X1 - X0), yv = v => Y0 - (v / 100) * (Y0 - Y1);
+  [0, 25, 50, 75, 100].forEach(v => { svgEl('line', { x1: X0, x2: X1, y1: yv(v), y2: yv(v), stroke: 'rgba(120,145,200,.14)' }, svg); const t = svgEl('text', { x: X0 - 12, y: yv(v) + 5, 'text-anchor': 'end', fill: '#5d6984', 'font-size': 14, 'font-family': 'IBM Plex Mono, monospace' }, svg); t.textContent = v + '%'; });
+  [0, 10, 20, 30, 40].forEach(m => { const t = svgEl('text', { x: xm(m), y: Y0 + 26, 'text-anchor': 'middle', fill: '#5d6984', 'font-size': 14, 'font-family': 'IBM Plex Mono, monospace' }, svg); t.textContent = '09 h ' + fmt2(m); });
+  let band = ''; for (let m = 0; m <= 40; m += .5) band += (band ? 'L' : 'M') + xm(m) + ',' + yv(46 + Math.sin(m / 6) * 3 + 9);
+  for (let m = 40; m >= 0; m -= .5) band += 'L' + xm(m) + ',' + yv(46 + Math.sin(m / 6) * 3 - 9);
+  svgEl('path', { d: band + 'Z', fill: 'rgba(69,137,255,.14)' }, svg);
+  const mk = (m, c, label, y) => { const g = svgEl('g', {}, svg); svgEl('line', { x1: xm(m), x2: xm(m), y1: Y1, y2: Y0, stroke: c, 'stroke-width': 2, 'stroke-dasharray': '4 5' }, g); const t = svgEl('text', { x: xm(m) + 8, y, fill: c, 'font-size': 14, 'font-family': 'IBM Plex Mono, monospace' }, g); t.textContent = label; return g; };
+  const chg = mk(21, '#f1c21b', '09 h 21 changement BGP', Y1 + 14);
+  const rb = recover ? mk(31, '#42be65', '09 h 31 retour arrière', Y1 + 36) : null;
+  let d = ''; for (let m = 0; m <= 40; m += .1) d += (d ? 'L' : 'M') + xm(m).toFixed(1) + ',' + yv(util(m, recover)).toFixed(1);
+  const defs = svgEl('defs', {}, svg); const cp = svgEl('clipPath', { id: svgId.slice(1) + 'clip' }, defs); const cr = svgEl('rect', { x: 0, y: 0, width: 0, height: 400 }, cp);
+  const line = svgEl('path', { d, fill: 'none', stroke: '#33b1ff', 'stroke-width': 3, 'clip-path': `url(#${svgId.slice(1)}clip)` }, svg);
+  return { cr, xm, chg, rb, line };
+}
+const ch4 = makeChart('#c4', false), ch9 = makeChart('#c9', true);
+
+// Detect timeline
+const TL5 = [['09 h 21', 'Politique BGP modifiée'], ['09 h 22', 'Le trafic change de chemin'], ['09 h 23', 'L’utilisation s’écarte'], ['09 h 24', 'La latence augmente'], ['09 h 25', 'La perte s’étend'], ['09 h 26', 'Impact d’affaires']];
+const tl5 = $('#tl5svg'); const TX = i => 120 + i * 297;
+svgEl('line', { x1: TX(0), x2: TX(5), y1: 133, y2: 133, stroke: 'rgba(120,145,200,.3)', 'stroke-width': 4 }, tl5);
+const tl5bar = svgEl('line', { x1: TX(0), x2: TX(0), y1: 133, y2: 133, stroke: '#f1c21b', 'stroke-width': 5 }, tl5);
+TL5.forEach(([tm, tx], i) => { const n = document.createElement('div'); n.className = 'tnode'; n.id = 'tn' + i; n.style.left = TX(i) + 'px'; n.innerHTML = `<div class="dot"></div><div class="tm">${tm}</div><div class="tx">${tx}</div>`; $('#tl5nodes').appendChild(n); });
+$('#det5').style.left = TX(3) + 'px';
+
+// Response pipeline
+const pipe = $('#pipesvg');
+const pipeLinks = [0, 1, 2, 3, 4, 5].map(i => { const x1 = 216 + i * 252, x2 = x1 + 36, y = 135;
+  svgEl('line', { x1, x2, y1: y, y2: y, stroke: '#4589ff', 'stroke-width': 3, 'stroke-opacity': .6 }, pipe);
+  svgEl('path', { d: `M${x2 - 8},${y - 7} L${x2},${y} L${x2 - 8},${y + 7}`, fill: 'none', stroke: '#4589ff', 'stroke-width': 3 }, pipe);
+  return { x1, x2, y }; });
+const pulse = svgEl('circle', { r: 9, fill: '#fff', opacity: 0 }, pipe);
+const IND_T = [1, 10.6, 20.2, 29.8, 39.4, 49];
+
+// Canada–U.S. architecture topology
+const A17 = $('#arch17svg');
+const N17 = { van: [140, 150, 'CD Vancouver', 'dc'], tor: [640, 200, 'CD Toronto', 'dc'], mtl: [1030, 140, 'CD Montréal', 'dc'],
+  cloud: [380, 60, 'Nuage · AWS · Azure', 'cloud'], isp: [860, 50, 'Internet · 2 FAI', 'isp'],
+  sfo: [140, 470, 'San Francisco', 'site'], chi: [520, 430, 'Chicago', 'site'], nyc: [1000, 440, 'New York', 'site'], atl: [760, 540, 'Atlanta', 'site'] };
+const L17 = [ ['van','tor','#4589ff',4,'',0], ['tor','mtl','#4589ff',7,'CHEMIN A · MPLS 10 Gb/s',0], ['van','mtl','#4589ff',2,'',0], ['tor','mtl','#a56eff',3,'CHEMIN B · 1 Gb/s',1],
+  ['sfo','van','#33b1ff',2,'',2], ['chi','tor','#33b1ff',2,'',2], ['atl','tor','#33b1ff',2,'',2], ['nyc','mtl','#33b1ff',2,'',2], ['nyc','tor','#33b1ff',1.5,'',2],
+  ['van','cloud','#8b97b3',1.5,'',3], ['tor','cloud','#8b97b3',1.5,'',3], ['tor','isp','#8b97b3',1.5,'eBGP',3], ['mtl','isp','#8b97b3',1.5,'',3] ];
+{ const by = 330; svgEl('line', { x1: 0, x2: 1180, y1: by, y2: by, stroke: '#fa4d56', 'stroke-opacity': .5, 'stroke-dasharray': '8 7', 'stroke-width': 1.5 }, A17);
+  const t1 = svgEl('text', { x: 20, y: by - 10, fill: '#ff8389', 'font-size': 13, 'letter-spacing': '.2em', 'font-family': 'IBM Plex Mono, monospace' }, A17); t1.textContent = 'CANADA';
+  const t2 = svgEl('text', { x: 20, y: by + 22, fill: '#8b97b3', 'font-size': 13, 'letter-spacing': '.2em', 'font-family': 'IBM Plex Mono, monospace' }, A17); t2.textContent = 'ÉTATS-UNIS'; }
+const pk17 = L17.map(([a, b, c, w, lab, kind], i) => {
+  let [x1, y1] = N17[a], [x2, y2] = N17[b];
+  const off = kind === 1 ? 46 : 0; // path B drawn parallel, below path A
+  y1 += off; y2 += off;
+  const g = svgEl('g', { 'data-in': String(kind === 0 ? 2 : kind === 1 ? 3.2 : kind === 2 ? 4.2 : 5.2), 'data-fx': 'fade' }, A17);
+  svgEl('line', Object.assign({ x1, y1, x2, y2, stroke: c, 'stroke-opacity': .55, 'stroke-width': w }, kind >= 1 ? { 'stroke-dasharray': kind === 2 ? '9 7' : kind === 3 ? '3 5' : '12 6' } : {}), g);
+  if (lab) { const t = svgEl('text', { x: (x1 + x2) / 2, y: (y1 + y2) / 2 + (kind === 1 ? 26 : -14), 'text-anchor': 'middle', fill: c, 'font-size': 14, 'font-family': 'IBM Plex Mono, monospace' }, g); t.textContent = lab; }
+  const p = svgEl('circle', { r: 4, fill: kind === 3 ? '#c6d0e6' : c }, g);
+  return { x1, y1, x2, y2, p, sp: .18 + (i % 4) * .06, off: i * .29 };
+});
+for (const k in N17) { const [x, y, label, kind] = N17[k];
+  const g = svgEl('g', { transform: `translate(${x},${y})` }, A17);
+  if (kind === 'dc') svgEl('rect', { x: -16, y: -16, width: 32, height: 32, rx: 6, fill: '#4589ff', stroke: '#04060d', 'stroke-width': 3 }, g);
+  else if (kind === 'site') svgEl('circle', { r: 10, fill: '#33b1ff', stroke: '#04060d', 'stroke-width': 3 }, g);
+  else svgEl('circle', { r: 12, fill: kind === 'cloud' ? '#a56eff' : '#8b97b3', stroke: '#04060d', 'stroke-width': 3 }, g);
+  const t = svgEl('text', { y: kind === 'dc' ? -26 : -18, 'text-anchor': 'middle', fill: '#dfe6f5', 'font-size': kind === 'dc' ? 18 : 15, 'font-weight': kind === 'dc' ? 600 : 400, 'font-family': 'IBM Plex Sans, sans-serif' }, g); t.textContent = label; }
+{ const lg = svgEl('g', { transform: 'translate(20,585)' }, A17);
+  [['Cœur MPLS', '#4589ff', ''], ['Chemin B', '#a56eff', '12 6'], ['Superposition SD-WAN', '#33b1ff', '9 7'], ['BGP · nuage / FAI', '#8b97b3', '3 5']].forEach(([n, c, d], i) => {
+    svgEl('line', Object.assign({ x1: i * 220, x2: i * 220 + 28, y1: -5, y2: -5, stroke: c, 'stroke-width': 3 }, d ? { 'stroke-dasharray': d } : {}), lg);
+    const t = svgEl('text', { x: i * 220 + 38, y: 0, fill: '#8b97b3', 'font-size': 14, 'font-family': 'IBM Plex Mono, monospace' }, lg); t.textContent = n; }); }
+
+
+/* ---------- Animation engine ---------- */
+const scenes = $$('.scene').map(el => ({ el, s: +el.dataset.start, e: +el.dataset.end,
+  items: $$('[data-in]', el), counts: $$('[data-count]', el), types: $$('[data-type]', el) }));
+scenes.forEach(sc => sc.types.forEach(el => el.dataset.full = el.dataset.type));
+
+function applyIn(el, lt) {
+  const tin = +el.dataset.in, d = +(el.dataset.dur || .6), fx = el.dataset.fx || 'up';
+  const p = clamp((lt - tin) / d); const e = easeOut(p);
+  el.style.opacity = e;
+  if (fx === 'up') el.style.transform = `translateY(${(1 - e) * 34}px)`;
+  else if (fx === 'left') el.style.transform = `translateX(${(1 - e) * -40}px)`;
+  else if (fx === 'scale') el.style.transform = `scale(${lerp(1.18, 1, e)})`;
+  else el.style.transform = '';
+}
+function applyCount(el, lt) {
+  const to = +el.dataset.count, p = easeOut(clamp((lt - +el.dataset.cin) / +el.dataset.cdur));
+  const dec = +(el.dataset.dec || 0); const v = to * p;
+  el.textContent = (el.dataset.pre || '') + (dec ? v.toFixed(dec).replace('.', ',') : Math.round(v).toLocaleString('fr-CA')) + (el.dataset.suf || '').replace('%', ' %');
+}
+function applyType(el, lt) {
+  const full = el.dataset.full, tin = +el.dataset.in, d = +(el.dataset.dur || 1);
+  const n = Math.floor(clamp((lt - tin) / d) * full.length);
+  const blink = Math.floor(lt * 2.2) % 2 === 0;
+  el.innerHTML = lt < tin - .4 ? '' : full.slice(0, n) + (n < full.length || blink ? '<span class="caret"></span>' : '');
+}
+
+const custom = {
+  s0(lt) {},
+  s1(lt) {},
+  s2(lt) {
+    const q = $('#q2'); const g = lt < .6 ? (Math.sin(lt * 90) > 0 ? 1 : -1) * (1 - lt / .6) * 14 : 0;
+    q.style.textShadow = g ? `${g}px 0 rgba(250,77,86,.8), ${-g}px 0 rgba(51,177,255,.8)` : 'none';
+    if (lt > 3.4) q.style.transform = `scale(${lerp(1, .82, easeInOut(clamp((lt - 3.4) / 1.2)))})`;
+  },
+  s3(lt) { ($('#sweep3') || {style:{}}).style.left = lerp(-400, 1600, clamp((lt - .8) / 1.6)) + 'px'; },
+  s2(lt) {
+    for (let i = 0; i < 5; i++) { const n = $('#c2n' + i); n && n.classList.toggle('hot', lt > 22 + i * 1.1 && lt < 24.2 + i * 1.1); }
+  },
+  s17(lt) { pk17.forEach(l => { const a = ((lt * l.sp + l.off) % 1); l.p.setAttribute('cx', lerp(l.x1, l.x2, a)); l.p.setAttribute('cy', lerp(l.y1, l.y2, a)); }); },
+  s4(lt) { ch4.cr.setAttribute('width', ch4.xm(lerp(0, 28, easeInOut(clamp((lt - 2) / 11)))) + 2); },
+  s5(lt) {
+    const p = clamp((lt - 3) / 9); const reach = p * 3;
+    for (let i = 0; i < 6; i++) { const n = $('#tn' + i); n.classList.toggle('on', i <= reach + .001 && i < 3); n.classList.toggle('hit', i === 3 && reach >= 3); n.classList.toggle('gone', i > 3 && lt > 13); }
+    $('#tl5bar') ; tl5bar.setAttribute('x2', 120 + reach * 297);
+    const d = $('#det5'); d.style.opacity = clamp((lt - 12) / .4); d.style.transform = `translateX(-50%) scale(${lerp(1.3, 1, easeOut(clamp((lt - 12) / .4)))})`;
+  },
+  s6(lt) {
+    let a = -1; IND_T.forEach((t, i) => { if (lt >= t) a = i; });
+    for (let i = 0; i < 6; i++) { const c = $('#ind' + i); c.classList.toggle('act', i === a); c.classList.toggle('dim', i !== a); }
+  },
+  s7(lt) {
+    for (let i = 0; i < 5; i++) $('#b' + i).classList.toggle('hot', lt > 17 + i * 1.6);
+    for (let i = 0; i < 5; i++) $('#q7' + i).classList.toggle('done', lt > 33);
+  },
+  s8(lt) {
+    const k = lt - 1.6; if (k < 0) { pulse.setAttribute('opacity', 0); return; }
+    const pos = Math.min(5.99, k / 1.05); const i = Math.floor(pos), f = pos - i; const L = pipeLinks[i];
+    pulse.setAttribute('cx', lerp(L.x1 - 108, L.x2 + 108, f)); pulse.setAttribute('cy', L.y); pulse.setAttribute('opacity', k < 7 ? 1 : 0);
+  },
+  s9(lt) {
+    ch9.cr.setAttribute('width', ch9.xm(lerp(0, 40, easeInOut(clamp((lt - 1) / 10)))) + 2);
+    for (let i = 0; i < 5; i++) $('#lp' + i).classList.toggle('on', lt > 12 + i * .8);
+  },
+  s16(lt) {
+    $('#close1').style.opacity = 1 - clamp((lt - 10.2) / .6);
+    $('#close1').style.transform = `scale(${lerp(1, 1.04, clamp(lt / 10))})`;
+  },
+};
+
+/* Background canvas: perspective grid + drifting particles, tinted per scene. */
+const bg = $('#bgc'), ctx = bg.getContext('2d');
+const PR = rand(3); const parts = Array.from({ length: 140 }, () => ({ x: PR() * 1920, y: PR() * 1080, z: .3 + PR() * .7, s: PR() }));
+function tintAt(t) {
+  // [time, r, g, b]
+  const K = TIMELINE.tint;
+  let i = 0; while (i < K.length - 1 && K[i + 1][0] <= t) i++;
+  const a = K[Math.max(0, i - 1)], b = K[i], q = clamp((t - b[0]) / .6);
+  return [1, 2, 3].map(k => lerp(a[k], b[k], q));
+}
+function drawBg(t) {
+  const [r, g, b] = tintAt(t);
+  ctx.fillStyle = '#04060d'; ctx.fillRect(0, 0, 1920, 1080);
+  const gr = ctx.createRadialGradient(960, 380, 50, 960, 380, 1100);
+  gr.addColorStop(0, `rgba(${r|0},${g|0},${b|0},.34)`); gr.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = gr; ctx.fillRect(0, 0, 1920, 1080);
+  // perspective floor grid
+  ctx.save(); ctx.strokeStyle = `rgba(${r|0},${g|0},${b|0},.22)`; ctx.lineWidth = 1;
+  const hz = 700, sp = (t * 40) % 60;
+  for (let i = 0; i < 22; i++) { const z = (i * 60 + sp); const y = hz + Math.pow(z / 1300, 1.8) * 520; if (y > 1080) break; ctx.globalAlpha = clamp((y - hz) / 300); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1920, y); ctx.stroke(); }
+  ctx.globalAlpha = .55;
+  for (let i = -16; i <= 16; i++) { ctx.beginPath(); ctx.moveTo(960 + i * 30, hz); ctx.lineTo(960 + i * 260, 1080); ctx.stroke(); }
+  ctx.restore();
+  // particles
+  for (const p of parts) {
+    const x = (p.x + t * 18 * p.z) % 1920, y = (p.y - t * 6 * p.z + 1080) % 1080;
+    const tw = .4 + .6 * Math.abs(Math.sin(t * (1 + p.s * 2) + p.s * 10));
+    ctx.fillStyle = `rgba(${150 + r * .4 | 0},${190 + g * .2 | 0},255,${.35 * p.z * tw})`;
+    ctx.beginPath(); ctx.arc(x, y, 1.2 + p.z * 1.6, 0, 7); ctx.fill();
+  }
+}
+
+function render(t) {
+  // impacts → flash + shake + zoom punch
+  let flash = 0, shake = 0, punch = 0;
+  for (const [it, w] of IMPACTS) { const d = t - it; if (d >= 0 && d < 1.2) { flash = Math.max(flash, w * .55 * Math.exp(-d * 7)); shake = Math.max(shake, w * 12 * Math.exp(-d * 8)); punch = Math.max(punch, w * .035 * Math.exp(-d * 5)); } }
+  $('#flash').style.opacity = flash;
+  const sxv = shake * Math.sin(t * 97), syv = shake * Math.cos(t * 83);
+  drawBg(t);
+  let active = null;
+  for (const sc of scenes) {
+    const lt = t - sc.s, dur = sc.e - sc.s;
+    const vis = lt > -0.05 && lt < dur;
+    sc.el.classList.toggle('on', vis);
+    if (!vis) continue;
+    active = sc;
+    const op = clamp(lt / .35) * clamp((dur - lt) / .45);
+    sc.el.style.opacity = op;
+    sc.items.forEach(el => applyIn(el, lt));
+    sc.counts.forEach(el => applyCount(el, lt));
+    sc.types.forEach(el => applyType(el, lt));
+    custom[sc.el.id] && custom[sc.el.id](lt, dur);
+    const zoom = 1 + .035 * (lt / dur) + punch;
+    $('#camera').style.transform = `translate(${sxv}px,${syv}px) scale(${zoom})`;
+  }
+  // HUD
+  const showHud = t > TIMELINE.steps_visible[0] && t < TIMELINE.steps_visible[1];
+  $('#hud .tl').style.opacity = $('#hud .tr').style.opacity = t > TIMELINE.duration - 20 ? 0 : 1;
+  $('#hud').style.opacity = t < 12 ? 0 : 1;
+  $('#steps').style.opacity = showHud ? 1 : 0;
+  let stepIdx = 0; TIMELINE.steps.forEach(([, s], i) => { if (t >= s) stepIdx = i; });
+  $$('#steps span').forEach((s, i) => { s.className = i === stepIdx ? 'act' : i < stepIdx ? 'done' : ''; });
+  $('#tc').textContent = 'MTL ↔ TOR · SCÉNARIO DÉMO';
+  const cue = NARRATION.find(c => t >= c[0] && t < c[1] + .35);
+  const sub = $('#subs span'); const txt = cue ? cue[2] : '';
+  if (sub.textContent !== txt) sub.textContent = txt;
+  sub.style.visibility = txt ? 'visible' : 'hidden';
+  $('#fadeblack').style.opacity = t < 0.5 ? 1 - t / .5 : clamp((t - (TIMELINE.duration - 2)) / 1.6);
+}
+
+/* ---------- Scale stage to window ---------- */
+function fit() {
+  const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+  $('#stage').style.transform = `scale(${s}) translate(-50%, -50%)`;
+  $('#stage').style.transformOrigin = '0 0';
+  $('#stage').style.left = '50%'; $('#stage').style.top = '50%';
+  $('#stage').style.transform = `translate(-50%, -50%) scale(${s})`;
+  $('#stage').style.transformOrigin = '50% 50%';
+}
+addEventListener('resize', fit); fit();
+
+/* ---------- Modes ---------- */
+const params = new URLSearchParams(location.search);
+window.__seek = t => render(t);
+window.__duration = DURATION;
+if (params.get('cc') === '1') document.body.classList.add('cc');
+if (params.has('render')) {
+  document.body.classList.add('render');
+  $('#stage').style.transform = 'none'; $('#stage').style.left = '0'; $('#stage').style.top = '0';
+  removeEventListener('resize', fit);
+  render(+params.get('t') || 0);
+  return;
+}
+const audio = $('#audio'); let playing = false, t0 = 0, clockStart = 0, cur = +params.get('t') || 0, audioOK = true;
+audio.addEventListener('error', () => { audioOK = false; });
+const now = () => playing ? (audioOK && !audio.paused ? audio.currentTime : (performance.now() - clockStart) / 1000 + t0) : cur;
+function play() {
+  playing = true; t0 = cur; clockStart = performance.now(); $('#pp').textContent = 'Pause'; $('#bigplay').style.display = 'none';
+  if (audioOK) { try { audio.currentTime = cur; const pr = audio.play(); pr && pr.catch(() => { audioOK = false; }); } catch (e) { audioOK = false; } }
+}
+function pause() { cur = now(); playing = false; audio.pause(); $('#pp').textContent = 'Lecture'; }
+function seek(t) { cur = clamp(t, 0, DURATION); if (playing) { t0 = cur; clockStart = performance.now(); if (audioOK) audio.currentTime = cur; } render(cur); }
+$('#pp').onclick = () => playing ? pause() : play();
+document.body.classList.toggle('cc', params.get('cc') !== '0');
+$('#ccb').setAttribute('aria-pressed', document.body.classList.contains('cc'));
+$('#ccb').onclick = () => { const on = !document.body.classList.contains('cc'); document.body.classList.toggle('cc', on); $('#ccb').setAttribute('aria-pressed', on); render(now()); };
+USE_CASES.forEach(([n, name, title, at, problem, how, outcome]) => {
+  const c = document.createElement('div'); c.className = 'card';
+  c.innerHTML = `<div class="n">${n} · ${name.toUpperCase()}</div><h3></h3><dl><dt>Situation</dt><dd class="p"></dd><dt>Ce que fait SevOne</dt><dd class="h"></dd><dt>Résultat</dt><dd class="o"></dd></dl><div style="margin-top:14px"><button>Voir · ${Math.floor(at / 60)}:${fmt2(at % 60)}</button></div>`;
+  c.querySelector('h3').textContent = title; c.querySelector('.p').textContent = problem; c.querySelector('.h').textContent = how; c.querySelector('.o').textContent = outcome;
+  c.querySelector('button').onclick = () => { $('#ucpanel').classList.remove('open'); seek(at); if (!playing) play(); };
+  $('#ucgrid').appendChild(c);
+});
+$('#ucb').onclick = () => { if (playing) pause(); $('#ucpanel').classList.add('open'); };
+$('#ucclose').onclick = () => $('#ucpanel').classList.remove('open');
+$('#bigplay').onclick = play;
+$('#scrub').oninput = e => seek(+e.target.value);
+$$('#player .chap button').forEach(b => b.onclick = () => { seek(+b.dataset.t); if (!playing) play(); });
+addEventListener('keydown', e => { if (e.code === 'Escape') $('#ucpanel').classList.remove('open'); if (e.code === 'Space') { e.preventDefault(); playing ? pause() : play(); } if (e.code === 'ArrowRight') seek(now() + 5); if (e.code === 'ArrowLeft') seek(now() - 5); });
+let idleT; addEventListener('mousemove', () => { document.body.classList.remove('idle'); clearTimeout(idleT); idleT = setTimeout(() => playing && document.body.classList.add('idle'), 2200); });
+function loop() {
+  const t = now();
+  if (playing && t >= DURATION) { pause(); cur = DURATION; }
+  render(Math.min(t, DURATION));
+  $('#scrub').value = t; $('#tcur').textContent = `${Math.floor(t / 60)}:${fmt2(t % 60)}`;
+  requestAnimationFrame(loop);
+}
+render(cur); loop();
+})();
+</script>
+</body>
+</html>

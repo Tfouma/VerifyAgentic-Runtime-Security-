@@ -1,0 +1,768 @@
+{
+ "title": "Quand l'IA modifie le réseau, qui vérifie le résultat ? (version Canada–États-Unis)",
+ "duration": 666,
+ "scenes": [
+  {
+   "id": "s0",
+   "start": 0,
+   "end": 12,
+   "name": "Ouverture",
+   "purpose": "Hook: AI accelerates operations and change"
+  },
+  {
+   "id": "s1",
+   "start": 12,
+   "end": 40,
+   "name": "Infrastructures critiques",
+   "purpose": "Six industries, on-prem and cloud, all run on the network"
+  },
+  {
+   "id": "s17",
+   "start": 40,
+   "end": 68,
+   "name": "Architecture réseau",
+   "purpose": "DCs in Montréal, Toronto, Vancouver; U.S. sites over SD-WAN; BGP and MPLS core"
+  },
+  {
+   "id": "s2",
+   "start": 68,
+   "end": 100,
+   "name": "Opérations agentiques encadrées",
+   "purpose": "Human and policy → agent → approved automation → network"
+  },
+  {
+   "id": "s18",
+   "start": 100,
+   "end": 134,
+   "name": "Configuration BGP et SD-WAN par l’IA",
+   "purpose": "The agent writes, validates and pushes the configuration"
+  },
+  {
+   "id": "s3",
+   "start": 134,
+   "end": 162,
+   "name": "Le changement",
+   "purpose": "48 devices, 0 errors: technical success"
+  },
+  {
+   "id": "s4",
+   "start": 162,
+   "end": 207,
+   "name": "SevOne voit autre chose",
+   "purpose": "Baseline deviation while BGP stays established"
+  },
+  {
+   "id": "s5",
+   "start": 207,
+   "end": 237,
+   "name": "Avant l’incident",
+   "purpose": "Detect degradation while services are still up"
+  },
+  {
+   "id": "s6",
+   "start": 237,
+   "end": 297,
+   "name": "Six secteurs, six conséquences",
+   "purpose": "Same signal, different business risk"
+  },
+  {
+   "id": "s7",
+   "start": 297,
+   "end": 342,
+   "name": "Cause racine et rayon d’impact",
+   "purpose": "Symptom → scope → path → flow → change"
+  },
+  {
+   "id": "s19",
+   "start": 342,
+   "end": 386,
+   "name": "Ce qui a mal tourné",
+   "purpose": "Three issues: route-map scope, SD-WAN SLA thresholds, no outcome check"
+  },
+  {
+   "id": "s8",
+   "start": 386,
+   "end": 431,
+   "name": "Automatisation des incidents",
+   "purpose": "Event → ServiceNow → routing → L1/L2 auto → L3 human"
+  },
+  {
+   "id": "s9",
+   "start": 431,
+   "end": 461,
+   "name": "Vérifier le résultat",
+   "purpose": "Re-measure against baseline before closing"
+  },
+  {
+   "id": "s10",
+   "start": 461,
+   "end": 501,
+   "name": "Contrôles de risque",
+   "purpose": "Preventive → detective → diagnostic → corrective → verification → evidence"
+  },
+  {
+   "id": "s11",
+   "start": 501,
+   "end": 531,
+   "name": "Tableau de bord de la direction",
+   "purpose": "KPI framework and change outcome assurance rate"
+  },
+  {
+   "id": "s12",
+   "start": 531,
+   "end": 576,
+   "name": "Coût total et dépenses d’exploitation",
+   "purpose": "Measure, don't assume: baseline → PoV → delta → business case"
+  },
+  {
+   "id": "s13",
+   "start": 576,
+   "end": 598,
+   "name": "Trois vérités",
+   "purpose": "Agent, automation and SevOne each report a different truth"
+  },
+  {
+   "id": "s14",
+   "start": 598,
+   "end": 618,
+   "name": "La question",
+   "purpose": "The 500-device question"
+  },
+  {
+   "id": "s15",
+   "start": 618,
+   "end": 646,
+   "name": "Prochaine étape",
+   "purpose": "Agentic Network Readiness & Observability Assessment"
+  },
+  {
+   "id": "s16",
+   "start": 646,
+   "end": 666,
+   "name": "Conclusion",
+   "purpose": "Autonomy without observability is risk"
+  }
+ ],
+ "steps": [
+  [
+   "01 CHANGEMENT",
+   100
+  ],
+  [
+   "02 DÉTECTER",
+   162
+  ],
+  [
+   "03 IMPACT",
+   237
+  ],
+  [
+   "04 DIAGNOSTIC",
+   297
+  ],
+  [
+   "05 RÉPONDRE",
+   386
+  ],
+  [
+   "06 VÉRIFIER",
+   431
+  ],
+  [
+   "07 CONTRÔLER",
+   461
+  ],
+  [
+   "08 VALEUR",
+   501
+  ]
+ ],
+ "steps_visible": [
+  100,
+  576
+ ],
+ "chapters": [
+  [
+   "Intro",
+   0
+  ],
+  [
+   "Architecture",
+   40
+  ],
+  [
+   "Config",
+   100
+  ],
+  [
+   "Changement",
+   134
+  ],
+  [
+   "Détection",
+   162
+  ],
+  [
+   "Secteurs",
+   237
+  ],
+  [
+   "Cause racine",
+   297
+  ],
+  [
+   "Problèmes",
+   342
+  ],
+  [
+   "Réponse",
+   386
+  ],
+  [
+   "Vérification",
+   431
+  ],
+  [
+   "Contrôles",
+   461
+  ],
+  [
+   "Indicateurs",
+   501
+  ],
+  [
+   "Coûts",
+   531
+  ],
+  [
+   "Question",
+   598
+  ],
+  [
+   "Évaluation",
+   618
+  ]
+ ],
+ "impacts": [
+  [
+   0.5,
+   1
+  ],
+  [
+   12,
+   0.45
+  ],
+  [
+   68,
+   0.45
+  ],
+  [
+   100,
+   0.45
+  ],
+  [
+   134,
+   0.45
+  ],
+  [
+   158,
+   1.1
+  ],
+  [
+   162,
+   0.5
+  ],
+  [
+   172,
+   1
+  ],
+  [
+   207,
+   0.45
+  ],
+  [
+   237,
+   0.8
+  ],
+  [
+   297,
+   0.45
+  ],
+  [
+   342,
+   0.7
+  ],
+  [
+   386,
+   0.45
+  ],
+  [
+   431,
+   0.6
+  ],
+  [
+   461,
+   0.45
+  ],
+  [
+   501,
+   0.45
+  ],
+  [
+   531,
+   0.45
+  ],
+  [
+   576,
+   0.6
+  ],
+  [
+   598,
+   1.2
+  ],
+  [
+   618,
+   0.6
+  ],
+  [
+   646,
+   0.8
+  ],
+  [
+   657,
+   1.2
+  ]
+ ],
+ "tint": [
+  [
+   0,
+   30,
+   60,
+   140
+  ],
+  [
+   12,
+   40,
+   90,
+   200
+  ],
+  [
+   40,
+   40,
+   100,
+   230
+  ],
+  [
+   68,
+   40,
+   100,
+   230
+  ],
+  [
+   158,
+   25,
+   35,
+   70
+  ],
+  [
+   162,
+   40,
+   100,
+   230
+  ],
+  [
+   172,
+   180,
+   30,
+   45
+  ],
+  [
+   207,
+   150,
+   110,
+   20
+  ],
+  [
+   237,
+   40,
+   100,
+   230
+  ],
+  [
+   342,
+   150,
+   110,
+   20
+  ],
+  [
+   386,
+   40,
+   100,
+   230
+  ],
+  [
+   431,
+   30,
+   140,
+   90
+  ],
+  [
+   461,
+   40,
+   100,
+   230
+  ],
+  [
+   531,
+   30,
+   140,
+   90
+  ],
+  [
+   576,
+   40,
+   100,
+   230
+  ],
+  [
+   598,
+   160,
+   30,
+   50
+  ],
+  [
+   618,
+   40,
+   100,
+   230
+  ]
+ ],
+ "audio": {
+  "pad": [
+   [
+    0,
+    0.25
+   ],
+   [
+    12,
+    0.35
+   ],
+   [
+    68,
+    0.32
+   ],
+   [
+    157.5,
+    0.32
+   ],
+   [
+    158,
+    0.05
+   ],
+   [
+    162,
+    0.3
+   ],
+   [
+    172,
+    0.4
+   ],
+   [
+    207,
+    0.32
+   ],
+   [
+    237,
+    0.42
+   ],
+   [
+    297,
+    0.32
+   ],
+   [
+    431,
+    0.4
+   ],
+   [
+    576,
+    0.3
+   ],
+   [
+    597.5,
+    0.3
+   ],
+   [
+    598,
+    0.08
+   ],
+   [
+    618,
+    0.3
+   ],
+   [
+    646,
+    0.45
+   ],
+   [
+    660,
+    0.45
+   ],
+   [
+    666,
+    0
+   ]
+  ],
+  "drone": [
+   [
+    0,
+    0
+   ],
+   [
+    3,
+    1
+   ],
+   [
+    157.5,
+    1
+   ],
+   [
+    158,
+    0.2
+   ],
+   [
+    162,
+    1
+   ],
+   [
+    597.5,
+    1
+   ],
+   [
+    598,
+    0.25
+   ],
+   [
+    606,
+    1
+   ],
+   [
+    662,
+    1
+   ],
+   [
+    666,
+    0
+   ]
+  ],
+  "bass": [
+   [
+    12,
+    0.35
+   ],
+   [
+    68,
+    0.45
+   ],
+   [
+    134,
+    0.5
+   ],
+   [
+    157.5,
+    0.6
+   ],
+   [
+    158,
+    0
+   ],
+   [
+    162,
+    0
+   ],
+   [
+    163,
+    0.55
+   ],
+   [
+    172,
+    0.75
+   ],
+   [
+    207,
+    0.55
+   ],
+   [
+    237,
+    0.6
+   ],
+   [
+    297,
+    0.5
+   ],
+   [
+    386,
+    0.6
+   ],
+   [
+    431,
+    0.55
+   ],
+   [
+    461,
+    0.45
+   ],
+   [
+    576,
+    0.4
+   ],
+   [
+    597.5,
+    0.3
+   ],
+   [
+    598,
+    0
+   ],
+   [
+    618,
+    0
+   ],
+   [
+    620,
+    0.45
+   ],
+   [
+    645.5,
+    0.45
+   ],
+   [
+    646,
+    0
+   ]
+  ],
+  "kick": [
+   [
+    40,
+    157.5
+   ],
+   [
+    163,
+    207
+   ],
+   [
+    237,
+    297
+   ],
+   [
+    386,
+    431
+   ],
+   [
+    461,
+    576
+   ]
+  ],
+  "kick_heavy": [
+   172,
+   207
+  ],
+  "hats": [
+   [
+    68,
+    157.5
+   ],
+   [
+    163,
+    576
+   ],
+   [
+    620,
+    646
+   ]
+  ],
+  "typewriter": [
+   1.8,
+   3.4
+  ],
+  "blips": [
+   [
+    136,
+    7,
+    1.0
+   ],
+   [
+    462.5,
+    6,
+    3.2
+   ],
+   [
+    619.5,
+    10,
+    1.6
+   ],
+   [
+    238,
+    6,
+    9.6
+   ],
+   [
+    101.5,
+    9,
+    1.0
+   ],
+   [
+    42,
+    7,
+    1.2
+   ],
+   [
+    345,
+    3,
+    10
+   ]
+  ],
+  "alarms": [
+   172.2
+  ],
+  "chimes": [
+   [
+    407.5,
+    0.12
+   ],
+   [
+    439.0,
+    0.16
+   ]
+  ],
+  "risers": [
+   [
+    155,
+    3
+   ],
+   [
+    169.5,
+    2.5
+   ],
+   [
+    234,
+    3
+   ],
+   [
+    595,
+    3
+   ],
+   [
+    643,
+    3
+   ],
+   [
+    654,
+    3
+   ],
+   [
+    339,
+    3
+   ]
+  ]
+ }
+}
