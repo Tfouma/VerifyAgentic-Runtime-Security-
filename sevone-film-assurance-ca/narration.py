@@ -125,7 +125,7 @@ CUES = [
     # Architecture
     (41.0, "Here is the network. Data centers in Montreal, Toronto and Vancouver, joined by an MPLS core."),
     (48.6, "Path A, ten gigabits, carries payments and replication between Toronto and Montreal. Path B, one gigabit, is the backup."),
-    (57.0, "New York, Chicago, Atlanta and San Francisco connect over SD-WAN, with BGP to the internet and the cloud."),
+    (56.8, "New York, Chicago, Atlanta and San Francisco connect over SD-WAN, with BGP to the cloud."),
     (64.2, "SevOne sees all of it."),
     # AI-built configuration
     (101.0, "The agent writes the configuration itself."),
@@ -141,6 +141,8 @@ CUES = [
     (368.6, "Three: each change was checked for syntax. None was checked against the outcome."),
     (374.6, "SevOne exposed all three: the flows on path B, SD-WAN tunnel latency and loss, and the baseline deviation minutes after the change."),
 ]
+
+CUES.sort(key=lambda c: c[0])
 
 # Words the model tends to mispronounce → spoken form. Subtitles keep the written form.
 SPOKEN = {
