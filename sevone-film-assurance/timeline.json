@@ -1,0 +1,41 @@
+{
+ "title": "When AI Changes the Network, Who Verifies the Outcome?",
+ "duration": 560,
+ "scenes": [
+  {"id": "s0",  "start": 0,   "end": 12,  "name": "Cold open",                       "purpose": "Hook: AI accelerates operations and change"},
+  {"id": "s1",  "start": 12,  "end": 40,  "name": "Critical infrastructure",         "purpose": "Six industries, on-prem and cloud, all run on the network"},
+  {"id": "s2",  "start": 40,  "end": 72,  "name": "Agentic operations, with controls","purpose": "Human and policy → agent → approved automation → network"},
+  {"id": "s3",  "start": 72,  "end": 100, "name": "The change",                      "purpose": "48 devices, 0 errors: technical success"},
+  {"id": "s4",  "start": 100, "end": 145, "name": "SevOne sees something different", "purpose": "Baseline deviation while BGP stays established"},
+  {"id": "s5",  "start": 145, "end": 175, "name": "Before it becomes an incident",   "purpose": "Detect degradation while services are still up"},
+  {"id": "s6",  "start": 175, "end": 235, "name": "Six industries, six consequences", "purpose": "Same signal, different business risk"},
+  {"id": "s7",  "start": 235, "end": 280, "name": "Root cause and blast radius",     "purpose": "Symptom → scope → path → flow → change"},
+  {"id": "s8",  "start": 280, "end": 325, "name": "Incident automation",             "purpose": "Event → ServiceNow → routing → L1/L2 auto → L3 human"},
+  {"id": "s9",  "start": 325, "end": 355, "name": "Verify the outcome",              "purpose": "Re-measure against baseline before closing"},
+  {"id": "s10", "start": 355, "end": 395, "name": "Risk controls",                   "purpose": "Preventive → detective → diagnostic → corrective → verification → evidence"},
+  {"id": "s11", "start": 395, "end": 425, "name": "Executive risk dashboard",        "purpose": "KPI framework and change outcome assurance rate"},
+  {"id": "s12", "start": 425, "end": 470, "name": "TCO and OPEX",                    "purpose": "Measure, don't assume: baseline → PoV → delta → business case"},
+  {"id": "s13", "start": 470, "end": 492, "name": "Three truths",                    "purpose": "Agent, automation and SevOne each report a different truth"},
+  {"id": "s14", "start": 492, "end": 512, "name": "The question",                    "purpose": "The 500-device question"},
+  {"id": "s15", "start": 512, "end": 540, "name": "Next step",                       "purpose": "Agentic Network Readiness & Observability Assessment"},
+  {"id": "s16", "start": 540, "end": 560, "name": "Closing",                         "purpose": "Autonomy without observability is risk"}
+ ],
+ "steps": [["01 CHANGE", 72], ["02 DETECT", 100], ["03 IMPACT", 175], ["04 DIAGNOSE", 235], ["05 RESPOND", 280], ["06 VERIFY", 325], ["07 CONTROL", 355], ["08 VALUE", 395]],
+ "steps_visible": [72, 470],
+ "chapters": [["Intro", 0], ["Change", 72], ["Detect", 100], ["Industries", 175], ["Root cause", 235], ["Respond", 280], ["Verify", 325], ["Controls", 355], ["KPIs", 395], ["TCO", 425], ["Question", 492], ["Assessment", 512]],
+ "impacts": [[0.5, 1], [12, 0.45], [40, 0.45], [72, 0.45], [96, 1.1], [100, 0.5], [110, 1], [145, 0.45], [175, 0.8], [235, 0.45], [280, 0.45], [325, 0.6], [355, 0.45], [395, 0.45], [425, 0.45], [470, 0.6], [492, 1.2], [512, 0.6], [540, 0.8], [551, 1.2]],
+ "tint": [[0, 30, 60, 140], [12, 40, 90, 200], [40, 40, 100, 230], [96, 25, 35, 70], [100, 40, 100, 230], [110, 180, 30, 45], [145, 150, 110, 20], [175, 40, 100, 230], [325, 30, 140, 90], [355, 40, 100, 230], [425, 30, 140, 90], [470, 40, 100, 230], [492, 160, 30, 50], [512, 40, 100, 230]],
+ "audio": {
+  "pad":   [[0, 0.25], [12, 0.35], [40, 0.32], [95.5, 0.32], [96, 0.05], [100, 0.3], [110, 0.4], [145, 0.32], [175, 0.42], [235, 0.32], [325, 0.4], [470, 0.3], [491.5, 0.3], [492, 0.08], [512, 0.3], [540, 0.45], [554, 0.45], [560, 0]],
+  "drone": [[0, 0], [3, 1], [95.5, 1], [96, 0.2], [100, 1], [491.5, 1], [492, 0.25], [500, 1], [556, 1], [560, 0]],
+  "bass":  [[12, 0.35], [40, 0.45], [72, 0.5], [95.5, 0.6], [96, 0], [100, 0], [101, 0.55], [110, 0.75], [145, 0.55], [175, 0.6], [235, 0.5], [280, 0.6], [325, 0.55], [355, 0.45], [470, 0.4], [491.5, 0.3], [492, 0], [512, 0], [514, 0.45], [539.5, 0.45], [540, 0]],
+  "kick":  [[40, 95.5], [101, 145], [175, 235], [280, 325], [355, 470]],
+  "kick_heavy": [110, 145],
+  "hats":  [[40, 95.5], [101, 470], [514, 540]],
+  "typewriter": [1.8, 3.4],
+  "blips": [[74, 7, 1.0], [356.5, 6, 3.2], [513.5, 10, 1.6], [176, 6, 9.6]],
+  "alarms": [110.2],
+  "chimes": [[301.5, 0.12], [333.0, 0.16]],
+  "risers": [[93, 3], [107.5, 2.5], [172, 3], [489, 3], [537, 3], [548, 3]]
+ }
+}
