@@ -20,7 +20,7 @@ illustration, not IBM software.
 | `demo/film/the-agent-that-went-rogue.mp4` | **The demo film** (about 5 minutes): both runs in the Breach Console plus Lateral Movement Map scenes, with captions tagged to three agent-governance objectives (1080p, no audio) |
 | `demo/film/the-agent-that-went-rogue-narrated.mp4` | The same film with a narrated sound track, paced so each line finishes before the next scene (1080p, AAC audio) |
 | `demo/film/record_film.js` | Re-records the film from the two pages |
-| `demo/film/narrate.py` | Speaks the narration locally with an open-weight text-to-speech model (Kyutai's Pocket TTS, or Kokoro for the older films) and mixes it onto one track |
+| `demo/film/narrate.py` | Speaks the narration locally with an open-weight text-to-speech model (Kyutai's Pocket TTS, or Kokoro) and mixes it onto one track |
 | `demo/film/fraud-ring-live.mp4` | **Fraud Ring Live, the film** (narrated): the controls-off run, the replay with the controls on and the kill switch, and the six checks that stopped the crews |
 | `demo/film/fraud-ring-live-fr.mp4` | The same film in Canadian French: French interface, captions, title cards and narration |
 | `demo/film/record_fraud_ring.js` | Re-records the Fraud Ring Live film from `demo/fraud_ring.html`, in English or French |
@@ -57,39 +57,34 @@ needs Node 18+, Playwright with Chromium, and ffmpeg, and takes about seven minu
 `FILM_CLIENT=Name` puts a client's name on the objective tags. Keep client-named cuts out
 of this repository.
 
-For the narrated copy, also install `kokoro-onnx` and `soundfile` in a Python environment,
-download `kokoro-v1.0.onnx` and `voices-v1.0.bin` from the
-[kokoro-onnx model release](https://github.com/thewh1teagle/kokoro-onnx/releases/tag/model-files-v1.0),
-and run:
+### Narration
+
+Every narrated film is spoken by Kyutai's
+[Pocket TTS](https://huggingface.co/kyutai/pocket-tts-without-voice-cloning), which runs on
+a CPU and sounds far more natural than the first takes. In a Python 3.10+ environment, run
+`pip install pocket-tts soundfile`, then point the film scripts at it:
 
 ```bash
-FILM_VOICE=af_heart FILM_PYTHON=/path/to/venv/bin/python \
-KOKORO_MODEL=/path/to/kokoro-v1.0.onnx KOKORO_VOICES=/path/to/voices-v1.0.bin \
-node demo/film/record_film.js demo/film/the-agent-that-went-rogue-narrated.mp4
-```
-
-The teaching film uses Kyutai's [Pocket TTS](https://huggingface.co/kyutai/pocket-tts-without-voice-cloning),
-which runs on a CPU and sounds far more natural. In a Python 3.10+ environment, run
-`pip install pocket-tts soundfile`, then:
-
-```bash
-FILM_TTS=pocket FILM_TTS_LANGUAGE=english FILM_VOICE=alba FILM_TTS_MAX_PAUSE=0.5 FILM_PYTHON=/path/to/venv/bin/python \
-node demo/film/record_identity_explained.js
-FILM_LANG=fr FILM_TTS=pocket FILM_TTS_LANGUAGE=french_24l FILM_VOICE=estelle FILM_PYTHON=/path/to/venv/bin/python \
-node demo/film/record_identity_explained.js
+export FILM_TTS=pocket FILM_PYTHON=/path/to/venv/bin/python
+# English: the teaching film, the narrated Agent That Went Rogue, and Fraud Ring Live
+FILM_TTS_LANGUAGE=english FILM_VOICE=alba FILM_TTS_MAX_PAUSE=0.5 node demo/film/record_identity_explained.js
+FILM_TTS_LANGUAGE=english FILM_VOICE=alba FILM_TTS_MAX_PAUSE=0.5 node demo/film/record_film.js demo/film/the-agent-that-went-rogue-narrated.mp4
+FILM_TTS_LANGUAGE=english FILM_VOICE=alba FILM_TTS_MAX_PAUSE=0.5 node demo/film/record_fraud_ring.js
+# Canadian French
+FILM_LANG=fr FILM_TTS_LANGUAGE=french_24l FILM_VOICE=estelle node demo/film/record_identity_explained.js
+FILM_LANG=fr FILM_TTS_LANGUAGE=french_24l FILM_VOICE=estelle node demo/film/record_fraud_ring.js
 ```
 
 The model and voices download from Hugging Face the first time. `FILM_TTS_CACHE=/some/folder`
 keeps every spoken line, so a re-render only speaks the lines you changed, and
-`FILM_TTS_MAX_PAUSE=0.5` shortens long silences between sentences. The committed copies were
-encoded with `FILM_CRF=22`, which keeps each file under 50 MB. Without
-`FILM_VOICE`, the film runs with captions only, paced for reading.
+`FILM_TTS_MAX_PAUSE=0.5` shortens long silences between sentences. The teaching films were
+encoded with `FILM_CRF=22`, which keeps each file under 50 MB. Without `FILM_VOICE`, a film
+runs with captions only.
 
 The narration runs on your machine, so the script text never goes to an outside service.
-`FILM_VOICE` picks any Kokoro voice, for example `am_michael` for a male narrator.
-`demo/film/record_fraud_ring.js` records the Fraud Ring Live film the same way, with or
-without `FILM_VOICE`. Add `FILM_LANG=fr` and a French voice such as `FILM_VOICE=ff_siwis`
-for the French version.
+`narrate.py` also still speaks with [Kokoro](https://github.com/thewh1teagle/kokoro-onnx)
+(`FILM_TTS=kokoro`, the default, with `KOKORO_MODEL`, `KOKORO_VOICES` and a voice such as
+`af_heart`); see its header for the setup.
 
 ## The story in one line
 
@@ -99,8 +94,7 @@ exposed and **$430,000** moves to an account no customer asked to fund. With con
 
 ## Credits
 
-The teaching film's narration is spoken by [Pocket TTS](https://huggingface.co/kyutai/pocket-tts-without-voice-cloning)
+The narration is spoken by [Pocket TTS](https://huggingface.co/kyutai/pocket-tts-without-voice-cloning)
 from Kyutai (weights under CC BY 4.0). The English voice, `alba`, is voice actor Alba MacKenna's,
 under CC BY 4.0. The French voice, `estelle`, is a Kyutai recording under CC0. See
-[kyutai/tts-voices](https://huggingface.co/kyutai/tts-voices) for both. The older films use
-[Kokoro](https://github.com/thewh1teagle/kokoro-onnx).
+[kyutai/tts-voices](https://huggingface.co/kyutai/tts-voices) for both.

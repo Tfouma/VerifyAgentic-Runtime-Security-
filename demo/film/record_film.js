@@ -10,15 +10,17 @@
  * and inventory, governance and accountability, lifecycle and controls. Set
  * FILM_CLIENT to prefix those tags with a client name for a client-specific cut.
  *
- * Set FILM_VOICE (for example af_heart) to add a narrated sound track. Each line
- * in LINES is spoken by the open-weight Kokoro model through narrate.py, locally,
- * and the film waits for the narrator before moving on. See narrate.py for setup.
+ * Set FILM_VOICE to add a narrated sound track. Each line in LINES is spoken by an
+ * open-weight text-to-speech model through narrate.py, locally, and the film waits
+ * for the narrator before moving on. The committed narrated copy uses Kyutai's Pocket
+ * TTS with the alba voice. See narrate.py for setup.
  *
  * Needs Node 18+, Playwright with Chromium, and ffmpeg built with libx264.
  *   node demo/film/record_film.js [output.mp4]
  *   FILM_CLIENT=ACME node demo/film/record_film.js acme-cut.mp4
- *   FILM_VOICE=af_heart KOKORO_MODEL=... KOKORO_VOICES=... node demo/film/record_film.js
- * FILM_PYTHON names the Python that has kokoro-onnx installed (default python3).
+ *   FILM_TTS=pocket FILM_TTS_LANGUAGE=english FILM_VOICE=alba FILM_TTS_MAX_PAUSE=0.5 \
+ *     node demo/film/record_film.js demo/film/the-agent-that-went-rogue-narrated.mp4
+ * FILM_PYTHON names the Python that has the voice model installed (default python3).
  * FILM_SPEED=6 renders a fast, rough preview without narration.
  */
 'use strict';

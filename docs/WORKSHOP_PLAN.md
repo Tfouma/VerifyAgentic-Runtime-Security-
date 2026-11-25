@@ -105,8 +105,9 @@ this storyboard and adds what the console alone can't show:
 The voiceover lines run as burned-in captions, so the film works in a room with the sound
 off. The file has no audio track. `demo/film/the-agent-that-went-rogue-narrated.mp4` adds a
 spoken narration of every caption and title card. Its scenes hold until each line is
-finished, so it runs a little longer. The voice is synthetic (the open-weight Kokoro model),
-so say so if anyone asks. If you would rather use your own voice, record over the silent cut.
+finished, so it runs a little longer. The voice is synthetic (Kyutai's open-weight Pocket TTS,
+run locally), so say so if anyone asks. If you would rather use your own voice, record over the
+silent cut.
 
 **To re-record** after changing either page, run `node demo/film/record_film.js`. It needs
 Node 18+, Playwright with Chromium, and ffmpeg, and takes about seven minutes.
@@ -150,7 +151,8 @@ and closes on the six checks that stopped the crews.
 
 For French-speaking audiences, switch the page to **FR** (or add `#fr` to its link). Everything on
 the page is then in Canadian French. `demo/film/fraud-ring-live-fr.mp4` is the same film with
-French captions and narration. The French voice is synthetic and has a European French accent.
+French captions and narration. The French voice is synthetic (Pocket TTS) and has a European
+French accent.
 
 ### D. Teaching film: identity attacks, explained (13 minutes)
 
@@ -186,8 +188,8 @@ Keep three things straight when you present it:
 - The standards are summarized, not quoted. Point people to each document for its full text.
 - The ISPM and ITDR numbers are illustrative, and every company, person and record is fictional.
 - The narration comes from Kyutai's Pocket TTS, which runs on your own machine. It sounds much
-  closer to a human narrator than the voice in the older films, but it is still synthetic, so
-  say so if anyone asks. To use your own voice, record the captions over the film.
+  closer to a human narrator than the first takes of these films did, but it is still
+  synthetic, so say so if anyone asks. To use your own voice, record the captions over the film.
 
 ---
 

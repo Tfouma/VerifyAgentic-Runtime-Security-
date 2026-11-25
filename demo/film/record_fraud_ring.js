@@ -10,12 +10,13 @@
  *
  * FILM_LANG=fr records the Canadian French version: the page opens at #fr, and the
  * captions, title cards and narration are in French. Use a French voice such as
- * ff_siwis for the narration.
+ * Pocket TTS's estelle for the narration.
  *
  *   node demo/film/record_fraud_ring.js [output.mp4]       captions only
- *   FILM_VOICE=af_heart FILM_PYTHON=... KOKORO_MODEL=... KOKORO_VOICES=... \
- *     node demo/film/record_fraud_ring.js                     with narration
- *   FILM_LANG=fr FILM_VOICE=ff_siwis ... node demo/film/record_fraud_ring.js
+ *   FILM_TTS=pocket FILM_TTS_LANGUAGE=english FILM_VOICE=alba FILM_TTS_MAX_PAUSE=0.5 \
+ *     FILM_PYTHON=... node demo/film/record_fraud_ring.js     with narration
+ *   FILM_LANG=fr FILM_TTS=pocket FILM_TTS_LANGUAGE=french_24l FILM_VOICE=estelle ... \
+ *     node demo/film/record_fraud_ring.js                     in French
  * See record_film.js for the requirements and narrate.py for the voice setup.
  */
 'use strict';
@@ -86,15 +87,15 @@ const LINES_FR = {
            say: "Le pirate sim veut des numéros de téléphone, et les codes à usage unique qu'ils reçoivent." },
   crew2: { text: 'Le Moissonneur veut des données personnelles.' },
   crew3: { text: 'Le Voleur de cartes veut des numéros de carte.' },
-  crew4: { text: "Le Vide-comptes veut de l'argent." },
+  crew4: { text: "Le Vide-comptes veut de l'argent.", say: "Et le Vide-comptes, lui, veut de l'argent." },
   go: { text: "Sans contrôles. L'attaque commence." },
   x1: { text: "Instructions cachées : l'agent de soutien exporte 12 400 profils clients.",
         say: "Des instructions cachées dans un message au soutien. L'agent de la banque exporte douze mille quatre cents profils clients." },
   x2: { text: "Un module piégé : l'agent des cartes lit 3 950 numéros de carte complets.",
-        say: "Un module piégé. L'agent des cartes lit trois mille neuf cent cinquante numéros de carte complets." },
+        say: "Un module piégé. L'agent des cartes récupère près de quatre mille numéros de carte complets." },
   x3: { text: "Un faux client : l'agent de l'opérateur transfère un numéro vers l'eSIM de l'équipe.",
         say: "Un faux client. L'agent de l'opérateur transfère un numéro de téléphone vers la carte sim virtuelle de l'équipe." },
-  x4: { text: "L'outil d'exportation : 2 100 autres profils.", say: "L'outil d'exportation. Deux mille cent autres profils." },
+  x4: { text: "L'outil d'exportation : 2 100 autres profils.", say: "Puis, l'outil d'exportation. Deux mille cent autres profils clients." },
   x5: { text: "36 autres numéros passent sur les eSIM de l'équipe.", say: "Trente-six autres numéros passent sur les cartes sim virtuelles de l'équipe." },
   x6: { text: 'Avec les codes détournés, 18 comptes bancaires sont piratés.', say: 'Avec les codes détournés, dix-huit comptes bancaires sont piratés.' },
   x7: { text: 'Test de cartes : 1 120 cartes volées fonctionnent encore.', say: 'Test de cartes. Plus de mille cartes volées fonctionnent encore.' },
@@ -111,7 +112,8 @@ const LINES_FR = {
         say: "Politique, encore. L'agent des cartes ne voit que les quatre derniers chiffres, et le module est déconnecté." },
   y3: { text: "Délégation : le titulaire de la ligne n'a jamais approuvé le transfert. Demande retenue.",
         say: "Délégation. Le titulaire de la ligne n'a jamais approuvé le transfert, alors la demande est retenue." },
-  y3b: { text: "Teleqo prévient la Banque Lumora que quelqu'un tente de transférer ces numéros." },
+  y3b: { text: "Teleqo prévient la Banque Lumora que quelqu'un tente de transférer ces numéros.",
+         say: "L'opérateur Teleqo prévient la Banque Lumora : quelqu'un tente de transférer ces numéros." },
   y4: { text: "L'agent de soutien est déjà en quarantaine. Refusé à l'entrée." },
   y5: { text: "Comportement : 36 transferts d'eSIM dans une même session, ce n'est pas normal. L'agent est mis en quarantaine.",
         say: "Comportement. Trente-six transferts de cartes sim virtuelles dans une même session, ce n'est pas normal. L'agent est mis en quarantaine." },
