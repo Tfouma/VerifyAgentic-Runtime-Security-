@@ -1,6 +1,6 @@
 {
  "title": "Quand l'IA modifie le réseau, qui vérifie le résultat ? (version Canada–États-Unis)",
- "duration": 666,
+ "duration": 676,
  "scenes": [
   {
    "id": "s0",
@@ -61,84 +61,84 @@
   {
    "id": "s6",
    "start": 237,
-   "end": 297,
-   "name": "Six secteurs, six conséquences",
+   "end": 307,
+   "name": "Sept secteurs, sept conséquences",
    "purpose": "Same signal, different business risk"
   },
   {
    "id": "s7",
-   "start": 297,
-   "end": 342,
+   "start": 307,
+   "end": 352,
    "name": "Cause racine et rayon d’impact",
    "purpose": "Symptom → scope → path → flow → change"
   },
   {
    "id": "s19",
-   "start": 342,
-   "end": 386,
+   "start": 352,
+   "end": 396,
    "name": "Ce qui a mal tourné",
    "purpose": "Three issues: route-map scope, SD-WAN SLA thresholds, no outcome check"
   },
   {
    "id": "s8",
-   "start": 386,
-   "end": 431,
+   "start": 396,
+   "end": 441,
    "name": "Automatisation des incidents",
    "purpose": "Event → ServiceNow → routing → L1/L2 auto → L3 human"
   },
   {
    "id": "s9",
-   "start": 431,
-   "end": 461,
+   "start": 441,
+   "end": 471,
    "name": "Vérifier le résultat",
    "purpose": "Re-measure against baseline before closing"
   },
   {
    "id": "s10",
-   "start": 461,
-   "end": 501,
+   "start": 471,
+   "end": 511,
    "name": "Contrôles de risque",
    "purpose": "Preventive → detective → diagnostic → corrective → verification → evidence"
   },
   {
    "id": "s11",
-   "start": 501,
-   "end": 531,
+   "start": 511,
+   "end": 541,
    "name": "Tableau de bord de la direction",
    "purpose": "KPI framework and change outcome assurance rate"
   },
   {
    "id": "s12",
-   "start": 531,
-   "end": 576,
+   "start": 541,
+   "end": 586,
    "name": "Coût total et dépenses d’exploitation",
    "purpose": "Measure, don't assume: baseline → PoV → delta → business case"
   },
   {
    "id": "s13",
-   "start": 576,
-   "end": 598,
+   "start": 586,
+   "end": 608,
    "name": "Trois vérités",
    "purpose": "Agent, automation and SevOne each report a different truth"
   },
   {
    "id": "s14",
-   "start": 598,
-   "end": 618,
+   "start": 608,
+   "end": 628,
    "name": "La question",
    "purpose": "The 500-device question"
   },
   {
    "id": "s15",
-   "start": 618,
-   "end": 646,
+   "start": 628,
+   "end": 656,
    "name": "Prochaine étape",
    "purpose": "Agentic Network Readiness & Observability Assessment"
   },
   {
    "id": "s16",
-   "start": 646,
-   "end": 666,
+   "start": 656,
+   "end": 676,
    "name": "Conclusion",
    "purpose": "Autonomy without observability is risk"
   }
@@ -158,28 +158,28 @@
   ],
   [
    "04 DIAGNOSTIC",
-   297
+   307
   ],
   [
    "05 RÉPONDRE",
-   386
+   396
   ],
   [
    "06 VÉRIFIER",
-   431
+   441
   ],
   [
    "07 CONTRÔLER",
-   461
+   471
   ],
   [
    "08 VALEUR",
-   501
+   511
   ]
  ],
  "steps_visible": [
   100,
-  576
+  586
  ],
  "chapters": [
   [
@@ -208,39 +208,39 @@
   ],
   [
    "Cause racine",
-   297
+   307
   ],
   [
    "Problèmes",
-   342
+   352
   ],
   [
    "Réponse",
-   386
+   396
   ],
   [
    "Vérification",
-   431
+   441
   ],
   [
    "Contrôles",
-   461
+   471
   ],
   [
    "Indicateurs",
-   501
+   511
   ],
   [
    "Coûts",
-   531
+   541
   ],
   [
    "Question",
-   598
+   608
   ],
   [
    "Évaluation",
-   618
+   628
   ]
  ],
  "impacts": [
@@ -285,51 +285,51 @@
    0.8
   ],
   [
-   297,
+   307,
    0.45
   ],
   [
-   342,
+   352,
    0.7
   ],
   [
-   386,
+   396,
    0.45
   ],
   [
-   431,
+   441,
    0.6
   ],
   [
-   461,
+   471,
    0.45
   ],
   [
-   501,
+   511,
    0.45
   ],
   [
-   531,
+   541,
    0.45
   ],
   [
-   576,
+   586,
    0.6
   ],
   [
-   598,
+   608,
    1.2
   ],
   [
-   618,
+   628,
    0.6
   ],
   [
-   646,
+   656,
    0.8
   ],
   [
-   657,
+   667,
    1.2
   ]
  ],
@@ -389,49 +389,49 @@
    230
   ],
   [
-   342,
+   352,
    150,
    110,
    20
   ],
   [
-   386,
+   396,
    40,
    100,
    230
   ],
   [
-   431,
+   441,
    30,
    140,
    90
   ],
   [
-   461,
+   471,
    40,
    100,
    230
   ],
   [
-   531,
+   541,
    30,
    140,
    90
   ],
   [
-   576,
+   586,
    40,
    100,
    230
   ],
   [
-   598,
+   608,
    160,
    30,
    50
   ],
   [
-   618,
+   628,
    40,
    100,
    230
@@ -476,39 +476,39 @@
     0.42
    ],
    [
-    297,
+    307,
     0.32
    ],
    [
-    431,
+    441,
     0.4
    ],
    [
-    576,
+    586,
     0.3
    ],
    [
-    597.5,
+    607.5,
     0.3
    ],
    [
-    598,
+    608,
     0.08
    ],
    [
-    618,
+    628,
     0.3
    ],
    [
-    646,
+    656,
     0.45
    ],
    [
-    660,
+    670,
     0.45
    ],
    [
-    666,
+    676,
     0
    ]
   ],
@@ -534,23 +534,23 @@
     1
    ],
    [
-    597.5,
+    607.5,
     1
    ],
    [
-    598,
+    608,
     0.25
    ],
    [
-    606,
+    616,
     1
    ],
    [
-    662,
+    672,
     1
    ],
    [
-    666,
+    676,
     0
    ]
   ],
@@ -596,47 +596,47 @@
     0.6
    ],
    [
-    297,
+    307,
     0.5
    ],
    [
-    386,
+    396,
     0.6
    ],
    [
-    431,
+    441,
     0.55
    ],
    [
-    461,
+    471,
     0.45
    ],
    [
-    576,
+    586,
     0.4
    ],
    [
-    597.5,
+    607.5,
     0.3
    ],
    [
-    598,
+    608,
     0
    ],
    [
-    618,
+    628,
     0
    ],
    [
-    620,
+    630,
     0.45
    ],
    [
-    645.5,
+    655.5,
     0.45
    ],
    [
-    646,
+    656,
     0
    ]
   ],
@@ -651,15 +651,15 @@
    ],
    [
     237,
-    297
+    307
    ],
    [
-    386,
-    431
+    396,
+    441
    ],
    [
-    461,
-    576
+    471,
+    586
    ]
   ],
   "kick_heavy": [
@@ -673,11 +673,11 @@
    ],
    [
     163,
-    576
+    586
    ],
    [
-    620,
-    646
+    630,
+    656
    ]
   ],
   "typewriter": [
@@ -691,19 +691,19 @@
     1.0
    ],
    [
-    462.5,
+    472.5,
     6,
     3.2
    ],
    [
-    619.5,
+    629.5,
     10,
     1.6
    ],
    [
     238,
-    6,
-    9.6
+    7,
+    9.4
    ],
    [
     101.5,
@@ -716,7 +716,7 @@
     1.2
    ],
    [
-    345,
+    355,
     3,
     10
    ]
@@ -726,11 +726,11 @@
   ],
   "chimes": [
    [
-    407.5,
+    417.5,
     0.12
    ],
    [
-    439.0,
+    449.0,
     0.16
    ]
   ],
@@ -748,19 +748,19 @@
     3
    ],
    [
-    595,
+    605,
     3
    ],
    [
-    643,
+    653,
     3
    ],
    [
-    654,
+    664,
     3
    ],
    [
-    339,
+    349,
     3
    ]
   ]

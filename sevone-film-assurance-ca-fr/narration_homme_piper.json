@@ -1,12 +1,12 @@
 [
  {
   "start": 0.8,
-  "end": 2.71,
+  "end": 2.64,
   "text": "Lundi, neuf heures vingt."
  },
  {
   "start": 3.4,
-  "end": 7.72,
+  "end": 7.29,
   "text": "L'IA accélère les opérations. Elle accélère aussi le changement."
  },
  {
@@ -16,112 +16,112 @@
  },
  {
   "start": 13.0,
-  "end": 19.56,
-  "text": "Banques, télécoms, chemins de fer, énergie, gouvernements et plateformes d'IA : tout repose sur le réseau."
+  "end": 20.16,
+  "text": "Banques, télécoms, chemins de fer, transport aérien, énergie, gouvernements et IA : tout repose sur le réseau."
  },
  {
   "start": 20.4,
-  "end": 25.76,
+  "end": 25.19,
   "text": "Sur site et en infonuagique, sur le WAN, le SD-WAN et les centres de données."
  },
  {
   "start": 26.0,
-  "end": 32.29,
+  "end": 32.42,
   "text": "Des agents d'IA aident maintenant les ingénieurs à diagnostiquer, à générer des configurations et à appliquer des changements."
  },
  {
   "start": 33.8,
-  "end": 36.92,
+  "end": 36.72,
   "text": "Une immense occasion, et un nouveau risque opérationnel."
  },
  {
   "start": 41.0,
-  "end": 48.02,
-  "text": "Voici le réseau. Trois centres de données, à Montréal, Toronto et Vancouver, reliés par un cœur MPLS."
+  "end": 48.29,
+  "text": "Voici le réseau. Trois centres de données, à Montréal, Toronto et Vancouver, maillés en haute disponibilité sur un cœur MPLS."
  },
  {
   "start": 48.6,
-  "end": 56.56,
-  "text": "Le chemin A, à dix gigabits, transporte paiements et réplication entre Toronto et Montréal. Le chemin B, à un gigabit, sert de relève."
+  "end": 54.44,
+  "text": "Chaque paire est reliée à cent gigabits, avec un lien de relève à vingt-cinq gigabits. Le chemin A porte les paiements."
  },
  {
   "start": 56.8,
-  "end": 63.29,
+  "end": 62.78,
   "text": "New York, Chicago, Atlanta et San Francisco se connectent en SD-WAN, avec BGP vers le nuage."
  },
  {
   "start": 64.2,
-  "end": 65.44,
+  "end": 65.29,
   "text": "SevOne voit tout."
  },
  {
   "start": 69.0,
-  "end": 70.85,
+  "end": 70.8,
   "text": "Prenons une optimisation de routine."
  },
  {
   "start": 71.2,
-  "end": 77.45,
+  "end": 77.4,
   "text": "Un ingénieur demande à un agent d'IA d'améliorer la connectivité entre Montréal et Toronto, sans nuire aux applications."
  },
  {
   "start": 79.6,
-  "end": 84.84,
+  "end": 84.78,
   "text": "L'agent analyse la télémétrie et propose de modifier la préférence BGP sur quarante-huit routeurs."
  },
  {
   "start": 86.4,
-  "end": 92.9,
+  "end": 92.95,
   "text": "Selon la politique de changement, la modification est approuvée, puis exécutée par la plateforme d'automatisation."
  },
  {
   "start": 93.2,
-  "end": 98.94,
+  "end": 99.24,
   "text": "L'humain et la politique, puis l'agent, puis l'automatisation approuvée. Exactement comme il se doit."
  },
  {
   "start": 101.0,
-  "end": 103.41,
+  "end": 103.54,
   "text": "L'agent rédige lui-même la configuration."
  },
  {
   "start": 103.8,
-  "end": 107.85,
+  "end": 107.69,
   "text": "Une route-map BGP qui augmente la préférence locale sur le chemin B."
  },
  {
   "start": 108.2,
-  "end": 112.17,
+  "end": 111.49,
   "text": "Et une politique SD-WAN, avec une classe de SLA pour les paiements."
  },
  {
   "start": 113.0,
-  "end": 118.2,
+  "end": 117.98,
   "text": "La syntaxe est valide. Les sessions BGP restent actives. Le changement est approuvé."
  },
  {
   "start": 119.0,
-  "end": 122.79,
+  "end": 122.69,
   "text": "Il est poussé sur quarante-huit routeurs et dans le gestionnaire SD-WAN."
  },
  {
   "start": 124.4,
-  "end": 126.95,
+  "end": 126.97,
   "text": "Toutes les vérifications que l'agent sait faire réussissent."
  },
  {
   "start": 135.0,
-  "end": 137.03,
+  "end": 136.95,
   "text": "Quarante-huit équipements sont mis à jour."
  },
  {
   "start": 138.0,
-  "end": 143.86,
+  "end": 143.04,
   "text": "Aucune erreur de configuration. Aucun équipement en panne. Les sessions BGP restent établies."
  },
  {
   "start": 144.2,
-  "end": 146.83,
+  "end": 146.78,
   "text": "La plateforme d'automatisation annonce un succès."
  },
  {
@@ -131,317 +131,322 @@
  },
  {
   "start": 163.4,
-  "end": 166.37,
+  "end": 166.27,
   "text": "La télémétrie réseau indépendante raconte une autre histoire."
  },
  {
   "start": 167.0,
-  "end": 169.71,
+  "end": 169.51,
   "text": "Le trafic a basculé vers un chemin plus contraint."
  },
  {
   "start": 172.6,
-  "end": 182.28,
+  "end": 182.08,
   "text": "L'utilisation du WAN passe de quarante-sept à quatre-vingt-deux pour cent. La latence, de dix-huit à soixante-trois millisecondes. La perte de paquets atteint deux pour cent."
  },
  {
   "start": 182.6,
-  "end": 187.09,
+  "end": 187.07,
   "text": "Pourtant, BGP reste établi, et tous les équipements sont en service."
  },
  {
   "start": 187.4,
-  "end": 193.22,
+  "end": 193.36,
   "text": "SevOne compare le comportement réel à la ligne de base de chaque chemin, et signale l'écart en quelques minutes."
  },
  {
   "start": 195.4,
-  "end": 200.23,
+  "end": 199.9,
   "text": "Voilà la distinction essentielle : un succès technique ne garantit pas le succès d'affaires."
  },
  {
   "start": 208.0,
-  "end": 210.89,
+  "end": 210.68,
   "text": "C'est là que l'observabilité change l'équation du risque."
  },
  {
   "start": 212.0,
-  "end": 217.68,
+  "end": 217.47,
   "text": "Lignes de base, flux et télémétrie en continu révèlent la dégradation pendant que les services fonctionnent."
  },
  {
   "start": 219.6,
-  "end": 225.43,
+  "end": 225.42,
   "text": "SevOne lève l'alerte à neuf heures vingt-quatre, avant que la perte ne s'étende et avant le premier appel client."
  },
  {
   "start": 227.6,
-  "end": 231.78,
+  "end": 231.97,
   "text": "N'attendez pas la panne. Détectez la dégradation pendant que tout fonctionne encore."
  },
  {
   "start": 238.0,
-  "end": 243.5,
+  "end": 243.23,
   "text": "Pour une banque, ce même écart devient de la latence transactionnelle et un enjeu de résilience opérationnelle."
  },
  {
-  "start": 247.6,
-  "end": 252.39,
+  "start": 247.4,
+  "end": 252.22,
   "text": "Pour un opérateur télécom, ce sont des pénalités de SLA et des escalades évitables."
  },
  {
-  "start": 257.2,
-  "end": 262.75,
+  "start": 256.8,
+  "end": 262.11,
   "text": "Pour le ferroviaire, la visibilité des communications empêche une dégradation de devenir une perturbation."
  },
  {
-  "start": 266.8,
-  "end": 272.12,
+  "start": 266.2,
+  "end": 272.95,
+  "text": "Pour le transport aérien, aérogares, portes et bagages dépendent du réseau : une dégradation devient des retards en cascade."
+ },
+ {
+  "start": 275.6,
+  "end": 280.71,
   "text": "Pour l'énergie, cette visibilité reste distincte des systèmes de sécurité et de contrôle."
  },
  {
-  "start": 276.4,
-  "end": 282.33,
+  "start": 285.0,
+  "end": 290.91,
   "text": "Pour les gouvernements et les services essentiels, c'est une preuve de disponibilité et de reddition de comptes."
  },
  {
-  "start": 286.0,
-  "end": 293.89,
+  "start": 294.4,
+  "end": 301.93,
   "text": "Et pour les plateformes d'IA, des chemins congestionnés laissent des GPU coûteux en attente. L'infrastructure d'IA est aussi une infrastructure réseau."
  },
  {
-  "start": 298.0,
-  "end": 300.86,
+  "start": 308.0,
+  "end": 311.02,
   "text": "Question suivante : que s'est-il passé, et où ?"
  },
  {
-  "start": 301.8,
-  "end": 307.22,
+  "start": 311.8,
+  "end": 317.43,
   "text": "SevOne remonte du symptôme à la portée, au chemin, aux flux, puis au changement qui en est la cause."
  },
  {
-  "start": 309.8,
-  "end": 317.35,
-  "text": "Latence sur le chemin des paiements. Trois circuits WAN en bordure de Toronto. Le meilleur chemin BGP a basculé vers un circuit d'un gigabit."
+  "start": 319.8,
+  "end": 327.96,
+  "text": "Latence sur le chemin des paiements. Trois circuits WAN en bordure de Toronto. Le meilleur chemin BGP a basculé vers le lien de relève à vingt-cinq gigabits."
  },
  {
-  "start": 319.0,
-  "end": 324.26,
+  "start": 329.0,
+  "end": 334.28,
   "text": "La réplication et les paiements le partagent. Le déclencheur : le changement de neuf heures vingt et une."
  },
  {
-  "start": 326.4,
-  "end": 333.25,
+  "start": 336.4,
+  "end": 343.08,
   "text": "Quoi, où, quelle anomalie, quel impact, quelle urgence : des réponses fondées sur des preuves, pas sur des opinions."
  },
  {
-  "start": 343.0,
-  "end": 347.4,
+  "start": 353.0,
+  "end": 357.24,
   "text": "Alors, qu'est-ce qui a mal tourné ? Trois problèmes, chacun valide en soi."
  },
  {
-  "start": 348.4,
-  "end": 356.52,
-  "text": "Un : la route-map s'applique à tous les préfixes, pas seulement au trafic de masse. Paiements et réplication passent sur le chemin d'un gigabit."
+  "start": 358.4,
+  "end": 366.72,
+  "text": "Un : la route-map s'applique à tous les préfixes, pas seulement au trafic de masse. Paiements et réplication passent sur le lien de relève de vingt-cinq gigabits."
  },
  {
-  "start": 357.6,
-  "end": 365.89,
+  "start": 367.6,
+  "end": 375.99,
   "text": "Deux : la classe de SLA tolère cent cinquante millisecondes et cinq pour cent de perte. Le chemin dégradé semble conforme, donc rien n'est redirigé."
  },
  {
-  "start": 368.6,
-  "end": 373.23,
+  "start": 378.6,
+  "end": 383.12,
   "text": "Trois : chaque changement a été validé pour la syntaxe. Aucun pour le résultat."
  },
  {
-  "start": 374.6,
-  "end": 382.68,
+  "start": 384.6,
+  "end": 392.43,
   "text": "SevOne a révélé les trois : les flux sur le chemin B, la latence et la perte des tunnels SD-WAN, et l'écart à la ligne de base."
  },
  {
-  "start": 387.0,
-  "end": 391.78,
+  "start": 397.0,
+  "end": 401.82,
   "text": "Détecter ne suffit pas à réduire le risque. L'information doit entrer dans vos processus."
  },
  {
-  "start": 393.6,
-  "end": 401.53,
+  "start": 403.6,
+  "end": 411.31,
   "text": "SevOne lève l'événement. Un incident ServiceNow s'ouvre automatiquement, avec l'élément de configuration, la priorité et les preuves."
  },
  {
-  "start": 402.4,
-  "end": 407.21,
+  "start": 412.4,
+  "end": 417.05,
   "text": "NetOps est alerté. DevSecOps est informé du changement initié par l'IA."
  },
  {
-  "start": 407.8,
-  "end": 413.35,
+  "start": 417.8,
+  "end": 423.3,
   "text": "Les niveaux un et deux sont automatisés : triage, corrélation et proposition de retour arrière."
  },
  {
-  "start": 413.8,
-  "end": 417.72,
+  "start": 423.8,
+  "end": 427.86,
   "text": "Le niveau trois est humain. Un ingénieur approuve le retour arrière."
  },
  {
-  "start": 418.2,
-  "end": 423.54,
+  "start": 428.2,
+  "end": 433.52,
   "text": "La plateforme d'automatisation l'exécute. SevOne reste l'observateur indépendant."
  },
  {
-  "start": 432.0,
-  "end": 437.04,
+  "start": 442.0,
+  "end": 447.21,
   "text": "Et une remédiation n'est pas terminée parce qu'une tâche réussit. Le réseau est mesuré de nouveau."
  },
  {
-  "start": 439.4,
-  "end": 445.18,
+  "start": 449.4,
+  "end": 455.27,
   "text": "L'utilisation revient à quarante-neuf pour cent. La latence à dix-neuf millisecondes. La perte disparaît."
  },
  {
-  "start": 446.8,
-  "end": 453.2,
+  "start": 456.8,
+  "end": 463.01,
   "text": "Alors seulement, le billet se ferme. Observer, détecter, comprendre, agir et vérifier."
  },
  {
-  "start": 462.0,
-  "end": 465.44,
+  "start": 472.0,
+  "end": 475.42,
   "text": "Voilà comment la preuve réseau soutient les contrôles de risque."
  },
  {
-  "start": 465.8,
-  "end": 471.76,
+  "start": 475.8,
+  "end": 481.41,
   "text": "Les contrôles préventifs encadrent ce qui peut changer. Les contrôles de détection révèlent les anomalies."
  },
  {
-  "start": 472.0,
-  "end": 478.35,
+  "start": 482.0,
+  "end": 487.95,
   "text": "Le diagnostic les explique. Les flux correctifs répondent. La vérification confirme le rétablissement."
  },
  {
-  "start": 478.6,
-  "end": 483.54,
+  "start": 488.6,
+  "end": 493.62,
   "text": "Et l'historique devient une preuve pour l'audit, les régulateurs et la diligence raisonnable."
  },
  {
-  "start": 484.4,
-  "end": 490.79,
+  "start": 494.4,
+  "end": 500.76,
   "text": "SevOne est une source importante de cette preuve, aux côtés des dossiers de changement, d'ITSM et de sécurité."
  },
  {
-  "start": 491.6,
-  "end": 494.41,
+  "start": 501.6,
+  "end": 504.63,
   "text": "Il ne remplace pas ces contrôles. Il les rend mesurables."
  },
  {
-  "start": 502.0,
-  "end": 505.35,
+  "start": 512.0,
+  "end": 515.36,
   "text": "La direction obtient une vue unique du risque opérationnel réseau."
  },
  {
-  "start": 505.6,
-  "end": 512.96,
+  "start": 515.6,
+  "end": 522.96,
   "text": "Les indicateurs sont définis par classe de service : disponibilité, performance, capacité, stabilité, changement et couverture."
  },
  {
-  "start": 513.2,
-  "end": 518.35,
+  "start": 523.2,
+  "end": 528.1,
   "text": "Et un nouvel indicateur pour l'ère agentique : le taux d'assurance des résultats de changement."
  },
  {
-  "start": 518.6,
-  "end": 522.44,
+  "start": 528.6,
+  "end": 532.53,
   "text": "La part des changements dont le résultat réseau a vraiment été vérifié."
  },
  {
-  "start": 532.0,
-  "end": 534.82,
+  "start": 542.0,
+  "end": 544.54,
   "text": "Le dossier d'affaires va au-delà des pannes évitées."
  },
  {
-  "start": 535.6,
-  "end": 543.15,
+  "start": 545.6,
+  "end": 553.05,
   "text": "Outils consolidés, lignes de base automatisées, billets automatiques et synchronisation CMDB réduisent l'effort de chaque incident."
  },
  {
-  "start": 543.8,
-  "end": 547.11,
+  "start": 553.8,
+  "end": 557.12,
   "text": "Mais n'estimez pas les économies à partir d'hypothèses marketing."
  },
  {
-  "start": 547.6,
-  "end": 553.63,
+  "start": 557.6,
+  "end": 563.43,
   "text": "Mesurez les coûts actuels : outils, administration, incidents, rapports et intégration."
  },
  {
-  "start": 554.6,
-  "end": 559.05,
+  "start": 564.6,
+  "end": 569.21,
   "text": "Faites une preuve de valeur, mesurez l'écart, et bâtissez le dossier sur des faits."
  },
  {
-  "start": 561.6,
-  "end": 565.54,
+  "start": 571.6,
+  "end": 576.05,
   "text": "C'est ainsi qu'on prouve un coût total et des dépenses d'exploitation plus bas."
  },
  {
-  "start": 577.0,
-  "end": 580.19,
+  "start": 587.0,
+  "end": 589.58,
   "text": "L'agent d'IA vous dit que la tâche est terminée."
  },
  {
-  "start": 580.8,
-  "end": 584.56,
+  "start": 590.8,
+  "end": 594.56,
   "text": "La plateforme d'automatisation vous dit que le changement est appliqué."
  },
  {
-  "start": 584.8,
-  "end": 587.03,
+  "start": 594.8,
+  "end": 597.24,
   "text": "SevOne vous dit ce qui est arrivé au réseau."
  },
  {
-  "start": 588.6,
-  "end": 593.59,
+  "start": 598.6,
+  "end": 604.01,
   "text": "L'entreprise a besoin des trois. Seule l'observabilité indépendante vérifie le résultat."
  },
  {
-  "start": 599.4,
-  "end": 607.13,
+  "start": 609.4,
+  "end": 617.1,
   "text": "Si un agent d'IA modifiait cinq cents équipements réseau cette nuit, combien de temps vous faudrait-il pour savoir si chaque changement a produit le résultat attendu ?"
  },
  {
-  "start": 619.4,
-  "end": 624.37,
+  "start": 629.4,
+  "end": 634.23,
   "text": "Commencez par une évaluation de la préparation et de l'observabilité de votre réseau agentique."
  },
  {
-  "start": 624.6,
-  "end": 631.72,
+  "start": 634.6,
+  "end": 642.17,
   "text": "Visibilité, cas d'usage de l'IA, dépendances critiques, couverture de télémétrie, et visibilité BGP et WAN."
  },
  {
-  "start": 633.4,
-  "end": 640.62,
+  "start": 643.4,
+  "end": 650.08,
   "text": "Lignes de base, validation des changements, processus d'incident, angles morts, et assurance en boucle fermée."
  },
  {
-  "start": 647.0,
-  "end": 651.56,
+  "start": 657.0,
+  "end": 661.39,
   "text": "À l'ère de l'IA agentique, l'autonomie sans observabilité, c'est un risque."
  },
  {
-  "start": 651.8,
-  "end": 653.99,
+  "start": 661.8,
+  "end": 663.96,
   "text": "L'avenir n'est pas seulement le réseau autonome."
  },
  {
-  "start": 654.8,
-  "end": 657.8,
+  "start": 664.8,
+  "end": 667.78,
   "text": "C'est le réseau autonome, avec une assurance continue."
  },
  {
-  "start": 659.8,
-  "end": 660.93,
+  "start": 669.8,
+  "end": 670.91,
   "text": "IBM SevOne."
  }
 ]

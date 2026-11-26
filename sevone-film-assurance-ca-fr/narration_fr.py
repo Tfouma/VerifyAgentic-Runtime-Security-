@@ -16,7 +16,19 @@ from pathlib import Path
 import numpy as np
 
 HERE = Path(__file__).resolve().parent
-from cues_fr import CUES, SPOKEN  # noqa: E402
+from cues_fr import CUES, SPOKEN, EN_TERMS, EN_SAY  # noqa: E402
+EN_RE = re.compile(r'(?<![\w-])(' + '|'.join(re.escape(t) for t in sorted(EN_TERMS, key=len, reverse=True)) + r')(?![\w-])')
+
+
+def segments(text):
+    """Split a French line into (segment, lang) parts; technical terms in EN_TERMS are English."""
+    out, pos = [], 0
+    for m in EN_RE.finditer(text):
+        if m.start() > pos: out.append((text[pos:m.start()], 'fr'))
+        out.append((EN_SAY.get(m.group(0), m.group(0)), 'en'))
+        pos = m.end()
+    if pos < len(text): out.append((text[pos:], 'fr'))
+    return [(t, l) for t, l in out if t.strip()]
 
 SR = 44100
 DUR = float(json.loads((HERE / 'timeline.json').read_text())['duration'])
@@ -62,7 +74,8 @@ def make_engine(a):
         from kokoro_onnx import Kokoro
         k = Kokoro(str(Path(a.model) / 'model.onnx'), str(Path(a.model) / 'voices.npz'))
         def synth(t):
-            audio, sr = k.create(t, voice=a.voice, speed=a.speed, lang='fr-fr')
+            ph = ' '.join(k.tokenizer.phonemize(seg.strip(), 'en-us' if l == 'en' else 'fr-fr') for seg, l in segments(t))
+            audio, sr = k.create(ph, voice=a.voice, speed=a.speed, lang='fr-fr', is_phonemes=True)
             return np.asarray(audio, dtype=np.float64), sr
         return synth
     if a.engine == 'piper':
@@ -70,10 +83,15 @@ def make_engine(a):
         from piper.config import SynthesisConfig
         v = PiperVoice.load(a.voice)
         cfg = SynthesisConfig(speaker_id=a.speaker, length_scale=1.0 / a.speed, noise_scale=0.6, noise_w_scale=0.75)
+        from piper.phonemize_espeak import EspeakPhonemizer
+        esp = EspeakPhonemizer()
         def synth(t):
-            chunks = list(v.synthesize(t, syn_config=cfg))
-            x = np.concatenate([c.audio_float_array for c in chunks])
-            return x.astype(np.float64), chunks[0].sample_rate
+            ph = []
+            for seg, l in segments(t):
+                for sent in esp.phonemize('en-us' if l == 'en' else 'fr', seg.strip()):
+                    ph += sent + [' ']
+            x = v.phoneme_ids_to_audio(v.phonemes_to_ids(ph[:-1]), cfg)
+            return np.asarray(x, dtype=np.float64), v.config.sample_rate
         return synth
     if a.engine == 'chatterbox':
         import torch
@@ -102,7 +120,7 @@ def main():
     track = np.zeros(int(DUR * SR)); out, problems = [], []
     for i, (start, text) in enumerate(cues):
         limit = (cues[i + 1][0] - GAP) if i + 1 < len(cues) else DUR - 1.5
-        x, sr = synth(spoken(text))
+        x, sr = synth(spoken(text) if a.engine == 'chatterbox' else text)
         x = trim(resample(x, sr))
         x = x / (np.abs(x).max() + 1e-9) * 0.9
         room = limit - start; length = len(x) / SR; tempo = 1.0

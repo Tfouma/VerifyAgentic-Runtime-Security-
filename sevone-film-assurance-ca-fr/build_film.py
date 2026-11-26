@@ -55,17 +55,17 @@ CSS = r"""
 .iss .lb.sv { color: var(--cyan); } .iss .lb.fxl { color: var(--green); }
 
 /* ---------- Assurance film ---------- */
-.ind-grid { position: absolute; left: 96px; right: 96px; top: 270px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
-.ind { padding: 22px 24px; height: 250px; box-sizing: border-box; transition: none; }
+.ind-grid { position: absolute; left: 80px; right: 80px; top: 250px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.ind { padding: 18px 20px; height: 300px; box-sizing: border-box; transition: none; }
 .ind .k { font-family: var(--mono); font-size: 15px; letter-spacing: .22em; color: var(--cyan); }
-.ind .v { font-size: 26px; font-weight: 600; margin-top: 10px; line-height: 1.2; }
-.ind .s { font-size: 17px; color: var(--dim); margin-top: 10px; line-height: 1.4; }
+.ind .v { font-size: 23px; font-weight: 600; margin-top: 10px; line-height: 1.2; }
+.ind .s { font-size: 15.5px; color: var(--dim); margin-top: 10px; line-height: 1.4; }
 .ind.dim { opacity: .38; }
 .ind.act { border-color: var(--cyan); box-shadow: 0 0 40px rgba(51,177,255,.25); background: rgba(20,36,66,.92); }
-.ind .path { font-family: var(--mono); font-size: 14px; color: #9fb4da; margin-top: 10px; line-height: 1.45; }
+.ind .path { font-family: var(--mono); font-size: 13px; color: #9fb4da; margin-top: 10px; line-height: 1.45; }
 .ind .kpis { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-.ind .kpis span { font-family: var(--mono); font-size: 13px; padding: 3px 8px; border-radius: 6px; border: 1px solid var(--line-2); color: #cfe0ff; }
-.ind .note { font-family: var(--mono); font-size: 13px; color: var(--yellow); margin-top: 8px; }
+.ind .kpis span { font-family: var(--mono); font-size: 12px; padding: 3px 8px; border-radius: 6px; border: 1px solid var(--line-2); color: #cfe0ff; }
+.ind .note { font-family: var(--mono); font-size: 12px; color: var(--yellow); margin-top: 8px; }
 .ind-full { position: absolute; left: 96px; right: 96px; top: 270px; height: 600px; display: grid; grid-template-columns: 1.15fr 1fr; gap: 26px; }
 .ind-full .panel { padding: 28px 32px; }
 .ind-full .big { font-size: 56px; }
@@ -205,6 +205,8 @@ INDS = [
      'Pénalités de SLA, dégradation de service, escalades évitables', ['perte', 'gigue', 'utilisation', 'état des pairs BGP', 'SLA'], ''),
     ('FERROVIAIRE', 'Communications d’exploitation', 'Gares · dépôts → WAN → systèmes de contrôle d’exploitation → CD',
      'Dégradation des communications devenant perturbation opérationnelle', ['disponibilité', 'latence', 'erreurs de lien', 'redondance'], 'Assurance des communications, pas un système de sécurité ferroviaire'),
+    ('TRANSPORT AÉRIEN', 'Aéroports et transporteurs', 'Aérogares · portes · bagages → WAN / SD-WAN → centre de contrôle des opérations → CD et nuage',
+     'Retards en cascade : enregistrement, embarquement, bagages, opérations au sol', ['disponibilité', 'latence', 'gigue', 'perte', 'redondance'], 'Assurance réseau, pas un système de contrôle de la circulation aérienne'),
     ('ÉNERGIE', 'Communications du réseau et des sites', 'Postes · sites → WAN → centre de contrôle → CD et nuage',
      'Perte de visibilité sur les communications d’exploitation', ['disponibilité', 'latence', 'utilisation', 'redondance'], 'La surveillance reste distincte de la sécurité et du contrôle OT'),
     ('GOUVERNEMENT', 'Services aux citoyens et essentiels', 'Portail citoyen → CD gouvernemental → nuage → réseaux des organismes',
@@ -215,7 +217,7 @@ INDS = [
 
 ind_cards = ''.join(f'''<div data-in="{0.6 + i * 0.25:.2f}" data-fx="up"><div class="panel ind dim" id="ind{i}"><div class="k">{k}</div><div class="v">{v}</div><div class="path">{p}</div><div class="s"><b style="color:#ffb3b8;font-weight:600">Risque ·</b> {r}</div><div class="kpis">{''.join(f'<span>{x}</span>' for x in kp)}</div>{f'<div class="note">{n}</div>' if n else ''}</div></div>''' for i, (k, v, p, r, kp, n) in enumerate(INDS))
 
-s1_tiles = ''.join(f'<div data-in="{1.4 + i * 0.35:.2f}" data-fx="up"><div class="panel ind" style="height:200px"><div class="k">{k}</div><div class="v">{v}</div><div class="s">{r}</div></div></div>' for i, (k, v, p, r, kp, n) in enumerate(INDS))
+s1_tiles = ''.join(f'<div data-in="{1.4 + i * 0.35:.2f}" data-fx="up"><div class="panel ind" style="height:215px"><div class="k">{k}</div><div class="v">{v}</div><div class="s">{r}</div></div></div>' for i, (k, v, p, r, kp, n) in enumerate(INDS))
 
 RCROWS = [
     ('Préventif', 'Ce changement doit-il avoir lieu ?', 'Lignes de base et capacité éclairent la décision', 'IAM · PAM · politique de changement · CAB · garde-fous'),
@@ -256,9 +258,9 @@ SCENES = f"""  <!-- S0 · Cold open -->
 
   <!-- S17 · Network architecture -->
   {sec(17)}
-    {stephead('LE RÉSEAU', 'Centres de données canadiens · sites américains · BGP · SD-WAN', 'Canada et États-Unis : <span class="cyan">un seul WAN hybride</span>.')}
+    {stephead('LE RÉSEAU', 'Centres de données canadiens · sites américains · BGP · SD-WAN', 'Canada et États-Unis : <span class="cyan">un maillage à haute disponibilité</span>.')}
     <div class="panel" id="arch17" data-in="1"><h4>Topologie · cœur MPLS · superposition SD-WAN · bordure BGP</h4><svg id="arch17svg" width="1180" height="600"></svg></div>
-    <div class="panel" id="facts17" data-in="1.6"><h4>Architecture</h4><div class="kv" data-in="3.0" data-fx="left"><div class="k">Centres de données</div><div class="v">Montréal · Toronto · Vancouver</div></div><div class="kv" data-in="4.1" data-fx="left"><div class="k">Sites américains</div><div class="v">New York · Chicago · Atlanta · San Francisco</div></div><div class="kv" data-in="5.2" data-fx="left"><div class="k">Cœur</div><div class="v">MPLS · chemin A 10 Gb/s · chemin B 1 Gb/s</div></div><div class="kv" data-in="6.3" data-fx="left"><div class="k">Routage</div><div class="v">BGP AS 65010 · iBGP entre CD · eBGP vers 2 FAI</div></div><div class="kv" data-in="7.4" data-fx="left"><div class="k">Superposition</div><div class="v">SD-WAN · transports MPLS + Internet</div></div><div class="kv" data-in="8.5" data-fx="left"><div class="k">Flux critiques</div><div class="v">paiements · réplication · VoIP · SAP</div></div><div class="kv" data-in="9.6" data-fx="left"><div class="k">Observé par</div><div class="v">SevOne · SNMP · flux · gNMI · tunnels SD-WAN</div></div></div>
+    <div class="panel" id="facts17" data-in="1.6"><h4>Architecture</h4><div class="kv" data-in="3.0" data-fx="left"><div class="k">Centres de données</div><div class="v">Montréal · Toronto · Vancouver</div></div><div class="kv" data-in="4.1" data-fx="left"><div class="k">Sites américains</div><div class="v">New York · Chicago · Atlanta · San Francisco</div></div><div class="kv" data-in="5.2" data-fx="left"><div class="k">Cœur</div><div class="v">Maillage MPLS entre CD · 100 Gb/s par paire · relève 25 Gb/s</div></div><div class="kv" data-in="6.3" data-fx="left"><div class="k">Routage</div><div class="v">BGP AS 65010 · iBGP entre CD · eBGP vers 2 FAI</div></div><div class="kv" data-in="7.4" data-fx="left"><div class="k">Superposition</div><div class="v">SD-WAN · transports MPLS + Internet</div></div><div class="kv" data-in="8.5" data-fx="left"><div class="k">Flux critiques</div><div class="v">paiements · réplication · VoIP · SAP</div></div><div class="kv" data-in="9.6" data-fx="left"><div class="k">Observé par</div><div class="v">SevOne · SNMP · flux · gNMI · tunnels SD-WAN</div></div></div>
   </section>
 
   <!-- S2 · Agentic operations -->
@@ -338,9 +340,9 @@ SCENES = f"""  <!-- S0 · Cold open -->
     </div>
   </section>
 
-  <!-- S6 · Six industries -->
+  <!-- S6 · Seven industries -->
   {sec(6)}
-    {stephead('03 — IMPACT', 'Même signal · risques d’affaires différents', 'Un écart. <span class="cyan">Six conséquences d’affaires.</span>')}
+    {stephead('03 — IMPACT', 'Même signal · risques d’affaires différents', 'Un écart. <span class="cyan">Sept conséquences d’affaires.</span>')}
     <div class="ind-grid">{ind_cards}</div>
   </section>
 
@@ -350,13 +352,13 @@ SCENES = f"""  <!-- S0 · Cold open -->
     <div id="rca7">
       <div class="panel rca" data-in="3" data-fx="left"><div class="k">SYMPTÔME</div><div class="v">Latence de 63 ms sur le chemin des paiements (ligne de base 18 ms)</div></div>
       <div class="panel rca" data-in="6" data-fx="left"><div class="k">PORTÉE</div><div class="v">Bordure de Toronto · 3 circuits WAN · 2 services critiques</div></div>
-      <div class="panel rca" data-in="9" data-fx="left"><div class="k">CHEMIN</div><div class="v">Meilleur chemin BGP : du chemin A (10 Gb/s) au chemin B (1 Gb/s)</div></div>
+      <div class="panel rca" data-in="9" data-fx="left"><div class="k">CHEMIN</div><div class="v">Meilleur chemin BGP : du chemin A (100 Gb/s) au chemin B, relève 25 Gb/s</div></div>
       <div class="panel rca" data-in="12" data-fx="left"><div class="k">FLUX</div><div class="v">Principaux flux sur le chemin B : réplication 38 % · paiements 22 %</div></div>
       <div class="panel rca" data-in="15" data-fx="left" style="border-color:rgba(241,194,27,.7)"><div class="k" style="color:var(--yellow)">CHANGEMENT</div><div class="v">09 h 21 politique BGP · CHG0052418 · proposé par l’IA, approuvé</div></div>
     </div>
     <div class="panel" id="br7" data-in="1.4"><h4>Rayon d’impact</h4>
       <div class="brn" id="b0"><span>Chemin BGP · chemin B</span><span class="m">route</span></div><div class="brd">↓</div>
-      <div class="brn" id="b1"><span>Circuit WAN · 1 Gb/s</span><span class="m">util. 82 %</span></div><div class="brd">↓</div>
+      <div class="brn" id="b1"><span>Relève TOR–MTL · 25 Gb/s</span><span class="m">util. 82 %</span></div><div class="brd">↓</div>
       <div class="brn" id="b2"><span>Bordure de Toronto</span><span class="m">rejets en file</span></div><div class="brd">↓</div>
       <div class="brn" id="b3"><span>Connectivité infonuagique</span><span class="m">63 ms</span></div><div class="brd">↓</div>
       <div class="brn" id="b4"><span>Service bancaire critique</span><span class="m">à risque</span></div>
@@ -369,7 +371,7 @@ SCENES = f"""  <!-- S0 · Cold open -->
     {stephead('04 — DIAGNOSTIQUER', 'Configuration valide · mauvais résultat', 'Configuration valide. <span class="red">Mauvais résultat.</span> Trois problèmes expliqués.')}
     <div class="panel iss" style="left:96px" data-in="6" data-fx="up"><div class="k">PROBLÈME 1 · PORTÉE DE LA ROUTE-MAP BGP</div><div class="h">La route-map s’applique à tous les préfixes</div><div class="cl">match ip address prefix-list ANY
 (0.0.0.0/0 le 32) → local-pref 200</div>
-<div class="lb">Effet</div><div class="tx">Paiements et réplication passent sur le chemin B à 1 Gb/s, avec le trafic de masse visé.</div><div class="lb sv" data-in="9.0" data-fx="fade">Ce que SevOne a vu</div><div class="tx ev" data-in="9.0" data-fx="fade">Principaux flux sur le chemin B : réplication 38 %, paiements 22 %. Meilleur chemin BGP modifié sur 96 sessions (données BGP gNMI, préversion publique).</div>
+<div class="lb">Effet</div><div class="tx">Paiements et réplication passent sur le chemin B, la relève à 25 Gb/s, avec le trafic de masse visé.</div><div class="lb sv" data-in="9.0" data-fx="fade">Ce que SevOne a vu</div><div class="tx ev" data-in="9.0" data-fx="fade">Principaux flux sur le chemin B : réplication 38 %, paiements 22 %. Meilleur chemin BGP modifié sur 96 sessions (données BGP gNMI, préversion publique).</div>
 <div class="lb fxl" data-in="11.0" data-fx="fade">Correctif</div><div class="tx fx" data-in="11.0" data-fx="fade">Cibler uniquement la prefix-list du trafic de masse ; garder les paiements sur le chemin A.</div></div><div class="panel iss" style="left:680px" data-in="15.4" data-fx="up"><div class="k">PROBLÈME 2 · SEUILS DE SLA SD-WAN</div><div class="h">La classe de SLA est bien trop permissive</div><div class="cl">sla-class PAYMENTS-SLA
 latency 150 · loss 5</div>
 <div class="lb">Effet</div><div class="tx">Les paiements tournent normalement à 18 ms et 0,1 % de perte. À 63 ms et 2,1 %, le chemin reste « conforme » : le SD-WAN ne redirige rien.</div><div class="lb sv" data-in="18.4" data-fx="fade">Ce que SevOne a vu</div><div class="tx ev" data-in="18.4" data-fx="fade">Surveillance des tunnels SD-WAN TOR–MTL : latence 63 ms, perte 2,1 %, gigue en hausse, alors que la politique déclare le SLA respecté.</div>
@@ -501,20 +503,20 @@ script_head = script_head.replace('const DURATION = 166;', 'const TIMELINE = ' +
 script_head = re.sub(r'const IMPACTS = \[.*?\];', 'const IMPACTS = TIMELINE.impacts;', script_head)
 script_head = re.sub(r'/\*NARRATION\*/.*?/\*END_NARRATION\*/', '/*NARRATION*/[]/*END_NARRATION*/', script_head, flags=re.S)
 UCX = {
- 's17': ('Who is involved and where?', 'DCs in Montréal, Toronto, Vancouver; U.S. sites over SD-WAN; MPLS path A 10 Gb/s and path B 1 Gb/s; BGP to ISPs and cloud.', 'One observed hybrid WAN.'),
- 's18': ('The agent writes BGP and SD-WAN config.', 'Route-map raising local-pref on path B; SD-WAN SLA class for payments; syntax, lint, dry run and approval all pass.', 'Pushed to 48 routers and the SD-WAN Manager.'),
- 's19': ('Valid configuration, wrong outcome.', 'Route-map scope too broad; SD-WAN SLA thresholds too loose; no post-change outcome check.', 'All three exposed by SevOne flows, SD-WAN tunnel metrics and baseline deviation.'),
- 's3': ('An AI-proposed, approved BGP change runs on 48 routers.', 'The automation platform reports 48/48 applied, 0 errors, BGP established.', 'Technical success, but the business outcome is still unknown.'),
- 's4': ('Traffic moves onto a constrained path; nothing is down.', 'SevOne compares live utilization, latency and loss with each path’s learned baseline.', 'Deviation flagged while BGP is still established.'),
- 's5': ('Degradation builds minute by minute.', 'Baselines, flow, streaming telemetry and synthetics surface it at 09:24.', 'Detected before packet loss spreads and before users call.'),
- 's6': ('The same deviation means different risks per industry.', 'Industry KPIs per critical path: banking, telecom, rail, energy, government, AI and data.', 'Network signals translated into business risk.'),
- 's7': ('Teams need the cause, not just an alert.', 'Symptom → scope → path → flow → change, with the blast radius.', 'The 09:21 change identified with evidence.'),
- 's8': ('Insight must enter existing processes.', 'SevOne event → automatic ServiceNow incident with CI and evidence → routing → L1/L2 automated → L3 approval.', 'Controlled rollback; SevOne stays the independent observer.'),
- 's9': ('A job reporting success is not proof.', 'SevOne re-measures utilization, latency and loss against the baseline.', 'Ticket closes only after verified recovery.'),
- 's10': ('Risk and audit teams need evidence.', 'Network evidence for preventive, detective, diagnostic, corrective, verification and evidence controls.', 'Measurable controls and due diligence.'),
- 's11': ('Executives need one risk view.', 'KPIs set per service class plus the change outcome assurance rate.', 'Network operational risk on one page.'),
- 's12': ('Savings claims need proof.', 'Baseline six cost pools, run a proof of value, measure the delta.', 'A TCO and OPEX case built on evidence.'),
- 's15': ('Where do you stand today?', 'Ten-point Agentic Network Readiness & Observability Assessment.', 'Gap map, prioritized use cases, proof-of-value plan.'),
+ 's17': ('Qui est concerné, et où ?', 'CD à Montréal, Toronto et Vancouver en maillage haute disponibilité : 100 Gb/s par paire, relève 25 Gb/s ; sites américains en SD-WAN ; BGP vers les FAI et le nuage.', 'Un réseau hybride entièrement observé.'),
+ 's18': ('L’agent rédige la configuration BGP et SD-WAN.', 'Route-map qui hausse la préférence locale sur le chemin B ; classe de SLA SD-WAN pour les paiements ; syntaxe, lint, essai à blanc et approbation réussis.', 'Poussée sur 48 routeurs et dans le gestionnaire SD-WAN.'),
+ 's19': ('Configuration valide, mauvais résultat.', 'Portée de la route-map trop large ; seuils de SLA SD-WAN trop permissifs ; aucune vérification du résultat après le changement.', 'Les trois révélés par les flux SevOne, les métriques des tunnels SD-WAN et l’écart à la ligne de base.'),
+ 's3': ('Un changement BGP proposé par l’IA et approuvé s’exécute sur 48 routeurs.', 'La plateforme d’automatisation annonce 48/48 appliqués, 0 erreur, BGP établi.', 'Succès technique, mais le résultat d’affaires reste inconnu.'),
+ 's4': ('Le trafic passe sur la relève à 25 Gb/s ; rien n’est en panne.', 'SevOne compare utilisation, latence et perte à la ligne de base apprise de chaque chemin.', 'Écart signalé alors que BGP reste établi.'),
+ 's5': ('La dégradation s’installe minute après minute.', 'Lignes de base, flux, télémétrie en continu et tests synthétiques la révèlent à 9 h 24.', 'Détectée avant que la perte ne s’étende et avant les appels.'),
+ 's6': ('Le même écart, des risques différents selon le secteur.', 'KPI sectoriels par chemin critique : banque, télécom, ferroviaire, transport aérien, énergie, gouvernement, IA et données.', 'Les signaux réseau traduits en risque d’affaires.'),
+ 's7': ('Les équipes ont besoin de la cause, pas seulement d’une alerte.', 'Symptôme → portée → chemin → flux → changement, avec le rayon d’impact.', 'Le changement de 9 h 21 identifié, preuves à l’appui.'),
+ 's8': ('L’information doit entrer dans les processus existants.', 'Événement SevOne → incident ServiceNow automatique avec CI et preuves → acheminement → N1/N2 automatisés → approbation N3.', 'Retour arrière contrôlé ; SevOne reste l’observateur indépendant.'),
+ 's9': ('Une tâche réussie n’est pas une preuve.', 'SevOne mesure de nouveau utilisation, latence et perte face à la ligne de base.', 'Le billet se ferme seulement après un rétablissement vérifié.'),
+ 's10': ('Les équipes de risque et d’audit ont besoin de preuves.', 'Preuves réseau pour les contrôles préventifs, de détection, de diagnostic, correctifs, de vérification et de preuve.', 'Des contrôles mesurables et une diligence raisonnable.'),
+ 's11': ('La direction a besoin d’une vue unique du risque.', 'KPI par classe de service, plus le taux d’assurance des résultats de changement.', 'Le risque opérationnel réseau sur une page.'),
+ 's12': ('Les économies doivent être prouvées.', 'Mesurer six postes de coûts, faire une preuve de valeur, mesurer l’écart.', 'Un dossier de coût total et d’OPEX fondé sur des preuves.'),
+ 's15': ('Où en êtes-vous aujourd’hui ?', 'Évaluation en dix points de la préparation et de l’observabilité du réseau agentique.', 'Carte des écarts, cas d’usage priorisés, plan de preuve de valeur.'),
 }
 UC = [[str(i + 1).zfill(2), x['name'], x['purpose'], x['start'], *UCX[x['id']]] for i, x in enumerate([x for x in TL['scenes'] if x['id'] in UCX])]
 script_head = re.sub(r'const USE_CASES = \[.*?\];', lambda m: 'const USE_CASES = ' + json.dumps(UC) + ';', script_head, flags=re.S)
@@ -575,14 +577,15 @@ const pipeLinks = [0, 1, 2, 3, 4, 5].map(i => { const x1 = 216 + i * 252, x2 = x
   svgEl('path', { d: `M${x2 - 8},${y - 7} L${x2},${y} L${x2 - 8},${y + 7}`, fill: 'none', stroke: '#4589ff', 'stroke-width': 3 }, pipe);
   return { x1, x2, y }; });
 const pulse = svgEl('circle', { r: 9, fill: '#fff', opacity: 0 }, pipe);
-const IND_T = [1, 10.6, 20.2, 29.8, 39.4, 49];
+const IND_T = [1, 10.4, 19.8, 29.2, 38.6, 48, 57.4];
 
 // Canada–U.S. architecture topology
 const A17 = $('#arch17svg');
 const N17 = { van: [140, 150, 'CD Vancouver', 'dc'], tor: [640, 200, 'CD Toronto', 'dc'], mtl: [1030, 140, 'CD Montréal', 'dc'],
   cloud: [380, 60, 'Nuage · AWS · Azure', 'cloud'], isp: [860, 50, 'Internet · 2 FAI', 'isp'],
   sfo: [140, 470, 'San Francisco', 'site'], chi: [520, 430, 'Chicago', 'site'], nyc: [1000, 440, 'New York', 'site'], atl: [760, 540, 'Atlanta', 'site'] };
-const L17 = [ ['van','tor','#4589ff',4,'',0], ['tor','mtl','#4589ff',7,'CHEMIN A · MPLS 10 Gb/s',0], ['van','mtl','#4589ff',2,'',0], ['tor','mtl','#a56eff',3,'CHEMIN B · 1 Gb/s',1],
+const L17 = [ ['van','tor','#4589ff',6,'',0], ['tor','mtl','#4589ff',6,'CHEMIN A',0], ['van','mtl','#4589ff',6,'',0],
+  ['van','tor','#a56eff',2.5,'',1], ['tor','mtl','#a56eff',2.5,'CHEMIN B',1], ['van','mtl','#a56eff',2.5,'',1],
   ['sfo','van','#33b1ff',2,'',2], ['chi','tor','#33b1ff',2,'',2], ['atl','tor','#33b1ff',2,'',2], ['nyc','mtl','#33b1ff',2,'',2], ['nyc','tor','#33b1ff',1.5,'',2],
   ['van','cloud','#8b97b3',1.5,'',3], ['tor','cloud','#8b97b3',1.5,'',3], ['tor','isp','#8b97b3',1.5,'eBGP',3], ['mtl','isp','#8b97b3',1.5,'',3] ];
 { const by = 330; svgEl('line', { x1: 0, x2: 1180, y1: by, y2: by, stroke: '#fa4d56', 'stroke-opacity': .5, 'stroke-dasharray': '8 7', 'stroke-width': 1.5 }, A17);
@@ -590,11 +593,12 @@ const L17 = [ ['van','tor','#4589ff',4,'',0], ['tor','mtl','#4589ff',7,'CHEMIN A
   const t2 = svgEl('text', { x: 20, y: by + 22, fill: '#8b97b3', 'font-size': 13, 'letter-spacing': '.2em', 'font-family': 'IBM Plex Mono, monospace' }, A17); t2.textContent = 'ÉTATS-UNIS'; }
 const pk17 = L17.map(([a, b, c, w, lab, kind], i) => {
   let [x1, y1] = N17[a], [x2, y2] = N17[b];
-  const off = kind === 1 ? 46 : 0; // path B drawn parallel, below path A
-  y1 += off; y2 += off;
+  if (kind === 1) { // 25 Gb/s backup drawn parallel to its 100 Gb/s primary (HA mesh)
+    const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy), o = 26, nx = -dy / L * o, ny = dx / L * o, mx = (x1 + x2) / 2 - 603, my = (y1 + y2) / 2 - 163, sg = (nx * mx + ny * my) >= 0 ? 1 : -1; // outward from the DC triangle
+    x1 += nx * sg; y1 += ny * sg; x2 += nx * sg; y2 += ny * sg; }
   const g = svgEl('g', { 'data-in': String(kind === 0 ? 2 : kind === 1 ? 3.2 : kind === 2 ? 4.2 : 5.2), 'data-fx': 'fade' }, A17);
   svgEl('line', Object.assign({ x1, y1, x2, y2, stroke: c, 'stroke-opacity': .55, 'stroke-width': w }, kind >= 1 ? { 'stroke-dasharray': kind === 2 ? '9 7' : kind === 3 ? '3 5' : '12 6' } : {}), g);
-  if (lab) { const t = svgEl('text', { x: (x1 + x2) / 2, y: (y1 + y2) / 2 + (kind === 1 ? 26 : -14), 'text-anchor': 'middle', fill: c, 'font-size': 14, 'font-family': 'IBM Plex Mono, monospace' }, g); t.textContent = lab; }
+  if (lab) { const t = svgEl('text', { x: (x1 + x2) / 2, y: (y1 + y2) / 2 + (kind === 1 ? 24 : -14), 'text-anchor': 'middle', fill: c, 'font-size': 14, 'font-family': 'IBM Plex Mono, monospace' }, g); t.textContent = lab; }
   const p = svgEl('circle', { r: 4, fill: kind === 3 ? '#c6d0e6' : c }, g);
   return { x1, y1, x2, y2, p, sp: .18 + (i % 4) * .06, off: i * .29 };
 });
@@ -605,9 +609,9 @@ for (const k in N17) { const [x, y, label, kind] = N17[k];
   else svgEl('circle', { r: 12, fill: kind === 'cloud' ? '#a56eff' : '#8b97b3', stroke: '#04060d', 'stroke-width': 3 }, g);
   const t = svgEl('text', { y: kind === 'dc' ? -26 : -18, 'text-anchor': 'middle', fill: '#dfe6f5', 'font-size': kind === 'dc' ? 18 : 15, 'font-weight': kind === 'dc' ? 600 : 400, 'font-family': 'IBM Plex Sans, sans-serif' }, g); t.textContent = label; }
 { const lg = svgEl('g', { transform: 'translate(20,585)' }, A17);
-  [['Cœur MPLS', '#4589ff', ''], ['Chemin B', '#a56eff', '12 6'], ['Superposition SD-WAN', '#33b1ff', '9 7'], ['BGP · nuage / FAI', '#8b97b3', '3 5']].forEach(([n, c, d], i) => {
-    svgEl('line', Object.assign({ x1: i * 220, x2: i * 220 + 28, y1: -5, y2: -5, stroke: c, 'stroke-width': 3 }, d ? { 'stroke-dasharray': d } : {}), lg);
-    const t = svgEl('text', { x: i * 220 + 38, y: 0, fill: '#8b97b3', 'font-size': 14, 'font-family': 'IBM Plex Mono, monospace' }, lg); t.textContent = n; }); }
+  [['Cœur MPLS · 100 Gb/s', '#4589ff', ''], ['Relève · 25 Gb/s', '#a56eff', '12 6'], ['Superposition SD-WAN', '#33b1ff', '9 7'], ['BGP · nuage / FAI', '#8b97b3', '3 5']].forEach(([n, c, d], i) => {
+    svgEl('line', Object.assign({ x1: i * 262, x2: i * 262 + 28, y1: -5, y2: -5, stroke: c, 'stroke-width': 3 }, d ? { 'stroke-dasharray': d } : {}), lg);
+    const t = svgEl('text', { x: i * 262 + 38, y: 0, fill: '#8b97b3', 'font-size': 14, 'font-family': 'IBM Plex Mono, monospace' }, lg); t.textContent = n; }); }
 
 
 """
@@ -628,7 +632,7 @@ CUSTOM = """const custom = {
   },
   s6(lt) {
     let a = -1; IND_T.forEach((t, i) => { if (lt >= t) a = i; });
-    for (let i = 0; i < 6; i++) { const c = $('#ind' + i); c.classList.toggle('act', i === a); c.classList.toggle('dim', i !== a); }
+    for (let i = 0; i < 7; i++) { const c = $('#ind' + i); c.classList.toggle('act', i === a); c.classList.toggle('dim', i !== a); }
   },
   s7(lt) {
     for (let i = 0; i < 5; i++) $('#b' + i).classList.toggle('hot', lt > 17 + i * 1.6);

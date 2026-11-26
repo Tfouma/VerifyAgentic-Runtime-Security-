@@ -1,7 +1,7 @@
 # Quand l'IA modifie le réseau, qui vérifie le résultat ? (version française)
 
 The French version of the Canada–U.S. architecture edition (`../sevone-film-assurance-ca/`).
-It runs 11:06. All on-screen text and the narration are in French, written for a Québec
+It runs 11:16. All on-screen text and the narration are in French, written for a Québec
 audience: *infonuagique*, *billet* for ticket, and French number formatting (98,4 %, 09 h 24).
 Configuration snippets and CLI output stay in English, as the real tools display them.
 
@@ -13,11 +13,23 @@ Configuration snippets and CLI output stay in English, as the real tools display
 Both files share the same video and include a French subtitle track you can switch on in the
 player. Everything is a simulated scenario, and both narrations are synthetic voices.
 
-## Rebuild it
+### How this edition differs from the English CA edition
 
-```bash
-python3 translate_fr.py
-```
+- **High-availability mesh:** the three data centres are fully meshed at 100 Gb/s per pair, with
+  a 25 Gb/s backup link on each pair. In the scenario, "path B" is the Toronto–Montréal 25 Gb/s
+  backup that the AI-built route-map wrongly prefers.
+- **Seven sectors:** air transport (airports and airlines) joins banking, telecom, rail, energy,
+  government and AI. Its card states that this is network assurance, not an air-traffic-control
+  system. The industries scene is 10 seconds longer.
+- **English technical terms:** IBM, SevOne, WAN, SD-WAN, MPLS, BGP, SLA, GPU, CMDB, ITSM, NetOps,
+  DevSecOps, ServiceNow and route-map are pronounced in English. `narration_fr.py` phonemizes
+  those terms with an en-us phonemizer and the rest of the line in French (`EN_TERMS` in
+  `cues_fr.py`).
+
+These changes were made directly in `build_film.py`, `timeline.json` and `cues_fr.py`, after
+`translate_fr.py` had run. Don't run `translate_fr.py` (without `--page`) again on these files.
+
+## Rebuild it
 
 ```bash
 python3 build_film.py ../sevone-film-part2/film.html

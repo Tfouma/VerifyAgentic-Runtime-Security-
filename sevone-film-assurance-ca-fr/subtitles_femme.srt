@@ -3,7 +3,7 @@
 Lundi, neuf heures vingt.
 
 2
-00:00:03,400 --> 00:00:08,050
+00:00:03,400 --> 00:00:07,180
 L'IA accélère les opérations. Elle accélère aussi le changement.
 
 3
@@ -11,15 +11,15 @@ L'IA accélère les opérations. Elle accélère aussi le changement.
 Et le changement va désormais à la vitesse machine.
 
 4
-00:00:13,000 --> 00:00:19,020
-Banques, télécoms, chemins de fer, énergie, gouvernements et plateformes d'IA : tout repose sur le réseau.
+00:00:13,000 --> 00:00:19,270
+Banques, télécoms, chemins de fer, transport aérien, énergie, gouvernements et IA : tout repose sur le réseau.
 
 5
-00:00:20,400 --> 00:00:26,000
+00:00:20,400 --> 00:00:25,000
 Sur site et en infonuagique, sur le WAN, le SD-WAN et les centres de données.
 
 6
-00:00:26,000 --> 00:00:33,080
+00:00:26,000 --> 00:00:33,040
 Des agents d'IA aident maintenant les ingénieurs à diagnostiquer, à générer des configurations et à appliquer des changements.
 
 7
@@ -27,19 +27,19 @@ Des agents d'IA aident maintenant les ingénieurs à diagnostiquer, à générer
 Une immense occasion, et un nouveau risque opérationnel.
 
 8
-00:00:41,000 --> 00:00:47,650
-Voici le réseau. Trois centres de données, à Montréal, Toronto et Vancouver, reliés par un cœur MPLS.
+00:00:41,000 --> 00:00:48,660
+Voici le réseau. Trois centres de données, à Montréal, Toronto et Vancouver, maillés en haute disponibilité sur un cœur MPLS.
 
 9
-00:00:48,600 --> 00:00:56,780
-Le chemin A, à dix gigabits, transporte paiements et réplication entre Toronto et Montréal. Le chemin B, à un gigabit, sert de relève.
+00:00:48,600 --> 00:00:55,310
+Chaque paire est reliée à cent gigabits, avec un lien de relève à vingt-cinq gigabits. Le chemin A porte les paiements.
 
 10
-00:00:56,800 --> 00:01:04,250
+00:00:56,800 --> 00:01:04,100
 New York, Chicago, Atlanta et San Francisco se connectent en SD-WAN, avec BGP vers le nuage.
 
 11
-00:01:04,200 --> 00:01:05,880
+00:01:04,200 --> 00:01:05,600
 SevOne voit tout.
 
 12
@@ -47,11 +47,11 @@ SevOne voit tout.
 Prenons une optimisation de routine.
 
 13
-00:01:11,200 --> 00:01:18,510
+00:01:11,200 --> 00:01:18,400
 Un ingénieur demande à un agent d'IA d'améliorer la connectivité entre Montréal et Toronto, sans nuire aux applications.
 
 14
-00:01:19,600 --> 00:01:25,920
+00:01:19,600 --> 00:01:26,040
 L'agent analyse la télémétrie et propose de modifier la préférence BGP sur quarante-huit routeurs.
 
 15
@@ -71,15 +71,15 @@ L'agent rédige lui-même la configuration.
 Une route-map BGP qui augmente la préférence locale sur le chemin B.
 
 19
-00:01:48,200 --> 00:01:52,780
+00:01:48,200 --> 00:01:52,240
 Et une politique SD-WAN, avec une classe de SLA pour les paiements.
 
 20
-00:01:53,000 --> 00:01:58,370
+00:01:53,000 --> 00:01:58,530
 La syntaxe est valide. Les sessions BGP restent actives. Le changement est approuvé.
 
 21
-00:01:59,000 --> 00:02:03,500
+00:01:59,000 --> 00:02:03,000
 Il est poussé sur quarante-huit routeurs et dans le gestionnaire SD-WAN.
 
 22
@@ -91,7 +91,7 @@ Toutes les vérifications que l'agent sait faire réussissent.
 Quarante-huit équipements sont mis à jour.
 
 24
-00:02:18,000 --> 00:02:23,800
+00:02:18,000 --> 00:02:23,960
 Aucune erreur de configuration. Aucun équipement en panne. Les sessions BGP restent établies.
 
 25
@@ -111,15 +111,15 @@ La télémétrie réseau indépendante raconte une autre histoire.
 Le trafic a basculé vers un chemin plus contraint.
 
 29
-00:02:52,600 --> 00:03:02,650
+00:02:52,600 --> 00:03:02,480
 L'utilisation du WAN passe de quarante-sept à quatre-vingt-deux pour cent. La latence, de dix-huit à soixante-trois millisecondes. La perte de paquets atteint deux pour cent.
 
 30
-00:03:02,600 --> 00:03:06,870
+00:03:02,600 --> 00:03:07,030
 Pourtant, BGP reste établi, et tous les équipements sont en service.
 
 31
-00:03:07,400 --> 00:03:14,340
+00:03:07,400 --> 00:03:13,960
 SevOne compare le comportement réel à la ligne de base de chaque chemin, et signale l'écart en quelques minutes.
 
 32
@@ -135,7 +135,7 @@ C'est là que l'observabilité change l'équation du risque.
 Lignes de base, flux et télémétrie en continu révèlent la dégradation pendant que les services fonctionnent.
 
 35
-00:03:39,600 --> 00:03:46,350
+00:03:39,600 --> 00:03:46,050
 SevOne lève l'alerte à neuf heures vingt-quatre, avant que la perte ne s'étende et avant le premier appel client.
 
 36
@@ -147,209 +147,213 @@ N'attendez pas la panne. Détectez la dégradation pendant que tout fonctionne e
 Pour une banque, ce même écart devient de la latence transactionnelle et un enjeu de résilience opérationnelle.
 
 38
-00:04:07,600 --> 00:04:13,180
+00:04:07,400 --> 00:04:12,860
 Pour un opérateur télécom, ce sont des pénalités de SLA et des escalades évitables.
 
 39
-00:04:17,200 --> 00:04:23,420
+00:04:16,800 --> 00:04:23,020
 Pour le ferroviaire, la visibilité des communications empêche une dégradation de devenir une perturbation.
 
 40
-00:04:26,800 --> 00:04:32,220
-Pour l'énergie, cette visibilité reste distincte des systèmes de sécurité et de contrôle.
+00:04:26,200 --> 00:04:33,270
+Pour le transport aérien, aérogares, portes et bagages dépendent du réseau : une dégradation devient des retards en cascade.
 
 41
-00:04:36,400 --> 00:04:42,610
-Pour les gouvernements et les services essentiels, c'est une preuve de disponibilité et de reddition de comptes.
+00:04:35,600 --> 00:04:41,020
+Pour l'énergie, cette visibilité reste distincte des systèmes de sécurité et de contrôle.
 
 42
-00:04:46,000 --> 00:04:54,700
-Et pour les plateformes d'IA, des chemins congestionnés laissent des GPU coûteux en attente. L'infrastructure d'IA est aussi une infrastructure réseau.
+00:04:45,000 --> 00:04:51,210
+Pour les gouvernements et les services essentiels, c'est une preuve de disponibilité et de reddition de comptes.
 
 43
-00:04:58,000 --> 00:05:00,500
-Question suivante : que s'est-il passé, et où ?
+00:04:54,400 --> 00:05:02,970
+Et pour les plateformes d'IA, des chemins congestionnés laissent des GPU coûteux en attente. L'infrastructure d'IA est aussi une infrastructure réseau.
 
 44
-00:05:01,800 --> 00:05:08,110
-SevOne remonte du symptôme à la portée, au chemin, aux flux, puis au changement qui en est la cause.
+00:05:08,000 --> 00:05:10,500
+Question suivante : que s'est-il passé, et où ?
 
 45
-00:05:09,800 --> 00:05:18,580
-Latence sur le chemin des paiements. Trois circuits WAN en bordure de Toronto. Le meilleur chemin BGP a basculé vers un circuit d'un gigabit.
+00:05:11,800 --> 00:05:17,790
+SevOne remonte du symptôme à la portée, au chemin, aux flux, puis au changement qui en est la cause.
 
 46
-00:05:19,000 --> 00:05:25,010
-La réplication et les paiements le partagent. Le déclencheur : le changement de neuf heures vingt et une.
+00:05:19,800 --> 00:05:29,060
+Latence sur le chemin des paiements. Trois circuits WAN en bordure de Toronto. Le meilleur chemin BGP a basculé vers le lien de relève à vingt-cinq gigabits.
 
 47
-00:05:26,400 --> 00:05:32,420
-Quoi, où, quelle anomalie, quel impact, quelle urgence : des réponses fondées sur des preuves, pas sur des opinions.
+00:05:29,000 --> 00:05:35,010
+La réplication et les paiements le partagent. Le déclencheur : le changement de neuf heures vingt et une.
 
 48
-00:05:43,000 --> 00:05:46,790
-Alors, qu'est-ce qui a mal tourné ? Trois problèmes, chacun valide en soi.
+00:05:36,400 --> 00:05:42,420
+Quoi, où, quelle anomalie, quel impact, quelle urgence : des réponses fondées sur des preuves, pas sur des opinions.
 
 49
-00:05:48,400 --> 00:05:56,100
-Un : la route-map s'applique à tous les préfixes, pas seulement au trafic de masse. Paiements et réplication passent sur le chemin d'un gigabit.
+00:05:53,000 --> 00:05:56,790
+Alors, qu'est-ce qui a mal tourné ? Trois problèmes, chacun valide en soi.
 
 50
-00:05:57,600 --> 00:06:06,630
-Deux : la classe de SLA tolère cent cinquante millisecondes et cinq pour cent de perte. Le chemin dégradé semble conforme, donc rien n'est redirigé.
+00:05:58,400 --> 00:06:07,290
+Un : la route-map s'applique à tous les préfixes, pas seulement au trafic de masse. Paiements et réplication passent sur le lien de relève de vingt-cinq gigabits.
 
 51
-00:06:08,600 --> 00:06:13,070
-Trois : chaque changement a été validé pour la syntaxe. Aucun pour le résultat.
+00:06:07,600 --> 00:06:16,560
+Deux : la classe de SLA tolère cent cinquante millisecondes et cinq pour cent de perte. Le chemin dégradé semble conforme, donc rien n'est redirigé.
 
 52
-00:06:14,600 --> 00:06:23,370
-SevOne a révélé les trois : les flux sur le chemin B, la latence et la perte des tunnels SD-WAN, et l'écart à la ligne de base.
+00:06:18,600 --> 00:06:23,070
+Trois : chaque changement a été validé pour la syntaxe. Aucun pour le résultat.
 
 53
-00:06:27,000 --> 00:06:32,370
-Détecter ne suffit pas à réduire le risque. L'information doit entrer dans vos processus.
+00:06:24,600 --> 00:06:32,400
+SevOne a révélé les trois : les flux sur le chemin B, la latence et la perte des tunnels SD-WAN, et l'écart à la ligne de base.
 
 54
-00:06:33,600 --> 00:06:42,460
-SevOne lève l'événement. Un incident ServiceNow s'ouvre automatiquement, avec l'élément de configuration, la priorité et les preuves.
+00:06:37,000 --> 00:06:42,370
+Détecter ne suffit pas à réduire le risque. L'information doit entrer dans vos processus.
 
 55
-00:06:42,400 --> 00:06:47,310
-NetOps est alerté. DevSecOps est informé du changement initié par l'IA.
+00:06:43,600 --> 00:06:51,750
+SevOne lève l'événement. Un incident ServiceNow s'ouvre automatiquement, avec l'élément de configuration, la priorité et les preuves.
 
 56
-00:06:47,800 --> 00:06:53,560
-Les niveaux un et deux sont automatisés : triage, corrélation et proposition de retour arrière.
+00:06:52,400 --> 00:06:57,280
+NetOps est alerté. DevSecOps est informé du changement initié par l'IA.
 
 57
-00:06:53,800 --> 00:06:57,790
-Le niveau trois est humain. Un ingénieur approuve le retour arrière.
+00:06:57,800 --> 00:07:03,560
+Les niveaux un et deux sont automatisés : triage, corrélation et proposition de retour arrière.
 
 58
-00:06:58,200 --> 00:07:04,250
-La plateforme d'automatisation l'exécute. SevOne reste l'observateur indépendant.
+00:07:03,800 --> 00:07:07,790
+Le niveau trois est humain. Un ingénieur approuve le retour arrière.
 
 59
-00:07:12,000 --> 00:07:17,340
-Et une remédiation n'est pas terminée parce qu'une tâche réussit. Le réseau est mesuré de nouveau.
+00:07:08,200 --> 00:07:13,890
+La plateforme d'automatisation l'exécute. SevOne reste l'observateur indépendant.
 
 60
-00:07:19,400 --> 00:07:25,680
-L'utilisation revient à quarante-neuf pour cent. La latence à dix-neuf millisecondes. La perte disparaît.
+00:07:22,000 --> 00:07:27,340
+Et une remédiation n'est pas terminée parce qu'une tâche réussit. Le réseau est mesuré de nouveau.
 
 61
-00:07:26,800 --> 00:07:32,060
-Alors seulement, le billet se ferme. Observer, détecter, comprendre, agir et vérifier.
+00:07:29,400 --> 00:07:35,680
+L'utilisation revient à quarante-neuf pour cent. La latence à dix-neuf millisecondes. La perte disparaît.
 
 62
-00:07:42,000 --> 00:07:45,430
-Voilà comment la preuve réseau soutient les contrôles de risque.
+00:07:36,800 --> 00:07:42,060
+Alors seulement, le billet se ferme. Observer, détecter, comprendre, agir et vérifier.
 
 63
-00:07:45,800 --> 00:07:52,000
-Les contrôles préventifs encadrent ce qui peut changer. Les contrôles de détection révèlent les anomalies.
+00:07:52,000 --> 00:07:55,430
+Voilà comment la preuve réseau soutient les contrôles de risque.
 
 64
-00:07:52,000 --> 00:07:58,460
-Le diagnostic les explique. Les flux correctifs répondent. La vérification confirme le rétablissement.
+00:07:55,800 --> 00:08:02,000
+Les contrôles préventifs encadrent ce qui peut changer. Les contrôles de détection révèlent les anomalies.
 
 65
-00:07:58,600 --> 00:08:03,800
-Et l'historique devient une preuve pour l'audit, les régulateurs et la diligence raisonnable.
+00:08:02,000 --> 00:08:08,460
+Le diagnostic les explique. Les flux correctifs répondent. La vérification confirme le rétablissement.
 
 66
-00:08:04,400 --> 00:08:11,650
-SevOne est une source importante de cette preuve, aux côtés des dossiers de changement, d'ITSM et de sécurité.
+00:08:08,600 --> 00:08:13,800
+Et l'historique devient une preuve pour l'audit, les régulateurs et la diligence raisonnable.
 
 67
-00:08:11,600 --> 00:08:14,920
-Il ne remplace pas ces contrôles. Il les rend mesurables.
+00:08:14,400 --> 00:08:21,540
+SevOne est une source importante de cette preuve, aux côtés des dossiers de changement, d'ITSM et de sécurité.
 
 68
-00:08:22,000 --> 00:08:25,650
-La direction obtient une vue unique du risque opérationnel réseau.
+00:08:21,600 --> 00:08:24,920
+Il ne remplace pas ces contrôles. Il les rend mesurables.
 
 69
-00:08:25,600 --> 00:08:33,260
-Les indicateurs sont définis par classe de service : disponibilité, performance, capacité, stabilité, changement et couverture.
+00:08:32,000 --> 00:08:35,650
+La direction obtient une vue unique du risque opérationnel réseau.
 
 70
-00:08:33,200 --> 00:08:38,380
-Et un nouvel indicateur pour l'ère agentique : le taux d'assurance des résultats de changement.
+00:08:35,600 --> 00:08:43,260
+Les indicateurs sont définis par classe de service : disponibilité, performance, capacité, stabilité, changement et couverture.
 
 71
-00:08:38,600 --> 00:08:42,660
-La part des changements dont le résultat réseau a vraiment été vérifié.
+00:08:43,200 --> 00:08:48,380
+Et un nouvel indicateur pour l'ère agentique : le taux d'assurance des résultats de changement.
 
 72
-00:08:52,000 --> 00:08:54,840
-Le dossier d'affaires va au-delà des pannes évitées.
+00:08:48,600 --> 00:08:52,660
+La part des changements dont le résultat réseau a vraiment été vérifié.
 
 73
-00:08:55,600 --> 00:09:03,630
-Outils consolidés, lignes de base automatisées, billets automatiques et synchronisation CMDB réduisent l'effort de chaque incident.
+00:09:02,000 --> 00:09:04,840
+Le dossier d'affaires va au-delà des pannes évitées.
 
 74
-00:09:03,800 --> 00:09:07,660
-Mais n'estimez pas les économies à partir d'hypothèses marketing.
+00:09:05,600 --> 00:09:13,450
+Outils consolidés, lignes de base automatisées, billets automatiques et synchronisation CMDB réduisent l'effort de chaque incident.
 
 75
-00:09:07,600 --> 00:09:12,730
-Mesurez les coûts actuels : outils, administration, incidents, rapports et intégration.
+00:09:13,800 --> 00:09:17,660
+Mais n'estimez pas les économies à partir d'hypothèses marketing.
 
 76
-00:09:14,600 --> 00:09:19,110
-Faites une preuve de valeur, mesurez l'écart, et bâtissez le dossier sur des faits.
+00:09:17,600 --> 00:09:22,730
+Mesurez les coûts actuels : outils, administration, incidents, rapports et intégration.
 
 77
-00:09:21,600 --> 00:09:26,070
-C'est ainsi qu'on prouve un coût total et des dépenses d'exploitation plus bas.
+00:09:24,600 --> 00:09:29,110
+Faites une preuve de valeur, mesurez l'écart, et bâtissez le dossier sur des faits.
 
 78
-00:09:37,000 --> 00:09:39,580
-L'agent d'IA vous dit que la tâche est terminée.
+00:09:31,600 --> 00:09:36,070
+C'est ainsi qu'on prouve un coût total et des dépenses d'exploitation plus bas.
 
 79
-00:09:40,800 --> 00:09:44,850
-La plateforme d'automatisation vous dit que le changement est appliqué.
+00:09:47,000 --> 00:09:49,510
+L'agent d'IA vous dit que la tâche est terminée.
 
 80
-00:09:44,800 --> 00:09:47,970
-SevOne vous dit ce qui est arrivé au réseau.
+00:09:50,800 --> 00:09:54,850
+La plateforme d'automatisation vous dit que le changement est appliqué.
 
 81
-00:09:48,600 --> 00:09:53,970
-L'entreprise a besoin des trois. Seule l'observabilité indépendante vérifie le résultat.
+00:09:54,800 --> 00:09:57,370
+SevOne vous dit ce qui est arrivé au réseau.
 
 82
-00:09:59,400 --> 00:10:08,660
-Si un agent d'IA modifiait cinq cents équipements réseau cette nuit, combien de temps vous faudrait-il pour savoir si chaque changement a produit le résultat attendu ?
+00:09:58,600 --> 00:10:03,970
+L'entreprise a besoin des trois. Seule l'observabilité indépendante vérifie le résultat.
 
 83
-00:10:19,400 --> 00:10:24,660
-Commencez par une évaluation de la préparation et de l'observabilité de votre réseau agentique.
+00:10:09,400 --> 00:10:18,510
+Si un agent d'IA modifiait cinq cents équipements réseau cette nuit, combien de temps vous faudrait-il pour savoir si chaque changement a produit le résultat attendu ?
 
 84
-00:10:24,600 --> 00:10:32,290
-Visibilité, cas d'usage de l'IA, dépendances critiques, couverture de télémétrie, et visibilité BGP et WAN.
+00:10:29,400 --> 00:10:34,660
+Commencez par une évaluation de la préparation et de l'observabilité de votre réseau agentique.
 
 85
-00:10:33,400 --> 00:10:39,750
-Lignes de base, validation des changements, processus d'incident, angles morts, et assurance en boucle fermée.
+00:10:34,600 --> 00:10:41,890
+Visibilité, cas d'usage de l'IA, dépendances critiques, couverture de télémétrie, et visibilité BGP et WAN.
 
 86
-00:10:47,000 --> 00:10:51,520
-À l'ère de l'IA agentique, l'autonomie sans observabilité, c'est un risque.
+00:10:43,400 --> 00:10:49,750
+Lignes de base, validation des changements, processus d'incident, angles morts, et assurance en boucle fermée.
 
 87
-00:10:51,800 --> 00:10:54,240
-L'avenir n'est pas seulement le réseau autonome.
+00:10:57,000 --> 00:11:01,400
+À l'ère de l'IA agentique, l'autonomie sans observabilité, c'est un risque.
 
 88
-00:10:54,800 --> 00:10:57,990
-C'est le réseau autonome, avec une assurance continue.
+00:11:01,800 --> 00:11:04,240
+L'avenir n'est pas seulement le réseau autonome.
 
 89
-00:10:59,800 --> 00:11:01,710
+00:11:04,800 --> 00:11:07,990
+C'est le réseau autonome, avec une assurance continue.
+
+90
+00:11:09,800 --> 00:11:11,330
 IBM SevOne.
