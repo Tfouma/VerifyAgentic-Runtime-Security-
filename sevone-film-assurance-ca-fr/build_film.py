@@ -209,6 +209,8 @@ INDS = [
      'Retards en cascade : enregistrement, embarquement, bagages, opérations au sol', ['disponibilité', 'latence', 'gigue', 'perte', 'redondance'], 'Assurance réseau, pas un système de contrôle de la circulation aérienne'),
     ('ÉNERGIE', 'Communications du réseau et des sites', 'Postes · sites → WAN → centre de contrôle → CD et nuage',
      'Perte de visibilité sur les communications d’exploitation', ['disponibilité', 'latence', 'utilisation', 'redondance'], 'La surveillance reste distincte de la sécurité et du contrôle OT'),
+    ('SANTÉ', 'Hôpitaux et réseaux de soins', 'Hôpitaux · cliniques → WAN / SD-WAN → dossiers médicaux · imagerie → CD et nuage',
+     'Accès ralenti aux dossiers et à l’imagerie, rendez-vous et soins perturbés', ['disponibilité', 'latence', 'perte', 'débit imagerie', 'redondance'], 'Assurance réseau, pas un dispositif médical ni un système clinique'),
     ('GOUVERNEMENT', 'Services aux citoyens et essentiels', 'Portail citoyen → CD gouvernemental → nuage → réseaux des organismes',
      'Pannes de services, retards des services d’urgence, reddition de comptes', ['disponibilité', 'temps de réponse', 'SLA', 'capacité'], ''),
     ('IA ET DONNÉES', 'Grappes GPU et pipelines de données', 'Sources de données → fabric → grappe GPU ↔ stockage → nuage',
@@ -340,9 +342,9 @@ SCENES = f"""  <!-- S0 · Cold open -->
     </div>
   </section>
 
-  <!-- S6 · Seven industries -->
+  <!-- S6 · Eight industries -->
   {sec(6)}
-    {stephead('03 — IMPACT', 'Même signal · risques d’affaires différents', 'Un écart. <span class="cyan">Sept conséquences d’affaires.</span>')}
+    {stephead('03 — IMPACT', 'Même signal · risques d’affaires différents', 'Un écart. <span class="cyan">Huit conséquences d’affaires.</span>')}
     <div class="ind-grid">{ind_cards}</div>
   </section>
 
@@ -509,7 +511,7 @@ UCX = {
  's3': ('Un changement BGP proposé par l’IA et approuvé s’exécute sur 48 routeurs.', 'La plateforme d’automatisation annonce 48/48 appliqués, 0 erreur, BGP établi.', 'Succès technique, mais le résultat d’affaires reste inconnu.'),
  's4': ('Le trafic passe sur la relève à 25 Gb/s ; rien n’est en panne.', 'SevOne compare utilisation, latence et perte à la ligne de base apprise de chaque chemin.', 'Écart signalé alors que BGP reste établi.'),
  's5': ('La dégradation s’installe minute après minute.', 'Lignes de base, flux, télémétrie en continu et tests synthétiques la révèlent à 9 h 24.', 'Détectée avant que la perte ne s’étende et avant les appels.'),
- 's6': ('Le même écart, des risques différents selon le secteur.', 'KPI sectoriels par chemin critique : banque, télécom, ferroviaire, transport aérien, énergie, gouvernement, IA et données.', 'Les signaux réseau traduits en risque d’affaires.'),
+ 's6': ('Le même écart, des risques différents selon le secteur.', 'KPI sectoriels par chemin critique : banque, télécom, ferroviaire, transport aérien, énergie, santé, gouvernement, IA et données.', 'Les signaux réseau traduits en risque d’affaires.'),
  's7': ('Les équipes ont besoin de la cause, pas seulement d’une alerte.', 'Symptôme → portée → chemin → flux → changement, avec le rayon d’impact.', 'Le changement de 9 h 21 identifié, preuves à l’appui.'),
  's8': ('L’information doit entrer dans les processus existants.', 'Événement SevOne → incident ServiceNow automatique avec CI et preuves → acheminement → N1/N2 automatisés → approbation N3.', 'Retour arrière contrôlé ; SevOne reste l’observateur indépendant.'),
  's9': ('Une tâche réussie n’est pas une preuve.', 'SevOne mesure de nouveau utilisation, latence et perte face à la ligne de base.', 'Le billet se ferme seulement après un rétablissement vérifié.'),
@@ -577,7 +579,7 @@ const pipeLinks = [0, 1, 2, 3, 4, 5].map(i => { const x1 = 216 + i * 252, x2 = x
   svgEl('path', { d: `M${x2 - 8},${y - 7} L${x2},${y} L${x2 - 8},${y + 7}`, fill: 'none', stroke: '#4589ff', 'stroke-width': 3 }, pipe);
   return { x1, x2, y }; });
 const pulse = svgEl('circle', { r: 9, fill: '#fff', opacity: 0 }, pipe);
-const IND_T = [1, 10.4, 19.8, 29.2, 38.6, 48, 57.4];
+const IND_T = [1, 10.4, 19.8, 29.2, 38.6, 48, 57.4, 66.8];
 
 // Canada–U.S. architecture topology
 const A17 = $('#arch17svg');
@@ -632,7 +634,7 @@ CUSTOM = """const custom = {
   },
   s6(lt) {
     let a = -1; IND_T.forEach((t, i) => { if (lt >= t) a = i; });
-    for (let i = 0; i < 7; i++) { const c = $('#ind' + i); c.classList.toggle('act', i === a); c.classList.toggle('dim', i !== a); }
+    for (let i = 0; i < 8; i++) { const c = $('#ind' + i); c.classList.toggle('act', i === a); c.classList.toggle('dim', i !== a); }
   },
   s7(lt) {
     for (let i = 0; i < 5; i++) $('#b' + i).classList.toggle('hot', lt > 17 + i * 1.6);

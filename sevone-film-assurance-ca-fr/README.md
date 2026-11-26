@@ -1,7 +1,7 @@
 # Quand l'IA modifie le réseau, qui vérifie le résultat ? (version française)
 
 The French version of the Canada–U.S. architecture edition (`../sevone-film-assurance-ca/`).
-It runs 11:16. All on-screen text and the narration are in French, written for a Québec
+It runs 11:26. All on-screen text and the narration are in French, written for a Québec
 audience: *infonuagique*, *billet* for ticket, and French number formatting (98,4 %, 09 h 24).
 Configuration snippets and CLI output stay in English, as the real tools display them.
 
@@ -18,10 +18,12 @@ player. Everything is a simulated scenario, and both narrations are synthetic vo
 - **High-availability mesh:** the three data centres are fully meshed at 100 Gb/s per pair, with
   a 25 Gb/s backup link on each pair. In the scenario, "path B" is the Toronto–Montréal 25 Gb/s
   backup that the AI-built route-map wrongly prefers.
-- **Seven sectors:** air transport (airports and airlines) joins banking, telecom, rail, energy,
-  government and AI. Its card states that this is network assurance, not an air-traffic-control
-  system. The industries scene is 10 seconds longer.
-- **English technical terms:** IBM, SevOne, WAN, SD-WAN, MPLS, BGP, SLA, GPU, CMDB, ITSM, NetOps,
+- **Eight sectors:** air transport (airports and airlines) and healthcare (hospitals and care
+  networks) join banking, telecom, rail, energy, government and AI. Their cards state that this is
+  network assurance, not an air-traffic-control system or a medical/clinical system. The
+  industries scene is 20 seconds longer.
+- **English pronunciation:** U.S. place names (New York, Chicago, Atlanta, San Francisco), the
+  loanword "marketing" and the technical terms IBM, SevOne, WAN, SD-WAN, MPLS, BGP, SLA, GPU, CMDB, ITSM, NetOps,
   DevSecOps, ServiceNow and route-map are pronounced in English. `narration_fr.py` phonemizes
   those terms with an en-us phonemizer and the rest of the line in French (`EN_TERMS` in
   `cues_fr.py`).
