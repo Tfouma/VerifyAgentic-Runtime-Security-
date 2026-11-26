@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agentic Runtime Security, Step by Step</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<style>
+  /* The bank's agentic runtime security reference architecture, redrawn from the
+     reference slide at the same coordinates (100 px per inch), with a walkthrough:
+     each step frames part of the diagram, lights the boxes and arrows it uses, and
+     explains it in the side panel. Next / Back or the arrow keys step through it; the
+     demo film drives the same page through window.arch. */
+  :root {
+    color-scheme: light;
+    --ink: #14213d;
+    --ink-2: #2b3445;
+    --ink-dim: #5b6577;
+    --page: #ffffff;
+    --stage: #eef1f6;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: var(--stage); }
+  body { font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+
+  /* A 1920x1080 stage, scaled to the window. */
+  .fit { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; overflow: hidden;
+         background: radial-gradient(1400px 800px at 30% 20%, #ffffff, var(--stage) 70%); }
+  .wrap { position: absolute; left: 0; top: 0; width: 1401px; height: 990px; transform-origin: 0 0;
+          transition: transform 1.4s cubic-bezier(.45, 0, .2, 1); }
+  .instant, .instant * { transition: none !important; }
+
+  /* ---------- the diagram ---------- */
+  .el { position: absolute; transition: opacity .6s ease, box-shadow .6s ease, filter .6s ease; }
+  .zone { border: 1.4px dashed; border-radius: 10px; }
+  .zone > .zt { position: absolute; left: 12px; top: 9px; font-size: 13.9px; font-weight: 700; white-space: nowrap; }
+  .zone > .zt.br { left: auto; top: auto; right: 14px; bottom: 6px; }
+  .box { border: 1.3px solid; border-radius: 9px; background: #fff; padding: 5px 10px; font-size: 12.5px; line-height: 1.32; color: var(--ink); }
+  .box.dash { border-style: dashed; }
+  .box b { font-weight: 700; }
+  .box i { font-style: italic; }
+  .ks { border: 1.3px solid #c0392b; background: #fdecea; color: #8e1c12; font-size: 11.1px; font-weight: 700; display: grid;
+        place-items: center; text-align: center; line-height: 1.2; padding: 1px 6px; border-radius: 2px; }
+  .band { border: 2px solid #5b3fa8; background: #f1ecfb; border-radius: 10px; padding: 9px 16px; font-size: 12.5px; line-height: 1.38; }
+  .lbl { position: absolute; background: #fff; font-size: 11.1px; line-height: 16px; white-space: nowrap; padding: 0 3px; color: var(--ink);
+         transition: opacity .6s ease, color .6s ease; }
+  .person .head { position: absolute; border-radius: 50%; border: 1.3px solid #14213d; background: #dce6f5; }
+  .person .body { position: absolute; border-radius: 7px; border: 1.3px solid #14213d; background: #dce6f5; }
+  .person .pl { position: absolute; text-align: center; font-size: 12.5px; line-height: 1.32; }
+  .person .pl i { font-style: italic; }
+  .db svg { position: absolute; inset: 0; overflow: visible; }
+  .db .dbt { position: absolute; left: 0; right: 0; top: 23px; text-align: center; font-size: 12.5px; line-height: 1.32; }
+  svg.arrows { position: absolute; left: 0; top: 0; width: 1401px; height: 990px; overflow: visible; pointer-events: none; }
+  svg.arrows path { fill: none; stroke-linejoin: round; transition: opacity .6s ease, stroke-width .4s ease; }
+  svg.arrows .pulse { stroke-width: 5.5; stroke-linecap: round; stroke-dasharray: 7 93; opacity: 0; }
+  svg.arrows .pulse.on { opacity: .95; animation: travel 1.7s linear infinite; }
+  @keyframes travel { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+
+  /* Walkthrough states: everything outside the step fades back. */
+  .dim { opacity: .16; }
+  .zone.dim { opacity: .4; }
+  .hot.box, .hot.band { box-shadow: 0 0 0 4px rgba(15, 98, 254, .22), 0 10px 26px -10px rgba(20, 33, 61, .45); }
+  .hot.box.c-gold { box-shadow: 0 0 0 4px rgba(184, 134, 11, .28), 0 10px 26px -10px rgba(20, 33, 61, .45); }
+  .hot.box.c-green { box-shadow: 0 0 0 4px rgba(46, 125, 50, .26), 0 10px 26px -10px rgba(20, 33, 61, .45); }
+  .hot.box.c-purple, .hot.band { box-shadow: 0 0 0 4px rgba(107, 79, 187, .26), 0 10px 26px -10px rgba(20, 33, 61, .45); }
+  .hot.box.c-slate { box-shadow: 0 0 0 4px rgba(74, 85, 104, .25), 0 10px 26px -10px rgba(20, 33, 61, .45); }
+  .hot.ks { box-shadow: 0 0 0 4px rgba(192, 57, 43, .28); animation: throb 1.6s ease-in-out infinite; }
+  @keyframes throb { 50% { box-shadow: 0 0 0 7px rgba(192, 57, 43, .12); } }
+  .hot.zone { box-shadow: 0 0 0 3px rgba(20, 33, 61, .08); }
+  .lbl.hot { font-weight: 600; }
+
+  /* ---------- the side panel ---------- */
+  .panel { position: absolute; left: 1262px; top: 64px; width: 610px; max-height: 840px; background: #fff; border: 1px solid #d5dbe7;
+           border-radius: 20px; box-shadow: 0 24px 60px -28px rgba(20, 33, 61, .45); padding: 30px 34px 30px; opacity: 0;
+           transform: translateX(40px); transition: opacity .6s ease, transform .6s ease; overflow: hidden; }
+  .panel.on { opacity: 1; transform: none; }
+  .chip { display: inline-flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 16px; font-weight: 600; letter-spacing: .12em;
+          text-transform: uppercase; color: #fff; background: var(--c, #0f62fe); padding: 6px 13px; border-radius: 8px; }
+  .chip.rec { background: transparent; color: var(--ink-dim); border: 1.5px dashed #8a94a3; margin-left: 8px; letter-spacing: .06em; }
+  .panel h2 { margin: 18px 0 16px; font-size: 33px; line-height: 1.15; font-weight: 600; letter-spacing: -0.01em; color: var(--ink); }
+  .facts { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+  .facts li { position: relative; padding-left: 24px; font-size: 20.5px; line-height: 1.42; color: var(--ink-2); }
+  .facts li::before { content: ""; position: absolute; left: 3px; top: 11px; width: 9px; height: 9px; border-radius: 50%; background: var(--c, #0f62fe); }
+  .facts b { color: var(--ink); font-weight: 600; }
+  .code { margin-top: 20px; background: #f4f6fb; border: 1px solid #e1e6f0; border-radius: 12px; padding: 14px 18px; font-family: var(--mono);
+          font-size: 17.5px; line-height: 1.55; color: var(--ink); white-space: pre; }
+  .code .k { color: #0f62fe; }
+  .code .c { color: #6b7385; }
+  .note { margin-top: 12px; font-family: var(--mono); font-size: 14px; color: var(--ink-dim); letter-spacing: .02em; }
+  .who { margin-top: 20px; display: grid; gap: 10px; }
+  .who div { display: grid; grid-template-columns: 210px 1fr; gap: 12px; align-items: center; background: #f4f6fb; border-radius: 12px; padding: 12px 16px; font-size: 18.5px; }
+  .who b { font-weight: 600; }
+  .who span { display: flex; flex-wrap: wrap; gap: 6px; }
+  .perm { font-family: var(--mono); font-size: 15px; padding: 3px 9px; border-radius: 6px; background: #e6eefe; color: #0b4ccc; }
+  .formula { margin-top: 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 19px; }
+  .formula span { background: #fff6db; border: 1.3px solid #b8860b; border-radius: 9px; padding: 6px 11px; }
+  .formula em { font-style: normal; font-size: 24px; color: #b8860b; font-weight: 600; }
+  table.dec { margin-top: 18px; width: 100%; border-collapse: separate; border-spacing: 0 8px; font-size: 16.5px; }
+  table.dec th { text-align: left; font-family: var(--mono); font-size: 12.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-dim); font-weight: 500; padding: 0 8px; }
+  table.dec td { background: #f4f6fb; padding: 10px 8px; vertical-align: middle; line-height: 1.3; }
+  table.dec td:first-child { border-radius: 10px 0 0 10px; font-weight: 600; }
+  table.dec td:last-child { border-radius: 0 10px 10px 0; font-weight: 600; white-space: nowrap; }
+  table.dec .ok { color: #1f7a3a; }
+  table.dec .no { color: #b3261e; }
+  .chain { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 18px; }
+  .chain span { background: #f1ecfb; border: 1.3px solid #6b4fbb; border-radius: 9px; padding: 6px 11px; }
+  .chain i { font-style: normal; color: #6b4fbb; font-weight: 600; }
+  .kss { margin-top: 6px; display: grid; gap: 12px; }
+  .kss div { display: grid; grid-template-columns: 46px 1fr; gap: 14px; align-items: center; background: #fdecea; border: 1.3px solid #e3a59d; border-radius: 12px; padding: 12px 14px; font-size: 19px; line-height: 1.35; }
+  .kss b { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: #c0392b; color: #fff; font-family: var(--mono); font-size: 20px; }
+  .kss small { display: block; color: var(--ink-dim); font-size: 16px; margin-top: 2px; }
+
+  /* ---------- presenter controls (hidden in the film) ---------- */
+  .nav { position: fixed; right: 16px; bottom: 16px; display: flex; gap: 8px; align-items: center; z-index: 10; font-family: var(--mono); }
+  .nav button { font: 500 13px var(--mono); color: var(--ink); background: #fff; border: 1px solid #c9d1df; border-radius: 9px; padding: 9px 13px; cursor: pointer; }
+  .nav button:hover { background: #f4f6fb; }
+  .nav button:focus-visible { outline: 2px solid #0f62fe; outline-offset: 2px; }
+  .nav .pos { font-size: 12.5px; color: var(--ink-dim); padding: 0 6px; min-width: 150px; text-align: center; }
+  body.film .nav { display: none; }
+</style>
+</head>
+<body>
+<div class="fit" id="fit"><div class="wrap" id="wrap"></div><aside class="panel" id="panel" aria-live="polite"></aside></div>
+<nav class="nav" aria-label="Walkthrough controls">
+  <button id="prev" aria-label="Back">‹ Back</button><span class="pos" id="pos"></span><button id="next" aria-label="Next">Next ›</button>
+</nav>
+<script>
+'use strict';
+/* Coordinates are the reference slide's, in inches; the page draws them at 100 px per inch. */
+const IN = 100;
+const px = (v) => Math.round(v * IN * 10) / 10;
+
+const COLOR = { purple: '#6b4fbb', band: '#5b3fa8', slate: '#4a5568', blue: '#0f62fe', gold: '#b8860b', green: '#2e7d32', navy: '#14213d', grey: '#8a94a3', red: '#c0392b' };
+
+// Zones (dashed containers).
+const ZONES = [
+  { id: 'zEmp', x: 0.10, y: 1.25, w: 1.88, h: 5.94, line: COLOR.grey, fill: '#fafafa', title: 'Bank employees' },
+  { id: 'zIdp', x: 2.29, y: 1.25, w: 3.44, h: 1.72, line: COLOR.purple, fill: '#f3f0fa', title: 'Workforce identity provider' },
+  { id: 'zAcp', x: 2.29, y: 3.23, w: 3.44, h: 3.96, line: COLOR.slate, fill: '#f2f4f8', title: 'Agentic Control Plane' },
+  { id: 'zVerify', x: 6.35, y: 1.25, w: 7.29, h: 2.40, line: COLOR.blue, fill: '#edf3ff', title: 'IBM Verify — agent identity &amp; delegation' },
+  { id: 'zBank', x: 6.35, y: 3.96, w: 7.29, h: 5.83, line: COLOR.grey, fill: '#fbfbf8', title: 'Bank environment', br: true },
+  { id: 'zVault', x: 9.32, y: 4.22, w: 4.22, h: 5.36, line: COLOR.gold, fill: '#fbf5e6', title: 'HashiCorp Vault Enterprise' },
+];
+
+// Boxes. c = the colour family used for the highlight ring.
+const BOXES = [
+  { id: 'idp', x: 2.45, y: 1.56, w: 3.12, h: 1.20, line: COLOR.purple, c: 'purple',
+    html: '<b>Okta · Microsoft Entra ID · Ping · IBM Verify · …</b><br>• MFA sign-in for employees<br>• job role → <i>groups</i> claim<br>• signed tokens · JWKS published' },
+  { id: 'agent', x: 2.45, y: 3.59, w: 3.12, h: 0.57, line: COLOR.slate, c: 'slate',
+    html: '<b>Payments Assistant agent</b><br>registered agent; the LLM picks tools and never sees tokens' },
+  { id: 'idconn', x: 2.45, y: 4.27, w: 3.12, h: 0.57, line: COLOR.slate, c: 'slate',
+    html: '<b>Identity connection</b> (per employee)<br>each employee signs in as themselves; no shared service account' },
+  { id: 'gateway', x: 2.45, y: 4.95, w: 3.12, h: 0.73, line: COLOR.slate, c: 'slate', dash: true,
+    html: '<b>MCP gateway</b> (e.g. IBM ContextForge)<br><span style="display:block;max-width:250px">one governed endpoint for all tools · guardrails · RBAC · rate limits · audit</span>' },
+  { id: 'lifecycle', x: 2.45, y: 5.78, w: 3.12, h: 0.62, line: COLOR.slate, c: 'slate', dash: true,
+    html: '<b>Agent lifecycle</b><br>inventory · evaluation before release · sandboxed runtime · platform kill switch' },
+  { id: 'registry', x: 6.56, y: 1.61, w: 2.19, h: 1.20, line: COLOR.blue, c: 'blue',
+    html: '<b>Agent Registry</b><br>Payments Assistant · owner<br>ACTIVE / SUSPENDED<br>agent\'s own token (actor)' },
+  { id: 'exchange', x: 8.91, y: 1.61, w: 2.29, h: 1.20, line: COLOR.blue, c: 'blue',
+    html: '<b>Token exchange</b> (on-behalf-of)<br>employee token + agent token → one token: sub = employee, act = agent · no impersonation' },
+  { id: 'rar', x: 11.35, y: 1.61, w: 2.14, h: 1.20, line: COLOR.blue, c: 'blue',
+    html: '<b>Per-action tokens</b> (RAR)<br><i>authorization_details</i>: exactly which database login this action may get (view or initiate)' },
+  { id: 'mcp', x: 6.56, y: 4.38, w: 2.55, h: 1.41, line: COLOR.navy, c: 'blue',
+    html: '<b>Banking tools MCP server</b><br>• checks the agent is live (Verify)<br>• exchanges the employee token<br>• one RAR token per action<br>• no stored secrets' },
+  { id: 'feed', x: 6.56, y: 5.99, w: 2.55, h: 0.52, line: COLOR.navy, c: 'slate',
+    html: '<b>Activity feed → SIEM / SOAR</b><br>employee · agent · token · decision' },
+  { id: 'trust', x: 9.48, y: 4.58, w: 3.91, h: 0.47, line: COLOR.gold, c: 'gold',
+    html: '<b>Trust profile</b> · Verify issuer + JWKS · user = sub · agent = act.sub · RAR required' },
+  { id: 'entities', x: 9.48, y: 5.16, w: 1.88, h: 0.68, line: COLOR.gold, c: 'gold',
+    html: '<b>Entities</b><br>employees by group · agent<br>(aliases = Verify IDs)' },
+  { id: 'ceiling', x: 11.51, y: 5.16, w: 1.88, h: 0.68, line: COLOR.gold, c: 'gold', tight: true,
+    html: '<b>Agent registry</b> · ceiling<br><i>payments-ceiling</i>: view, initiate<br><b>never cancel</b>' },
+  { id: 'decision', x: 9.48, y: 5.94, w: 3.91, h: 0.47, line: COLOR.gold, c: 'gold', fill: '#fff6db',
+    html: '<b>Decision per request</b><br>employee\'s policy ∩ agent\'s ceiling ∩ token\'s RAR' },
+  { id: 'dbengine', x: 9.48, y: 6.67, w: 1.88, h: 0.68, line: COLOR.gold, c: 'gold',
+    html: '<b>Database engine</b><br>2-minute DB users<br>(view · initiate · cancel)' },
+  { id: 'audit', x: 11.51, y: 6.67, w: 1.88, h: 0.68, line: COLOR.gold, c: 'gold',
+    html: '<b>Audit log</b><br>employee · agent · Verify txn' },
+  { id: 'legend', x: 2.29, y: 7.50, w: 3.44, h: 0.99, line: COLOR.grey, c: 'slate', small: true,
+    html: '<b>Legend</b><br>Solid: built and demoed in our lab<br>Dashed boxes: recommended additions<br>Dashed grey arrows: trust (public keys)<br>Purple band: agentic identity observability' },
+];
+const KILLS = [
+  { id: 'ks0', x: 2.45, y: 6.56, w: 3.12, h: 0.27, text: 'Kill switch 0: stop the agent in the platform' },
+  { id: 'ks1', x: 7.03, y: 2.92, w: 1.72, h: 0.27, text: 'Kill switch 1: suspend the agent', tight: true },
+  { id: 'ks2', x: 11.51, y: 7.50, w: 1.88, h: 0.42, text: 'Kill switch 2: disable the agent\'s entity' },
+];
+const PEOPLE = [
+  { id: 'pRm', head: [0.95, 1.67, 0.19, 0.17], body: [0.89, 1.87, 0.31, 0.42], label: [0.14, 2.32, 1.81, 0.62],
+    html: 'Relationship manager<br><i>view accounts; initiate<br>and cancel payments</i>' },
+  { id: 'pTeller', head: [0.95, 3.96, 0.19, 0.17], body: [0.89, 4.16, 0.31, 0.42], label: [0.14, 4.61, 1.81, 0.62],
+    html: 'Bank teller<br><i>view accounts only</i>' },
+];
+// Arrows: polylines in inches; the head is at the last point.
+const ARROWS = [
+  { id: 'aObs1', pts: [[1.04, 0.92], [1.04, 1.25]], color: COLOR.band, dash: true },
+  { id: 'aObs2', pts: [[4.01, 0.92], [4.01, 1.25]], color: COLOR.band, dash: true },
+  { id: 'aObs3', pts: [[10.0, 0.92], [10.0, 1.25]], color: COLOR.band, dash: true },
+  { id: 'a1', pts: [[1.2, 1.855], [2.44, 1.855]], color: COLOR.purple },
+  { id: 'a2rm', pts: [[1.2, 2.1], [2.1, 2.1], [2.1, 3.88], [2.44, 3.88]], color: COLOR.slate },
+  { id: 'a2t', pts: [[1.2, 4.27], [2.1, 4.27], [2.1, 3.88]], color: COLOR.slate, head: false },
+  { id: 'aTok', pts: [[5.57, 2.58], [5.66, 2.58], [5.66, 4.555], [5.58, 4.555]], color: COLOR.purple },
+  { id: 'a3', pts: [[5.57, 5.31], [6.15, 5.31], [6.15, 5.07], [6.55, 5.07]], color: COLOR.slate },
+  { id: 'a4a', pts: [[6.775, 4.37], [6.775, 2.82]], color: COLOR.blue },
+  { id: 'a4b', pts: [[7.81, 4.37], [7.81, 3.80], [9.53, 3.80], [9.53, 2.82]], color: COLOR.blue },
+  { id: 'a4c', pts: [[9.11, 4.56], [9.22, 4.56], [9.22, 3.85], [12.42, 3.85], [12.42, 2.82]], color: COLOR.blue },
+  { id: 'aKs1', pts: [[7.89, 2.92], [7.89, 2.86], [7.66, 2.86], [7.66, 2.82]], color: COLOR.red, dash: true },
+  { id: 'aJw1', pts: [[8.91, 2.49], [8.82, 2.49], [8.82, 3.39], [4.01, 3.39], [4.01, 2.77]], color: COLOR.grey, dash: true },
+  { id: 'aJw2', pts: [[11.35, 4.58], [11.35, 4.14], [12.965, 4.14], [12.965, 2.82]], color: COLOR.grey, dash: true },
+  { id: 'a5', pts: [[9.11, 5.57], [9.30, 5.57], [9.30, 6.17], [9.47, 6.17]], color: COLOR.gold },
+  { id: 'aAllow', pts: [[10.42, 6.41], [10.42, 6.66]], color: COLOR.gold },
+  { id: 'aCreate', pts: [[10.42, 7.35], [10.42, 9.12], [9.12, 9.12]], color: COLOR.gold, dash: true },
+  { id: 'a6', pts: [[6.56, 5.47], [6.41, 5.47], [6.41, 9.12], [6.55, 9.12]], color: COLOR.green },
+  { id: 'aFeed', pts: [[7.84, 5.79], [7.84, 5.98]], color: COLOR.navy },
+];
+const LABELS = [
+  { id: 'l1', x: 1.49, y: 1.775, text: '1. sign in' },
+  { id: 'l2', x: 1.86, y: 2.63, text: '2. chat' },
+  { id: 'lTok', x: 5.21, y: 3.48, text: 'employee token' },
+  { id: 'l3', x: 5.6, y: 5.35, text: '3. tool call<br>+ employee token', wrap: true },
+  { id: 'l4a', x: 6.29, y: 3.52, text: '4a. agent token' },
+  { id: 'l4b', x: 8.49, y: 3.72, text: '4b. exchange' },
+  { id: 'l4c', x: 10.19, y: 3.78, text: '4c. per-action RAR token' },
+  { id: 'l5', x: 8.73, y: 5.79, text: '5. request a login' },
+  { id: 'lAllow', x: 10.17, y: 6.46, text: 'allowed' },
+  { id: 'lCreate', x: 10.03, y: 8.81, text: 'creates user' },
+  { id: 'l6', x: 5.34, y: 7.22, text: '6. read / write with the 2-min user' },
+  { id: 'lJw1', x: 5.36, y: 3.31, text: 'Verify checks the IdP\'s signatures (JWKS)' },
+  { id: 'lJw2', x: 11.16, y: 4.06, text: 'Vault checks Verify\'s signatures (JWKS), offline' },
+];
+
+/* ------------------------------------------------------------------ the walkthrough */
+// Each step: what to frame (inches), what to light up, the hot elements (ringed, arrows
+// pulsing) and the side panel. lit: 'all' keeps the whole diagram bright.
+const P = (o) => o;
+const STEPS = [
+  { id: 'map', frame: [0.02, 0.02, 13.72, 9.86], lit: 'all', hot: [] },
+  { id: 'left', frame: [0.02, 0.02, 13.72, 9.86], lit: ['pRm', 'pTeller', 'idp', 'agent', 'idconn', 'gateway', 'lifecycle', 'ks0'], hot: ['zEmp', 'zIdp', 'zAcp'] },
+  { id: 'right', frame: [0.02, 0.02, 13.72, 9.86],
+    lit: ['registry', 'exchange', 'rar', 'ks1', 'mcp', 'feed', 'db', 'trust', 'entities', 'ceiling', 'decision', 'dbengine', 'audit', 'ks2'], hot: ['zVerify', 'zBank', 'zVault'] },
+  { id: 'band', frame: [0.02, 0.02, 13.72, 9.86], lit: 'all', hot: ['band', 'aObs1', 'aObs2', 'aObs3'] },
+  { id: 'legend', frame: [0.02, 0.02, 13.72, 9.86], lit: ['zAcp', 'agent', 'idconn', 'ks0'], hot: ['legend', 'gateway', 'lifecycle'] },
+  { id: 's1', frame: [0.05, 1.2, 5.75, 2.1], lit: ['zEmp', 'pRm', 'pTeller', 'zIdp'], hot: ['a1', 'l1', 'idp'],
+    panel: P({ chip: 'Step 1', c: COLOR.purple, title: 'Sign in',
+      facts: ['MFA sign-in at the bank\'s <b>workforce identity provider</b>: Okta, Microsoft Entra ID, Ping, IBM Verify…',
+              'The job role becomes a <b>groups claim</b> in a signed token',
+              'The provider publishes its <b>public keys (JWKS)</b>, so others can verify its tokens'],
+      extra: `<div class="who"><div><b>Relationship manager</b><span><i class="perm">view accounts</i><i class="perm">initiate payments</i><i class="perm">cancel payments</i></span></div>
+               <div><b>Bank teller</b><span><i class="perm">view accounts</i></span></div></div>` }) },
+  { id: 's2', frame: [0.05, 1.2, 5.85, 3.75], lit: ['zEmp', 'pRm', 'pTeller', 'zIdp', 'idp', 'zAcp'], hot: ['a2rm', 'a2t', 'l2', 'agent', 'idconn', 'aTok', 'lTok'],
+    panel: P({ chip: 'Step 2', c: COLOR.slate, title: 'Chat with the agent',
+      facts: ['The employee chats with the <b>Payments Assistant</b>, a registered agent',
+              'The LLM picks the tools. <b>It never sees a token</b>',
+              'The <b>identity connection</b> keeps each employee\'s own token: everyone signs in as themselves, <b>no shared service account</b>'] }) },
+  { id: 's3', frame: [2.25, 3.5, 6.95, 2.45], lit: ['zAcp', 'agent', 'idconn', 'zBank'], hot: ['a3', 'l3', 'mcp', 'gateway'],
+    panel: P({ chip: 'Step 3', c: COLOR.slate, title: 'Tool call + employee token', rec: 'MCP gateway: recommended addition',
+      facts: ['The tool call reaches the <b>banking tools MCP server</b>, carrying the employee\'s token',
+              'The server checks the agent, exchanges the token, asks for <b>one token per action</b>, and <b>stores no secrets</b>',
+              'Recommended: an <b>MCP gateway</b> such as IBM ContextForge: one governed endpoint, guardrails, RBAC, rate limits, audit'] }) },
+  { id: 's4a', frame: [6.3, 1.2, 3.05, 4.65], lit: ['mcp', 'zVerify', 'zBank', 'aKs1'], hot: ['a4a', 'l4a', 'registry', 'ks1'],
+    panel: P({ chip: 'Step 4a', c: COLOR.blue, title: 'Is the agent live?',
+      facts: ['The MCP server asks <b>IBM Verify</b> for the agent\'s own token: the <b>actor</b>',
+              'The <b>Agent Registry</b> knows the agent, its owner and its state: <b>ACTIVE</b> or <b>SUSPENDED</b>',
+              '<b>Kill switch 1</b>: suspend the agent, and it gets no token. The chain stops here'] }) },
+  { id: 's4b', frame: [3.85, 1.2, 7.45, 4.65], lit: ['mcp', 'zVerify', 'zBank', 'registry', 'zIdp', 'idp'], hot: ['a4b', 'l4b', 'exchange', 'aJw1', 'lJw1'],
+    panel: P({ chip: 'Step 4b', c: COLOR.blue, title: 'Token exchange, on behalf of the employee',
+      facts: ['Employee token + agent token → <b>one token</b>',
+              '<b>No impersonation</b>: the token says who acts for whom',
+              'Verify first checks the identity provider\'s <b>signature</b> with its public keys'],
+      extra: `<div class="code"><span class="c">// the exchanged token (illustrative)</span>
+{
+  <span class="k">"sub"</span>: "rm-0427",
+  <span class="k">"act"</span>: { <span class="k">"sub"</span>: "payments-assistant" }
+}</div><div class="note">sub = the employee · act = the agent acting for them</div>` }) },
+  { id: 's4c', frame: [6.3, 1.2, 7.4, 4.65], lit: ['mcp', 'zVerify', 'zBank', 'exchange'], hot: ['a4c', 'l4c', 'rar'],
+    panel: P({ chip: 'Step 4c', c: COLOR.blue, title: 'One token per action',
+      facts: ['For each action, Verify issues a token with <b>Rich Authorization Requests</b> (RAR)',
+              'Its <b>authorization_details</b> name exactly which database login this one action may get: <b>view</b> or <b>initiate</b>'],
+      extra: `<div class="code"><span class="c">// a per-action token (illustrative)</span>
+<span class="k">"authorization_details"</span>: [{
+  <span class="k">"type"</span>: "database_login",
+  <span class="k">"role"</span>: "initiate"
+}]</div>` }) },
+  { id: 's5', frame: [6.3, 2.75, 7.35, 3.75], lit: ['mcp', 'zVault', 'zBank', 'zVerify', 'rar'], hot: ['a5', 'l5', 'trust', 'entities', 'ceiling', 'decision', 'aJw2', 'lJw2'],
+    panel: P({ chip: 'Step 5', c: COLOR.gold, title: 'Request a login from Vault',
+      facts: ['The MCP server asks <b>HashiCorp Vault Enterprise</b> for a database login, with the per-action token',
+              'Vault checks Verify\'s <b>signature offline</b>, with its published keys',
+              '<b>Trust profile</b>: user = sub, agent = act.sub, RAR required',
+              '<b>Entities</b>: employees by group, and the agent, linked to their Verify IDs'] }) },
+  { id: 's5x', frame: [9.3, 4.2, 4.3, 2.3], lit: ['zVault', 'trust'], hot: ['decision', 'ceiling', 'entities'],
+    panel: P({ chip: 'Step 5', c: COLOR.gold, title: 'All three must say yes',
+      extra: `<div class="formula"><span>employee's policy</span><em>∩</em><span>agent's ceiling</span><em>∩</em><span>token's RAR</span></div>
+        <table class="dec"><tr><th>Request</th><th>Policy</th><th>Ceiling</th><th>RAR</th><th>Result</th></tr>
+          <tr><td>Relationship manager: initiate a payment</td><td>view · initiate · cancel</td><td>view · initiate</td><td>initiate</td><td class="ok">✓ allowed</td></tr>
+          <tr><td>Relationship manager: cancel a payment</td><td>view · initiate · cancel</td><td>view · initiate</td><td>cancel</td><td class="no">✗ never cancel</td></tr>
+          <tr><td>Bank teller: initiate a payment</td><td>view</td><td>view · initiate</td><td>initiate</td><td class="no">✗ view only</td></tr></table>` }) },
+  { id: 's5y', frame: [9.3, 5.85, 4.3, 2.15], lit: ['zVault', 'decision', 'entities'], hot: ['aAllow', 'lAllow', 'dbengine', 'audit', 'ks2'],
+    panel: P({ chip: 'Step 5', c: COLOR.gold, title: 'Allowed: a 2-minute database user',
+      facts: ['Vault\'s <b>database engine</b> creates a database user that lives <b>two minutes</b>, with only that role: view, initiate or cancel',
+              'The <b>audit log</b> records the employee, the agent and the Verify transaction',
+              '<b>Kill switch 2</b>: disable the agent\'s entity in Vault, and no login is issued'] }) },
+  { id: 's6', frame: [6.25, 4.3, 5.2, 5.3], lit: ['mcp', 'zBank', 'zVault', 'dbengine'], hot: ['a6', 'l6', 'db', 'aCreate', 'lCreate'],
+    panel: P({ chip: 'Step 6', c: COLOR.green, title: 'Read or write, then it expires',
+      facts: ['The MCP server reads or writes the <b>payments database</b> (accounts, payment_requests) with the 2-minute user',
+              'Two minutes later the user is gone: <b>nothing to steal, nothing to reuse</b>',
+              'No stored secrets in the agent, the platform or the MCP server'] }) },
+  { id: 'feed', frame: [6.3, 4.3, 3.05, 2.3], lit: ['zBank'], hot: ['mcp', 'aFeed', 'feed'],
+    panel: P({ chip: 'On record', c: COLOR.navy, title: 'Activity feed → SIEM / SOAR',
+      facts: ['Every action is recorded with the <b>employee</b>, the <b>agent</b>, the <b>token</b> and the <b>decision</b>',
+              'The SIEM and SOAR see the whole chain, and playbooks can act on it'] }) },
+  { id: 'kills', frame: [0.02, 0.02, 13.72, 9.86], lit: ['zAcp', 'zVerify', 'zVault', 'lifecycle', 'registry', 'entities', 'zBank'], hot: ['ks0', 'ks1', 'ks2', 'aKs1'],
+    panel: P({ chip: 'Control', c: COLOR.red, title: 'Three kill switches',
+      extra: `<div class="kss">
+        <div><b>0</b><span>Agent platform: stop the agent<small>agent lifecycle (recommended): inventory, evaluation before release, sandboxed runtime</small></span></div>
+        <div><b>1</b><span>IBM Verify: suspend the agent<small>no agent token, so no exchange and no per-action token</small></span></div>
+        <div><b>2</b><span>Vault: disable the agent's entity<small>no database login, whatever the tokens say</small></span></div></div>
+        <div class="note">Any one of them cuts the chain.</div>` }) },
+  { id: 'observe', frame: [0.02, 0.02, 13.72, 9.86], lit: 'all', hot: ['band', 'aObs1', 'aObs2', 'aObs3'],
+    panel: P({ chip: 'Observability', c: COLOR.band, title: 'IBM Verify Identity Protection',
+      facts: ['<b>Discovers</b> every agent and its identities, registered or shadow, with owner, delegations and credentials',
+              '<b>Detects</b> unusual delegation, privilege drift, static secrets or service accounts outside Vault, and MFA gaps',
+              '<b>Responds</b> through SIEM / SOAR playbooks that trigger the kill switches'],
+      extra: `<div class="chain"><b style="font-weight:600">Maps</b><span>employee</span><i>→</i><span>agent</span><i>→</i><span>token</span><i>→</i><span>Vault login</span><i>→</i><span>data</span></div>` }) },
+  { id: 'recap', frame: [0.02, 0.02, 13.72, 9.86], lit: 'all', hot: ['a1', 'a2rm', 'a3', 'a4a', 'a4b', 'a4c', 'a5', 'aAllow', 'a6'],
+    panel: P({ chip: 'In one line', c: COLOR.navy, title: 'Every hop proves who acts for whom',
+      facts: ['<b>Verified</b>: every token is signed and checked at every hop',
+              '<b>Short-lived</b>: one token per action, a database user for two minutes',
+              '<b>Attributable</b>: every action names the employee and the agent',
+              '<b>Stoppable</b>: three kill switches, in three places'] }) },
+];
+
+/* ------------------------------------------------------------------ drawing */
+const wrap = document.getElementById('wrap');
+const panel = document.getElementById('panel');
+const box = (o) => `left:${px(o.x)}px;top:${px(o.y)}px;width:${px(o.w)}px;height:${px(o.h)}px`;
+
+function draw() {
+  let h = `<div class="el band" id="band" style="${box({ x: 0.10, y: 0.08, w: 13.54, h: 0.83 })}">
+    <b>IBM Verify Identity Protection — agentic identity observability</b><br><b>Discovers</b> every agent and its identities (registered or shadow),
+    with owner, delegations and credentials &nbsp;·&nbsp; <b>Maps</b> who each agent acts for and what it can reach: employee → agent → token → Vault login → data
+    &nbsp;·&nbsp; <b>Detects</b> unusual delegation, privilege drift, agents using static secrets or service accounts outside Vault, MFA gaps on the employees
+    agents act for &nbsp;·&nbsp; <b>Responds</b> via SIEM / SOAR playbooks that trigger the kill switches</div>`;
+  ZONES.forEach((z) => {
+    h += `<div class="el zone" id="${z.id}" style="${box(z)};border-color:${z.line};background:${z.fill}"><div class="zt ${z.br ? 'br' : ''}">${z.title}</div></div>`;
+  });
+  PEOPLE.forEach((p) => {
+    const r = (a) => `left:${px(a[0])}px;top:${px(a[1])}px;width:${px(a[2])}px;height:${px(a[3])}px`;
+    h += `<div class="el person" id="${p.id}" style="left:0;top:0;width:0;height:0"><div class="head" style="${r(p.head)}"></div>
+      <div class="body" style="${r(p.body)}"></div><div class="pl" style="${r(p.label)}">${p.html}</div></div>`;
+  });
+  BOXES.forEach((b) => {
+    h += `<div class="el box ${b.dash ? 'dash' : ''} c-${b.c}" id="${b.id}" style="${box(b)};border-color:${b.line};${b.fill ? `background:${b.fill};` : ''}${b.small ? 'font-size:11.1px;' : ''}${b.tight ? 'font-size:11.6px;padding:4px 7px;letter-spacing:-0.1px;' : ''}">${b.html}</div>`;
+  });
+  KILLS.forEach((k) => { h += `<div class="el ks" id="${k.id}" style="${box(k)}${k.tight ? ';font-size:10.2px;white-space:nowrap;padding:0 3px' : ''}">${k.text}</div>`; });
+  // The payments database, drawn as a cylinder.
+  const W = px(2.55), H = px(0.65), ry = 9;
+  h += `<div class="el db" id="db" style="${box({ x: 6.56, y: 8.8, w: 2.55, h: 0.65 })}"><svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+    <path d="M0 ${ry} V${H - ry} A${W / 2} ${ry} 0 0 0 ${W} ${H - ry} V${ry}" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.3"/>
+    <ellipse cx="${W / 2}" cy="${ry}" rx="${W / 2}" ry="${ry}" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.3"/></svg>
+    <div class="dbt"><b>Payments database</b><br>accounts · payment_requests</div></div>`;
+  // Arrows and their labels.
+  const colors = [...new Set(ARROWS.map((a) => a.color))];
+  let svg = `<svg class="arrows" viewBox="0 0 1401 990"><defs>${colors.map((c) =>
+    `<marker id="m${c.slice(1)}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="${c}"/></marker>`).join('')}</defs>`;
+  ARROWS.forEach((a) => {
+    const d = 'M' + a.pts.map(([x, y]) => `${px(x)} ${px(y)}`).join(' L');
+    svg += `<g class="el arr" id="${a.id}"><path d="${d}" stroke="${a.color}" stroke-width="${a.dash ? 1.6 : 2}" ${a.dash ? 'stroke-dasharray="5 4"' : ''}
+      ${a.head === false ? '' : `marker-end="url(#m${a.color.slice(1)})"`}/><path class="pulse" d="${d}" stroke="${a.color}" pathLength="100"/></g>`;
+  });
+  svg += '</svg>';
+  h += svg;
+  LABELS.forEach((l) => { h += `<div class="el lbl" id="${l.id}" style="left:${px(l.x)}px;top:${px(l.y)}px${l.wrap ? ';line-height:13px;padding:1px 3px' : ''}">${l.text}</div>`; });
+  wrap.innerHTML = h;
+}
+
+/* ------------------------------------------------------------------ the camera */
+const STAGE = { w: 1920, h: 1080 };
+let filmMode = false;
+// With a panel, the diagram uses the left of the stage; without, all of it. The
+// bottom stays clear for the film's captions.
+const AREA = { panel: { x: 24, y: 24, w: 1210, h: 876 }, full: { x: 24, y: 18, w: 1872, h: 884 } };
+function frameTo([x, y, w, h], area, instant) {
+  const s = Math.min(2.3, (area.w * 0.96) / (w * IN), (area.h * 0.96) / (h * IN));
+  const tx = area.x + area.w / 2 - s * (x + w / 2) * IN;
+  const ty = area.y + area.h / 2 - s * (y + h / 2) * IN;
+  if (instant) wrap.classList.add('instant');
+  wrap.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`;
+  if (instant) { void wrap.offsetWidth; wrap.classList.remove('instant'); }
+}
+
+/* ------------------------------------------------------------------ steps */
+let cur = 0;
+function renderPanel(p) {
+  if (!p) { panel.classList.remove('on'); return; }
+  const fill = () => {
+    panel.style.setProperty('--c', p.c);
+    panel.innerHTML = `<span class="chip" style="--c:${p.c}">${p.chip}</span>${p.rec ? `<span class="chip rec">${p.rec}</span>` : ''}
+      <h2>${p.title}</h2>${p.facts ? `<ul class="facts">${p.facts.map((f) => `<li>${f}</li>`).join('')}</ul>` : ''}${p.extra || ''}`;
+    panel.classList.add('on');
+  };
+  if (panel.classList.contains('on')) { panel.classList.remove('on'); setTimeout(fill, 350); } else fill();
+}
+function go(i, instant = false) {
+  cur = Math.max(0, Math.min(STEPS.length - 1, typeof i === 'string' ? STEPS.findIndex((s) => s.id === i) : i));
+  const st = STEPS[cur];
+  const hot = new Set(st.hot);
+  const lit = st.lit === 'all' ? null : new Set(st.lit);
+  wrap.querySelectorAll('.el').forEach((el) => {
+    const on = !lit || lit.has(el.id) || hot.has(el.id);
+    el.classList.toggle('dim', !on);
+    el.classList.toggle('hot', hot.has(el.id));
+    const pulse = el.querySelector && el.querySelector('.pulse');
+    if (pulse) pulse.classList.toggle('on', hot.has(el.id));
+  });
+  frameTo(st.frame, st.panel ? AREA.panel : AREA.full, instant);
+  renderPanel(st.panel);
+  document.getElementById('pos').textContent = `${cur + 1} / ${STEPS.length} · ${st.panel ? st.panel.chip : 'Overview'}`;
+}
+
+// Fits the 1920x1080 stage into the window (the film runs at exactly that size).
+function fit() {
+  const f = document.getElementById('fit');
+  if (filmMode) { f.style.transform = 'none'; return; }
+  const k = Math.min(innerWidth / STAGE.w, innerHeight / STAGE.h);
+  f.style.transform = `translate(${(innerWidth - STAGE.w * k) / 2}px, ${(innerHeight - STAGE.h * k) / 2}px) scale(${k})`;
+}
+
+draw();
+fit();
+go(0, true);
+addEventListener('resize', fit);
+document.getElementById('next').addEventListener('click', () => go(cur + 1));
+document.getElementById('prev').addEventListener('click', () => go(cur - 1));
+addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); go(cur + 1); }
+  if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(cur - 1); }
+});
+
+// The film's handle on the page.
+window.arch = {
+  film() { filmMode = true; document.body.classList.add('film'); fit(); },
+  go,
+  steps: () => STEPS.map((s) => s.id),
+};
+</script>
+</body>
+</html>

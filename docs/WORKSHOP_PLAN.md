@@ -51,6 +51,8 @@ Deterministic and safe to use on stage or in a recording. It runs anywhere and h
 | **Demo film** | `demo/film/the-agent-that-went-rogue.mp4` | The film from section 3A, ready to play (about 5 minutes, 1080p, burned-in captions, no audio) |
 | **Narrated film** | `demo/film/the-agent-that-went-rogue-narrated.mp4` | The same film with a spoken narration track, for rooms with sound or for sending ahead |
 | **Identity Attacks, Explained** | `demo/identity_explained.html` | A presenter's explainer in eleven scenes: the three kinds of identity, how a person signs in, how an AI agent should authenticate, protocols, standards, best practices, fraud and non-compliance, lateral movement, ISPM, ITDR and defense in depth. English and French (section 3D) |
+| **Reference architecture walkthrough** | `demo/agentic_runtime_architecture.html` | The bank's agentic runtime security reference architecture, redrawn from the reference slide, with a step-by-step walkthrough (section 3E) |
+| **Architecture film** | `demo/film/agentic-runtime-security-step-by-step.mp4` | The same walkthrough as a narrated film with chapter marks |
 | **Teaching film** | `demo/film/identity-attacks-explained.mp4` | The explainer and two Fraud Ring Live runs as one narrated film with chapter marks (13 minutes). French version: `identity-attacks-explained-fr.mp4` |
 
 **Why simulate first:** a live attack on stage can fail. A scripted one runs the same
@@ -190,6 +192,33 @@ Keep three things straight when you present it:
 - The narration comes from Kyutai's Pocket TTS, which runs on your own machine. It sounds much
   closer to a human narrator than the first takes of these films did, but it is still
   synthetic, so say so if anyone asks. To use your own voice, record the captions over the film.
+
+### E. Reference architecture, step by step (about 6 minutes)
+
+For architects, play `demo/film/agentic-runtime-security-step-by-step.mp4` in block 4, or open
+`demo/agentic_runtime_architecture.html` and step through it yourself. It follows one request
+through the bank's reference architecture:
+
+| Step | What happens | Where it can stop |
+|------|--------------|-------------------|
+| 1 · Sign in | The employee signs in with MFA at the workforce identity provider; the job role becomes a groups claim in a signed token | |
+| 2 · Chat | The employee chats with the Payments Assistant. The model picks tools and never sees a token; each employee keeps their own token | |
+| 3 · Tool call | The call reaches the banking tools MCP server with the employee's token (recommended: an MCP gateway such as IBM ContextForge) | |
+| 4a · Agent token | IBM Verify's agent registry confirms the agent is active and issues its own token, as the actor | Kill switch 1: suspend the agent |
+| 4b · Token exchange | Employee token + agent token → one token: sub = employee, act = agent. No impersonation | |
+| 4c · Per-action token | A token whose authorization details name exactly which database login this action may get | |
+| 5 · Vault decides | Vault checks Verify's signature offline, then grants only what the employee's policy, the agent's ceiling and the token's request all allow | Kill switch 2: disable the agent's entity |
+| 6 · Read or write | A database user that lives two minutes does the work, then expires | |
+
+It then covers the activity feed to the SIEM and SOAR, kill switch 0 in the agent platform, and
+IBM Verify Identity Protection across the chain: discover, map, detect, respond. The decision
+step works through three requests: a relationship manager initiating a payment (allowed), the
+same manager cancelling one (denied: the agent may never cancel), and a teller initiating one
+(denied: tellers can only view).
+
+Say clearly which parts were built and demoed in the lab (solid boxes) and which are
+recommended additions (dashed: the MCP gateway and the agent lifecycle). The token values on
+screen are illustrative.
 
 ---
 

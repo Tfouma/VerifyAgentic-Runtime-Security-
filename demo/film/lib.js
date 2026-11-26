@@ -190,14 +190,16 @@ function installCamera() {
     return { l: f(r.left, ox, cur.x), t: f(r.top, oy, cur.y), r: f(r.right, ox, cur.x), b: f(r.bottom, oy, cur.y) };
   };
   window.film = {
-    frame(sels, { maxScale = 1.9, fill = 0.92, safeH = 870, instant = false, minH = 0 } = {}) {
+    // Fits the elements into the screen area that starts at (areaX, areaY), areaW wide
+    // and safeH tall: by default the full width, above the captions.
+    frame(sels, { maxScale = 1.9, fill = 0.92, safeH = 870, instant = false, minH = 0, areaX = 0, areaY = 0, areaW = innerWidth } = {}) {
       const boxes = [].concat(sels).map((s) => untransformed(document.querySelector(s).getBoundingClientRect()));
       const l = Math.min(...boxes.map((b) => b.l)), t = Math.min(...boxes.map((b) => b.t));
       const r = Math.max(...boxes.map((b) => b.r));
       const b = Math.max(t + minH, ...boxes.map((b) => b.b)); // minH reserves room for content still to come
-      const s = Math.min(maxScale, (innerWidth * fill) / (r - l), (safeH * fill) / (b - t));
+      const s = Math.min(maxScale, (areaW * fill) / (r - l), (safeH * fill) / (b - t));
       const ox = wrap.offsetLeft, oy = wrap.offsetTop;
-      set({ x: innerWidth / 2 - ox - s * ((l + r) / 2 - ox), y: safeH / 2 - oy - s * ((t + b) / 2 - oy), s }, instant);
+      set({ x: areaX + areaW / 2 - ox - s * ((l + r) / 2 - ox), y: areaY + safeH / 2 - oy - s * ((t + b) / 2 - oy), s }, instant);
     },
     rect(sels) {
       const rs = [].concat(sels).map((s) => document.querySelector(s).getBoundingClientRect());
