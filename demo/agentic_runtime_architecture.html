@@ -118,12 +118,16 @@
   .nav button:hover { background: #f4f6fb; }
   .nav button:focus-visible { outline: 2px solid #0f62fe; outline-offset: 2px; }
   .nav .pos { font-size: 12.5px; color: var(--ink-dim); padding: 0 6px; min-width: 150px; text-align: center; }
+  .nav .lang button[aria-pressed="true"] { background: #0f62fe; border-color: #0f62fe; color: #fff; }
+  table.dec.fr { font-size: 15px; }
+  table.dec.fr td:last-child { white-space: normal; }
   body.film .nav { display: none; }
 </style>
 </head>
 <body>
 <div class="fit" id="fit"><div class="wrap" id="wrap"></div><aside class="panel" id="panel" aria-live="polite"></aside></div>
 <nav class="nav" aria-label="Walkthrough controls">
+  <span class="lang" role="group" aria-label="Language"><button data-lang="en">EN</button> <button data-lang="fr">FR</button></span>
   <button id="prev" aria-label="Back">‹ Back</button><span class="pos" id="pos"></span><button id="next" aria-label="Next">Next ›</button>
 </nav>
 <script>
@@ -330,35 +334,161 @@ const STEPS = [
               '<b>Stoppable</b>: three kill switches, in three places'] }) },
 ];
 
+
+/* ------------------------------------------------------------------ French */
+// The page opens in French with #fr in its link, or with the FR button. Product names,
+// protocol fields and table names stay as they are in the reference slide.
+let LANG = /(^|[#&])fr\b/.test(location.hash) ? 'fr' : 'en';
+const FR = {
+  nav: { back: '‹ Retour', next: 'Suivant ›', overview: 'Vue d’ensemble' },
+  band: '<b>IBM Verify Identity Protection — observabilité des identités agentiques</b><br><b>Découvre</b> chaque agent et ses identités (enregistrées ou fantômes), avec propriétaire, délégations et identifiants &nbsp;·&nbsp; <b>Cartographie</b> pour qui chaque agent agit et ce qu’il peut atteindre : employé → agent → jeton → connexion Vault → données &nbsp;·&nbsp; <b>Détecte</b> les délégations inhabituelles, la dérive des privilèges, les agents qui utilisent des secrets statiques ou des comptes de service hors de Vault, les lacunes de MFA des employés pour qui ils agissent &nbsp;·&nbsp; <b>Répond</b> par des playbooks SIEM / SOAR qui déclenchent les coupe-circuits',
+  zones: { zEmp: 'Employés de la banque', zIdp: 'Fournisseur d’identité des employés', zAcp: 'Plan de contrôle agentique',
+           zVerify: 'IBM Verify — identité et délégation des agents', zBank: 'Environnement de la banque', zVault: 'HashiCorp Vault Enterprise' },
+  people: { pRm: 'Directeur de comptes<br><i>consulter les comptes; initier<br>et annuler des paiements</i>', pTeller: 'Caissier<br><i>consulter les comptes seulement</i>' },
+  boxes: {
+    idp: '<b>Okta · Microsoft Entra ID · Ping · IBM Verify · …</b><br>• connexion MFA des employés<br>• rôle → revendication <i>groups</i><br>• jetons signés · clés JWKS publiées',
+    agent: '<b>Agent Assistant paiements</b><br>agent enregistré; le LLM choisit les outils et ne voit jamais les jetons',
+    idconn: '<b>Connexion d’identité</b> (par employé)<br>chacun se connecte en son nom; aucun compte de service partagé',
+    gateway: '<b>Passerelle MCP</b> (p. ex. IBM ContextForge)<br><span style="display:block;max-width:250px">un point d’accès gouverné pour tous les outils · garde-fous · RBAC · limites de débit · audit</span>',
+    lifecycle: '<b>Cycle de vie des agents</b><br>inventaire · évaluation avant mise en service · exécution isolée · coupe-circuit de la plateforme',
+    registry: '<b>Registre des agents</b><br>Assistant paiements · propriétaire<br>ACTIF / SUSPENDU<br>jeton propre de l’agent (acteur)',
+    exchange: '<b>Échange de jetons</b> (au nom de)<br>jeton de l’employé + jeton de l’agent → un seul jeton : sub = employé, act = agent · aucune usurpation',
+    rar: '<b>Jetons par action</b> (RAR)<br><i>authorization_details</i> : quelle connexion à la base de données cette action peut obtenir (consulter ou initier)',
+    mcp: '<b>Serveur MCP des outils bancaires</b><br>• vérifie que l’agent est actif (Verify)<br>• échange le jeton de l’employé<br>• un jeton RAR par action<br>• aucun secret stocké',
+    feed: '<b>Flux d’activité → SIEM / SOAR</b><br>employé · agent · jeton · décision',
+    trust: '<b>Profil de confiance</b> · émetteur Verify + JWKS · user = sub · agent = act.sub · RAR obligatoire',
+    entities: '<b>Entités</b><br>employés par groupe · agent<br>(alias = ID Verify)',
+    ceiling: '<b>Registre des agents</b> · plafond<br><i>payments-ceiling</i> : consulter, initier<br><b>jamais annuler</b>',
+    decision: '<b>Décision par requête</b><br>politique de l’employé ∩ plafond de l’agent ∩ RAR du jeton',
+    dbengine: '<b>Moteur de base de données</b><br>utilisateurs de 2 minutes<br>(consulter · initier · annuler)',
+    audit: '<b>Journal d’audit</b><br>employé · agent · transaction Verify',
+    legend: '<b>Légende</b><br>Trait plein : construit et démontré dans notre labo<br>Boîtes pointillées : ajouts recommandés<br>Flèches grises pointillées : confiance (clés publiques)<br>Bande violette : observabilité des identités agentiques',
+  },
+  tight: ['idconn', 'exchange', 'rar', 'mcp', 'entities', 'dbengine', 'lifecycle', 'agent'],
+  kills: { ks0: 'Coupe-circuit 0 : arrêter l’agent dans la plateforme', ks1: 'Coupe-circuit 1 : suspendre l’agent',
+           ks2: 'Coupe-circuit 2 : désactiver l’entité de l’agent' },
+  db: '<b>Base de données des paiements</b><br>accounts · payment_requests',
+  labels: { l1: '1. connexion', l2: '2. conversation', lTok: 'jeton de l’employé', l3: '3. appel d’outil<br>+ jeton employé',
+            l4a: '4a. jeton de l’agent', l4b: '4b. échange', l4c: '4c. jeton RAR par action', l5: '5. demande de connexion',
+            lAllow: 'autorisé', lCreate: 'crée l’utilisateur', l6: '6. lecture / écriture avec l’utilisateur de 2 min',
+            lJw1: 'Verify vérifie les signatures du fournisseur d’identité (JWKS)', lJw2: 'Vault vérifie les signatures de Verify (JWKS), hors ligne' },
+  panels: {
+    s1: { chip: 'Étape 1', title: 'Connexion',
+      facts: ['Connexion MFA au <b>fournisseur d’identité des employés</b> : Okta, Microsoft Entra ID, Ping, IBM Verify…',
+              'Le rôle devient une <b>revendication groups</b> dans un jeton signé',
+              'Le fournisseur publie ses <b>clés publiques (JWKS)</b>, pour que d’autres puissent vérifier ses jetons'],
+      extra: `<div class="who"><div><b>Directeur de comptes</b><span><i class="perm">consulter les comptes</i><i class="perm">initier des paiements</i><i class="perm">annuler des paiements</i></span></div>
+               <div><b>Caissier</b><span><i class="perm">consulter les comptes</i></span></div></div>` },
+    s2: { chip: 'Étape 2', title: 'Conversation avec l’agent',
+      facts: ['L’employé converse avec l’<b>Assistant paiements</b>, un agent enregistré',
+              'Le LLM choisit les outils. <b>Il ne voit jamais de jeton</b>',
+              'La <b>connexion d’identité</b> garde le jeton propre à chaque employé : chacun se connecte en son nom, <b>aucun compte de service partagé</b>'] },
+    s3: { chip: 'Étape 3', title: 'Appel d’outil + jeton de l’employé', rec: 'Passerelle MCP : ajout recommandé',
+      facts: ['L’appel arrive au <b>serveur MCP des outils bancaires</b>, avec le jeton de l’employé',
+              'Le serveur vérifie l’agent, échange le jeton, demande <b>un jeton par action</b>, et <b>ne stocke aucun secret</b>',
+              'Recommandé : une <b>passerelle MCP</b> comme IBM ContextForge : un point d’accès gouverné, garde-fous, RBAC, limites de débit, audit'] },
+    s4a: { chip: 'Étape 4a', title: 'L’agent est-il actif ?',
+      facts: ['Le serveur MCP demande à <b>IBM Verify</b> le jeton propre de l’agent : l’<b>acteur</b>',
+              'Le <b>registre des agents</b> connaît l’agent, son propriétaire et son état : <b>ACTIF</b> ou <b>SUSPENDU</b>',
+              '<b>Coupe-circuit 1</b> : suspendez l’agent, et il n’obtient aucun jeton. La chaîne s’arrête ici'] },
+    s4b: { chip: 'Étape 4b', title: 'Échange de jetons, au nom de l’employé',
+      facts: ['Jeton de l’employé + jeton de l’agent → <b>un seul jeton</b>',
+              '<b>Aucune usurpation</b> : le jeton dit qui agit pour qui',
+              'Verify vérifie d’abord la <b>signature</b> du fournisseur d’identité avec ses clés publiques'],
+      extra: `<div class="code"><span class="c">// le jeton échangé (illustratif)</span>
+{
+  <span class="k">"sub"</span>: "rm-0427",
+  <span class="k">"act"</span>: { <span class="k">"sub"</span>: "payments-assistant" }
+}</div><div class="note">sub = l’employé · act = l’agent qui agit en son nom</div>` },
+    s4c: { chip: 'Étape 4c', title: 'Un jeton par action',
+      facts: ['Pour chaque action, Verify émet un jeton avec des <b>Rich Authorization Requests</b> (RAR)',
+              'Ses <b>authorization_details</b> indiquent exactement quelle connexion à la base de données cette action peut obtenir : <b>consulter</b> ou <b>initier</b>'],
+      extra: `<div class="code"><span class="c">// un jeton par action (illustratif)</span>
+<span class="k">"authorization_details"</span>: [{
+  <span class="k">"type"</span>: "database_login",
+  <span class="k">"role"</span>: "initiate"
+}]</div>` },
+    s5: { chip: 'Étape 5', title: 'Demande de connexion à Vault',
+      facts: ['Le serveur MCP demande à <b>HashiCorp Vault Enterprise</b> une connexion à la base de données, avec le jeton par action',
+              'Vault vérifie la <b>signature de Verify hors ligne</b>, avec ses clés publiées',
+              '<b>Profil de confiance</b> : user = sub, agent = act.sub, RAR obligatoire',
+              '<b>Entités</b> : les employés par groupe, et l’agent, liés à leurs identifiants Verify'] },
+    s5x: { chip: 'Étape 5', title: 'Les trois doivent dire oui',
+      extra: `<div class="formula"><span>politique de l’employé</span><em>∩</em><span>plafond de l’agent</span><em>∩</em><span>RAR du jeton</span></div>
+        <table class="dec fr"><tr><th>Requête</th><th>Politique</th><th>Plafond</th><th>RAR</th><th>Résultat</th></tr>
+          <tr><td>Directeur de comptes : initier un paiement</td><td>consulter · initier · annuler</td><td>consulter · initier</td><td>initier</td><td class="ok">✓ autorisé</td></tr>
+          <tr><td>Directeur de comptes : annuler un paiement</td><td>consulter · initier · annuler</td><td>consulter · initier</td><td>annuler</td><td class="no">✗ jamais annuler</td></tr>
+          <tr><td>Caissier : initier un paiement</td><td>consulter</td><td>consulter · initier</td><td>initier</td><td class="no">✗ consultation seulement</td></tr></table>` },
+    s5y: { chip: 'Étape 5', title: 'Autorisé : un utilisateur de 2 minutes',
+      facts: ['Le <b>moteur de base de données</b> de Vault crée un utilisateur qui vit <b>deux minutes</b>, avec ce seul rôle : consulter, initier ou annuler',
+              'Le <b>journal d’audit</b> consigne l’employé, l’agent et la transaction Verify',
+              '<b>Coupe-circuit 2</b> : désactivez l’entité de l’agent dans Vault, et aucune connexion n’est émise'] },
+    s6: { chip: 'Étape 6', title: 'Lire ou écrire, puis tout expire',
+      facts: ['Le serveur MCP lit ou écrit dans la <b>base de données des paiements</b> (accounts, payment_requests) avec l’utilisateur de 2 minutes',
+              'Deux minutes plus tard, l’utilisateur n’existe plus : <b>rien à voler, rien à réutiliser</b>',
+              'Aucun secret stocké dans l’agent, la plateforme ou le serveur MCP'] },
+    feed: { chip: 'Traçabilité', title: 'Flux d’activité → SIEM / SOAR',
+      facts: ['Chaque action est consignée avec l’<b>employé</b>, l’<b>agent</b>, le <b>jeton</b> et la <b>décision</b>',
+              'Le SIEM et le SOAR voient toute la chaîne, et les playbooks peuvent agir'] },
+    kills: { chip: 'Contrôle', title: 'Trois coupe-circuits',
+      extra: `<div class="kss">
+        <div><b>0</b><span>Plateforme des agents : arrêter l’agent<small>cycle de vie des agents (recommandé) : inventaire, évaluation avant mise en service, exécution isolée</small></span></div>
+        <div><b>1</b><span>IBM Verify : suspendre l’agent<small>aucun jeton d’agent, donc ni échange ni jeton par action</small></span></div>
+        <div><b>2</b><span>Vault : désactiver l’entité de l’agent<small>aucune connexion à la base de données, quels que soient les jetons</small></span></div></div>
+        <div class="note">Un seul suffit pour couper la chaîne.</div>` },
+    observe: { chip: 'Observabilité', title: 'IBM Verify Identity Protection',
+      facts: ['<b>Découvre</b> chaque agent et ses identités, enregistrées ou fantômes, avec propriétaire, délégations et identifiants',
+              '<b>Détecte</b> les délégations inhabituelles, la dérive des privilèges, les secrets statiques ou comptes de service hors de Vault, et les lacunes de MFA',
+              '<b>Répond</b> par des playbooks SIEM / SOAR qui déclenchent les coupe-circuits'],
+      extra: `<div class="chain"><b style="font-weight:600">Cartographie</b><span>employé</span><i>→</i><span>agent</span><i>→</i><span>jeton</span><i>→</i><span>connexion Vault</span><i>→</i><span>données</span></div>` },
+    recap: { chip: 'En une ligne', title: 'Chaque saut prouve qui agit pour qui',
+      facts: ['<b>Vérifié</b> : chaque jeton est signé et vérifié à chaque saut',
+              '<b>De courte durée</b> : un jeton par action, un utilisateur de base de données pour deux minutes',
+              '<b>Attribuable</b> : chaque action nomme l’employé et l’agent',
+              '<b>Arrêtable</b> : trois coupe-circuits, à trois endroits'] },
+  },
+};
+// French typography: non-breaking spaces before : ; ? ! (outside tags and code).
+(function frenchSpaces(o) {
+  for (const k of Object.keys(o)) {
+    if (typeof o[k] === 'string') o[k] = o[k].replace(/ ([:;?!])(?=[\s<]|$)/g, ' $1');
+    else if (o[k] && typeof o[k] === 'object') frenchSpaces(o[k]);
+  }
+})(FR);
+const L = (kind, id, en) => (LANG === 'fr' && FR[kind] && FR[kind][id] != null ? FR[kind][id] : en);
+
 /* ------------------------------------------------------------------ drawing */
 const wrap = document.getElementById('wrap');
 const panel = document.getElementById('panel');
 const box = (o) => `left:${px(o.x)}px;top:${px(o.y)}px;width:${px(o.w)}px;height:${px(o.h)}px`;
 
 function draw() {
-  let h = `<div class="el band" id="band" style="${box({ x: 0.10, y: 0.08, w: 13.54, h: 0.83 })}">
-    <b>IBM Verify Identity Protection — agentic identity observability</b><br><b>Discovers</b> every agent and its identities (registered or shadow),
+  const BAND_EN = `<b>IBM Verify Identity Protection — agentic identity observability</b><br><b>Discovers</b> every agent and its identities (registered or shadow),
     with owner, delegations and credentials &nbsp;·&nbsp; <b>Maps</b> who each agent acts for and what it can reach: employee → agent → token → Vault login → data
     &nbsp;·&nbsp; <b>Detects</b> unusual delegation, privilege drift, agents using static secrets or service accounts outside Vault, MFA gaps on the employees
-    agents act for &nbsp;·&nbsp; <b>Responds</b> via SIEM / SOAR playbooks that trigger the kill switches</div>`;
+    agents act for &nbsp;·&nbsp; <b>Responds</b> via SIEM / SOAR playbooks that trigger the kill switches`;
+  let h = `<div class="el band" id="band" style="${box({ x: 0.10, y: 0.08, w: 13.54, h: 0.83 })}${LANG === 'fr' ? ';font-size:11.8px;line-height:1.3;padding-top:7px' : ''}">${LANG === 'fr' ? FR.band : BAND_EN}</div>`;
   ZONES.forEach((z) => {
-    h += `<div class="el zone" id="${z.id}" style="${box(z)};border-color:${z.line};background:${z.fill}"><div class="zt ${z.br ? 'br' : ''}">${z.title}</div></div>`;
+    h += `<div class="el zone" id="${z.id}" style="${box(z)};border-color:${z.line};background:${z.fill}"><div class="zt ${z.br ? 'br' : ''}">${L('zones', z.id, z.title)}</div></div>`;
   });
   PEOPLE.forEach((p) => {
     const r = (a) => `left:${px(a[0])}px;top:${px(a[1])}px;width:${px(a[2])}px;height:${px(a[3])}px`;
     h += `<div class="el person" id="${p.id}" style="left:0;top:0;width:0;height:0"><div class="head" style="${r(p.head)}"></div>
-      <div class="body" style="${r(p.body)}"></div><div class="pl" style="${r(p.label)}">${p.html}</div></div>`;
+      <div class="body" style="${r(p.body)}"></div><div class="pl" style="${r(p.label)}">${L('people', p.id, p.html)}</div></div>`;
   });
   BOXES.forEach((b) => {
-    h += `<div class="el box ${b.dash ? 'dash' : ''} c-${b.c}" id="${b.id}" style="${box(b)};border-color:${b.line};${b.fill ? `background:${b.fill};` : ''}${b.small ? 'font-size:11.1px;' : ''}${b.tight ? 'font-size:11.6px;padding:4px 7px;letter-spacing:-0.1px;' : ''}">${b.html}</div>`;
+    h += `<div class="el box ${b.dash ? 'dash' : ''} c-${b.c}" id="${b.id}" style="${box(b)};border-color:${b.line};${b.fill ? `background:${b.fill};` : ''}${b.small ? 'font-size:11.1px;' : ''}${b.tight || (LANG === 'fr' && FR.tight.includes(b.id)) ? 'font-size:11.6px;padding:4px 7px;letter-spacing:-0.1px;' : ''}">${L('boxes', b.id, b.html)}</div>`;
   });
-  KILLS.forEach((k) => { h += `<div class="el ks" id="${k.id}" style="${box(k)}${k.tight ? ';font-size:10.2px;white-space:nowrap;padding:0 3px' : ''}">${k.text}</div>`; });
+  KILLS.forEach((k) => {
+    const tight = k.tight ? (LANG === 'fr' ? ';font-size:9.4px;line-height:1.1;padding:0 3px' : ';font-size:10.2px;white-space:nowrap;padding:0 3px') : '';
+    h += `<div class="el ks" id="${k.id}" style="${box(k)}${tight}">${L('kills', k.id, k.text)}</div>`;
+  });
   // The payments database, drawn as a cylinder.
   const W = px(2.55), H = px(0.65), ry = 9;
   h += `<div class="el db" id="db" style="${box({ x: 6.56, y: 8.8, w: 2.55, h: 0.65 })}"><svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
     <path d="M0 ${ry} V${H - ry} A${W / 2} ${ry} 0 0 0 ${W} ${H - ry} V${ry}" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.3"/>
     <ellipse cx="${W / 2}" cy="${ry}" rx="${W / 2}" ry="${ry}" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.3"/></svg>
-    <div class="dbt"><b>Payments database</b><br>accounts · payment_requests</div></div>`;
+    <div class="dbt">${LANG === 'fr' ? FR.db : '<b>Payments database</b><br>accounts · payment_requests'}</div></div>`;
   // Arrows and their labels.
   const colors = [...new Set(ARROWS.map((a) => a.color))];
   let svg = `<svg class="arrows" viewBox="0 0 1401 990"><defs>${colors.map((c) =>
@@ -370,7 +500,7 @@ function draw() {
   });
   svg += '</svg>';
   h += svg;
-  LABELS.forEach((l) => { h += `<div class="el lbl" id="${l.id}" style="left:${px(l.x)}px;top:${px(l.y)}px${l.wrap ? ';line-height:13px;padding:1px 3px' : ''}">${l.text}</div>`; });
+  LABELS.forEach((l) => { h += `<div class="el lbl" id="${l.id}" style="left:${px(l.x)}px;top:${px(l.y)}px${l.wrap ? ';line-height:13px;padding:1px 3px' : ''}">${L('labels', l.id, l.text)}</div>`; });
   wrap.innerHTML = h;
 }
 
@@ -414,8 +544,9 @@ function go(i, instant = false) {
     if (pulse) pulse.classList.toggle('on', hot.has(el.id));
   });
   frameTo(st.frame, st.panel ? AREA.panel : AREA.full, instant);
-  renderPanel(st.panel);
-  document.getElementById('pos').textContent = `${cur + 1} / ${STEPS.length} · ${st.panel ? st.panel.chip : 'Overview'}`;
+  const p = st.panel && (LANG === 'fr' ? { ...st.panel, ...FR.panels[st.id] } : st.panel);
+  renderPanel(p);
+  document.getElementById('pos').textContent = `${cur + 1} / ${STEPS.length} · ${p ? p.chip : (LANG === 'fr' ? FR.nav.overview : 'Overview')}`;
 }
 
 // Fits the 1920x1080 stage into the window (the film runs at exactly that size).
@@ -426,9 +557,25 @@ function fit() {
   f.style.transform = `translate(${(innerWidth - STAGE.w * k) / 2}px, ${(innerHeight - STAGE.h * k) / 2}px) scale(${k})`;
 }
 
+function setNav() {
+  document.documentElement.lang = LANG;
+  document.querySelectorAll('.nav [data-lang]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === LANG)));
+  document.getElementById('prev').textContent = LANG === 'fr' ? FR.nav.back : '‹ Back';
+  document.getElementById('next').textContent = LANG === 'fr' ? FR.nav.next : 'Next ›';
+}
+function setLang(l) {
+  LANG = l;
+  history.replaceState(null, '', l === 'fr' ? '#fr' : '#');
+  draw();
+  setNav();
+  go(cur, true);
+}
+
 draw();
+setNav();
 fit();
 go(0, true);
+document.querySelectorAll('.nav [data-lang]').forEach((b) => b.addEventListener('click', () => setLang(b.dataset.lang)));
 addEventListener('resize', fit);
 document.getElementById('next').addEventListener('click', () => go(cur + 1));
 document.getElementById('prev').addEventListener('click', () => go(cur - 1));

@@ -52,7 +52,7 @@ Deterministic and safe to use on stage or in a recording. It runs anywhere and h
 | **Narrated film** | `demo/film/the-agent-that-went-rogue-narrated.mp4` | The same film with a spoken narration track, for rooms with sound or for sending ahead |
 | **Identity Attacks, Explained** | `demo/identity_explained.html` | A presenter's explainer in eleven scenes: the three kinds of identity, how a person signs in, how an AI agent should authenticate, protocols, standards, best practices, fraud and non-compliance, lateral movement, ISPM, ITDR and defense in depth. English and French (section 3D) |
 | **Reference architecture walkthrough** | `demo/agentic_runtime_architecture.html` | The bank's agentic runtime security reference architecture, redrawn from the reference slide, with a step-by-step walkthrough (section 3E) |
-| **Architecture film** | `demo/film/agentic-runtime-security-step-by-step.mp4` | The same walkthrough as a narrated film with chapter marks |
+| **Architecture film** | `demo/film/agentic-runtime-security-step-by-step.mp4` | The same walkthrough as a narrated film with chapter marks. French version: `agentic-runtime-security-step-by-step-fr.mp4` |
 | **Teaching film** | `demo/film/identity-attacks-explained.mp4` | The explainer and two Fraud Ring Live runs as one narrated film with chapter marks (13 minutes). French version: `identity-attacks-explained-fr.mp4` |
 
 **Why simulate first:** a live attack on stage can fail. A scripted one runs the same
@@ -219,6 +219,11 @@ same manager cancelling one (denied: the agent may never cancel), and a teller i
 Say clearly which parts were built and demoed in the lab (solid boxes) and which are
 recommended additions (dashed: the MCP gateway and the agent lifecycle). The token values on
 screen are illustrative.
+
+For French-speaking audiences, play `agentic-runtime-security-step-by-step-fr.mp4`, or switch
+the page to **FR** (or add `#fr` to its link): the diagram, the panels and the controls are then
+in Canadian French. Product names, protocol fields (sub, act, authorization_details) and table
+names stay in English, as on the reference slide.
 
 ---
 
